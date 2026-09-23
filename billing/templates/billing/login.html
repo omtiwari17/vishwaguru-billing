@@ -1,0 +1,47 @@
+{% extends 'billing/base.html' %}
+{% load static %}
+
+{% block title %}{% if site_lang == 'hi' %}कर्मचारी लॉगिन | विश्वगुरु{% else %}Staff Login | Vishwaguru Billing{% endif %}{% endblock %}
+
+{% block content %}
+<div style="max-width: 420px; margin: 3rem auto;">
+    <div class="card" style="box-shadow: var(--shadow-lg); text-align: center;">
+        <div style="margin-bottom: 1.5rem;">
+            <img src="{% static 'billing/img/logo.png' %}" alt="विश्वगुरु" style="height: 55px; max-width: 220px; object-fit: contain; margin-bottom: 0.5rem;">
+            <h2 style="font-size: 1.25rem; color: var(--secondary);">
+                {% if site_lang == 'hi' %}कर्मचारी लॉगिन (Staff Login){% else %}Staff Sign In{% endif %}
+            </h2>
+            <p style="font-size: 0.85rem; color: var(--text-muted);">
+                {% if site_lang == 'hi' %}विज्ञापन बिलिंग पोर्टल में प्रवेश करें{% else %}Enter credentials to access ad billing portal{% endif %}
+            </p>
+        </div>
+
+        {% if form.errors %}
+        <div class="alert alert-danger" style="font-size: 0.85rem; text-align: left;">
+            {% if site_lang == 'hi' %}उपयोगकर्ता नाम या पासवर्ड गलत है।{% else %}Invalid username or password. Please try again.{% endif %}
+        </div>
+        {% endif %}
+
+        <form method="post" style="text-align: left;">
+            {% csrf_token %}
+            <div class="form-group" style="margin-bottom: 1rem;">
+                <label class="form-label" for="id_username">
+                    {% if site_lang == 'hi' %}उपयोगकर्ता नाम (Username){% else %}Username{% endif %}
+                </label>
+                <input type="text" name="username" autofocus required id="id_username" class="form-control" placeholder="admin">
+            </div>
+
+            <div class="form-group" style="margin-bottom: 1.5rem;">
+                <label class="form-label" for="id_password">
+                    {% if site_lang == 'hi' %}पासवर्ड (Password){% else %}Password{% endif %}
+                </label>
+                <input type="password" name="password" required id="id_password" class="form-control" placeholder="••••••••">
+            </div>
+
+            <button type="submit" class="btn btn-primary" style="width: 100%; padding: 0.75rem; font-size: 1rem;">
+                {% if site_lang == 'hi' %}लॉगइन करें (Sign In){% else %}Sign In{% endif %}
+            </button>
+        </form>
+    </div>
+</div>
+{% endblock %}

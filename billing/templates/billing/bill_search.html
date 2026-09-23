@@ -1,0 +1,196 @@
+{% extends 'billing/base.html' %}
+{% load static %}
+
+{% block title %}
+    {% if site_lang == 'hi' %}बिल खोजें व सूची | विश्वगुरु बिलिंग{% else %}Search Bills & Invoices | Vishwaguru Billing{% endif %}
+{% endblock %}
+
+{% block content %}
+<!-- Metrics Summary Cards -->
+<div class="metrics-grid">
+    <div class="metric-card accent-blue">
+        <div class="metric-title">{% if site_lang == 'hi' %}कुल बिल (Total Bills){% else %}Total Invoices{% endif %}</div>
+        <div class="metric-val">{{ total_count }}</div>
+    </div>
+    <div class="metric-card accent-red">
+        <div class="metric-title">{% if site_lang == 'hi' %}कुल बिल राशि (Total Billed){% else %}Total Billed Amount{% endif %}</div>
+        <div class="metric-val">₹{{ total_billed|floatformat:2 }}</div>
+    </div>
+    <div class="metric-card accent-green">
+        <div class="metric-title">{% if site_lang == 'hi' %}कुल प्राप्त राशि (Collected){% else %}Total Received{% endif %}</div>
+        <div class="metric-val">₹{{ total_collected|floatformat:2 }}</div>
+    </div>
+    <div class="metric-card accent-amber">
+        <div class="metric-title">{% if site_lang == 'hi' %}शेष बकाया (Outstanding){% else %}Outstanding Balance{% endif %}</div>
+        <div class="metric-val">₹{{ total_outstanding|floatformat:2 }}</div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <div>
+            <h2 class="card-title">
+                🔍 {% if site_lang == 'hi' %}बिल खोजें व सूची (Search Bills){% else %}Search & Filter Invoices{% endif %}
+            </h2>
+            <p class="card-subtitle">
+                {% if site_lang == 'hi' %}ग्राहक के नाम, फ़ोन, बिल क्रमांक या दिनांक से खोजें{% else %}Filter by client name, phone, invoice number, or publication date{% endif %}
+            </p>
+        </div>
+        <a href="{% url 'billing:bill_create' %}" class="btn btn-primary">
+            ➕ {% if site_lang == 'hi' %}नया बिल बनाएं{% else %}New Bill{% endif %}
+        </a>
+    </div>
+
+    <!-- Filter Form -->
+    <form method="get" style="margin-bottom: 1.5rem; background: #f8fafc; padding: 1.25rem; border-radius: 8px; border: 1px solid var(--border);">
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; align-items: flex-end;">
+            <div class="form-group">
+                <label class="form-label" style="font-size: 0.8rem;">
+                    {% if site_lang == 'hi' %}खोजें (Search Text){% else %}Search (Name, Phone, Bill No){% endif %}
+                </label>
+                <input type="text" name="q" value="{{ query }}" class="form-control" placeholder="{% if site_lang == 'hi' %}नाम, फ़ोन या बिल क्र.{% else %}Client name, phone or bill no{% endif %}">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" style="font-size: 0.8rem;">
+                    {% if site_lang == 'hi' %}भुगतान स्थिति (Status){% else %}Payment Status{% endif %}
+                </label>
+                <select name="status" class="form-select">
+                    <option value="">-- {% if site_lang == 'hi' %}समस्त स्थितियां (All){% else %}All Statuses{% endif %} --</option>
+                    {% for val, label in status_choices %}
+                    <option value="{{ val }}" {% if status == val %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" style="font-size: 0.8rem;">
+                    {% if site_lang == 'hi' %}प्रारंभिक दिनांक (From Date){% else %}From Date{% endif %}
+                </label>
+                <input type="date" name="start_date" value="{{ start_date }}" class="form-control">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" style="font-size: 0.8rem;">
+                    {% if site_lang == 'hi' %}अंतिम दिनांक (To Date){% else %}To Date{% endif %}
+                </label>
+                <input type="date" name="end_date" value="{{ end_date }}" class="form-control">
+            </div>
+
+            <div style="display: flex; gap: 0.5rem;">
+                <button type="submit" class="btn btn-primary" style="flex: 1;">
+                    {% if site_lang == 'hi' %}खोजें (Filter){% else %}Filter{% endif %}
+                </button>
+                <a href="{% url 'billing:bill_search' %}" class="btn btn-secondary">
+                    {% if site_lang == 'hi' %}रीसेट{% else %}Reset{% endif %}
+                </a>
+            </div>
+        </div>
+    </form>
+
+    <!-- Results Table -->
+    <div class="table-container">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>{% if site_lang == 'hi' %}बिल क्रमांक{% else %}Invoice No{% endif %}</th>
+                    <th>{% if site_lang == 'hi' %}विज्ञापनदाता{% else %}Client{% endif %}</th>
+                    <th>{% if site_lang == 'hi' %}प्रकाशन दिनांक{% else %}Edition Date{% endif %}</th>
+                    <th>{% if site_lang == 'hi' %}स्थान व आकार{% else %}Placement{% endif %}</th>
+                    <th>{% if site_lang == 'hi' %}कुल राशि{% else %}Total (₹){% endif %}</th>
+                    <th>{% if site_lang == 'hi' %}प्राप्त राशि{% else %}Paid (₹){% endif %}</th>
+                    <th>{% if site_lang == 'hi' %}स्थिति{% else %}Status{% endif %}</th>
+                    <th>{% if site_lang == 'hi' %}ई-पेपर{% else %}Epaper{% endif %}</th>
+                    <th style="text-align: right;">{% if site_lang == 'hi' %}क्रियाएं{% else %}Actions{% endif %}</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for b in bills %}
+                <tr>
+                    <td>
+                        <a href="{% url 'billing:bill_detail' b.pk %}" style="font-weight: 700; color: var(--primary); text-decoration: none;">
+                            {{ b.bill_number }}
+                        </a>
+                    </td>
+                    <td>
+                        <strong>{{ b.client_name }}</strong><br>
+                        <small style="color: var(--text-muted);"><a href="tel:{{ b.client_phone }}" style="color: inherit;">📞 {{ b.client_phone }}</a></small>
+                    </td>
+                    <td>
+                        {{ b.edition_date|date:"d/m/Y" }}<br>
+                        <small style="color: var(--text-muted);">{{ b.get_edition_name_display }}</small>
+                    </td>
+                    <td>
+                        {{ b.get_placement_type_display }}
+                        {% if b.custom_size_text %}<br><small style="color: var(--text-muted);">({{ b.custom_size_text }})</small>{% endif %}
+                    </td>
+                    <td style="font-weight: 700; color: var(--secondary);">
+                        ₹{{ b.total_amount|floatformat:2 }}
+                    </td>
+                    <td style="color: var(--success); font-weight: 600;">
+                        ₹{{ b.amount_paid|floatformat:2 }}
+                    </td>
+                    <td>
+                        {% if b.payment_status == 'Paid' %}
+                            <span class="badge badge-paid">{% if site_lang == 'hi' %}पूर्ण भुगतान{% else %}Paid{% endif %}</span>
+                        {% elif b.payment_status == 'Partial' %}
+                            <span class="badge badge-partial">{% if site_lang == 'hi' %}आंशिक{% else %}Partial{% endif %}</span>
+                        {% else %}
+                            <span class="badge badge-unpaid">{% if site_lang == 'hi' %}अदत्त{% else %}Unpaid{% endif %}</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if b.epaper_link %}
+                            <a href="{{ b.epaper_link }}" target="_blank" style="color: var(--primary); font-size: 0.8rem; font-weight: 600;">
+                                {% if site_lang == 'hi' %}देखें ↗{% else %}View ↗{% endif %}
+                            </a>
+                        {% else %}
+                            <span style="color: var(--text-muted);">-</span>
+                        {% endif %}
+                    </td>
+                    <td style="text-align: right; white-space: nowrap;">
+                        <a href="{{ b.whatsapp_share_url }}" target="_blank" class="btn btn-whatsapp" style="padding: 0.35rem 0.65rem; font-size: 0.8rem;" title="WhatsApp Share">
+                            💬 WhatsApp
+                        </a>
+                        <a href="{% url 'billing:bill_pdf' b.pk %}?download=1&lang={{ b.bill_language }}" class="btn btn-pdf" style="padding: 0.35rem 0.65rem; font-size: 0.8rem;" title="Download PDF">
+                            📥 PDF
+                        </a>
+                        <a href="{% url 'billing:bill_detail' b.pk %}" class="btn btn-secondary" style="padding: 0.35rem 0.65rem; font-size: 0.8rem;">
+                            {% if site_lang == 'hi' %}विवरण{% else %}Details{% endif %}
+                        </a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="9" style="text-align: center; padding: 2.5rem; color: var(--text-muted);">
+                        {% if site_lang == 'hi' %}कोई बिल प्राप्त नहीं हुआ{% else %}No invoices found matching your criteria.{% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Pagination -->
+    {% if page_obj.has_other_pages %}
+    <div style="display: flex; justify-content: center; gap: 0.5rem; margin-top: 1.5rem;">
+        {% if page_obj.has_previous %}
+            <a href="?page={{ page_obj.previous_page_number }}&q={{ query }}&status={{ status }}&start_date={{ start_date }}&end_date={{ end_date }}" class="btn btn-secondary" style="padding: 0.4rem 0.8rem;">
+                « {% if site_lang == 'hi' %}पिछला{% else %}Previous{% endif %}
+            </a>
+        {% endif %}
+        
+        <span style="align-self: center; font-size: 0.9rem; color: var(--text-muted);">
+            {% if site_lang == 'hi' %}पृष्ठ{% else %}Page{% endif %} {{ page_obj.number }} / {{ page_obj.paginator.num_pages }}
+        </span>
+
+        {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}&q={{ query }}&status={{ status }}&start_date={{ start_date }}&end_date={{ end_date }}" class="btn btn-secondary" style="padding: 0.4rem 0.8rem;">
+                {% if site_lang == 'hi' %}अगला{% else %}Next{% endif %} »
+            </a>
+        {% endif %}
+    </div>
+    {% endif %}
+
+</div>
+{% endblock %}

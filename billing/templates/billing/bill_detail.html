@@ -1,0 +1,194 @@
+{% extends 'billing/base.html' %}
+{% load static %}
+
+{% block title %}
+    {% if site_lang == 'hi' %}बिल विवरण | {{ bill.bill_number }} | विश्वगुरु बिलिंग{% else %}Invoice Details | {{ bill.bill_number }} | Vishwaguru Billing{% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header" style="flex-wrap: wrap; gap: 1rem;">
+        <div>
+            <div style="display: flex; align-items: center; gap: 0.75rem;">
+                <h2 class="card-title" style="font-size: 1.5rem;">
+                    📄 {% if site_lang == 'hi' %}बिल क्रमांक:{% else %}Invoice No:{% endif %} {{ bill.bill_number }}
+                </h2>
+                {% if bill.payment_status == 'Paid' %}
+                    <span class="badge badge-paid">✓ {% if site_lang == 'hi' %}पूर्ण भुगतान (Paid){% else %}Paid{% endif %}</span>
+                {% elif bill.payment_status == 'Partial' %}
+                    <span class="badge badge-partial">⏳ {% if site_lang == 'hi' %}आंशिक भुगतान (Partial){% else %}Partial{% endif %}</span>
+                {% else %}
+                    <span class="badge badge-unpaid">✕ {% if site_lang == 'hi' %}अदत्त (Unpaid){% else %}Unpaid{% endif %}</span>
+                {% endif %}
+            </div>
+            <p class="card-subtitle">
+                {% if site_lang == 'hi' %}निर्मित दिनांक:{% else %}Created:{% endif %} {{ bill.created_at|date:"d/m/Y H:i" }} | {% if site_lang == 'hi' %}द्वारा:{% else %}By:{% endif %} {{ bill.created_by.username|default:"Staff" }}
+            </p>
+        </div>
+
+        <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center;">
+            <!-- WhatsApp Share Button -->
+            <a href="{{ bill.whatsapp_share_url }}" target="_blank" class="btn btn-whatsapp" title="Share via WhatsApp">
+                💬 WhatsApp
+            </a>
+
+            <!-- PDF Language Options -->
+            <div style="display: inline-flex; border: 1px solid #cbd5e1; border-radius: 6px; overflow: hidden;">
+                <a href="{% url 'billing:bill_pdf' bill.pk %}?lang=en" target="_blank" class="btn" style="background: #f8fafc; color: var(--secondary); padding: 0.5rem 0.75rem; font-size: 0.825rem; border-right: 1px solid #cbd5e1;" title="View English PDF">
+                    📄 English PDF
+                </a>
+                <a href="{% url 'billing:bill_pdf' bill.pk %}?lang=hi" target="_blank" class="btn" style="background: #f8fafc; color: var(--secondary); padding: 0.5rem 0.75rem; font-size: 0.825rem; border-right: 1px solid #cbd5e1;" title="हिंदी PDF देखें">
+                    📄 हिंदी PDF
+                </a>
+                <a href="{% url 'billing:bill_pdf' bill.pk %}?lang=bi" target="_blank" class="btn" style="background: #f8fafc; color: var(--secondary); padding: 0.5rem 0.75rem; font-size: 0.825rem;" title="Bilingual PDF">
+                    📄 Bilingual
+                </a>
+            </div>
+
+            <!-- Direct PDF Download -->
+            <a href="{% url 'billing:bill_pdf' bill.pk %}?download=1&lang={{ bill.bill_language }}" class="btn btn-pdf" title="Download PDF File">
+                📥 Download
+            </a>
+
+            <a href="{% url 'billing:bill_create' %}" class="btn btn-primary">
+                ➕ {% if site_lang == 'hi' %}नया बिल{% else %}New Bill{% endif %}
+            </a>
+        </div>
+    </div>
+
+    <!-- Bill Content Breakdown -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.5rem;">
+        
+        <!-- Left Column: Client & Ad Details -->
+        <div>
+            <div style="background: #f8fafc; border: 1px solid var(--border); border-radius: 8px; padding: 1.25rem; margin-bottom: 1.5rem;">
+                <h3 style="font-size: 1rem; color: var(--primary); margin-bottom: 0.75rem; border-bottom: 1px solid var(--border); padding-bottom: 0.35rem;">
+                    👤 {% if site_lang == 'hi' %}विज्ञापनदाता विवरण (Client Details){% else %}Client Details{% endif %}
+                </h3>
+                <p style="margin-bottom: 0.4rem;"><strong>{% if site_lang == 'hi' %}नाम:{% else %}Name:{% endif %}</strong> {{ bill.client_name }}</p>
+                <p style="margin-bottom: 0.4rem;"><strong>{% if site_lang == 'hi' %}फ़ोन:{% else %}Phone:{% endif %}</strong> <a href="tel:{{ bill.client_phone }}">{{ bill.client_phone }}</a></p>
+                {% if bill.client_address %}
+                <p style="margin-bottom: 0.4rem;"><strong>{% if site_lang == 'hi' %}पता:{% else %}Address:{% endif %}</strong> {{ bill.client_address }}</p>
+                {% endif %}
+                {% if bill.client_gstin %}
+                <p style="margin-bottom: 0.4rem;"><strong>{% if site_lang == 'hi' %}जीएसटी / पैन:{% else %}GSTIN / PAN:{% endif %}</strong> {{ bill.client_gstin }}</p>
+                {% endif %}
+                <p style="margin-bottom: 0.4rem;"><strong>{% if site_lang == 'hi' %}बिल भाषा:{% else %}Invoice Language:{% endif %}</strong> {{ bill.get_bill_language_display }}</p>
+            </div>
+
+            <div style="background: #f8fafc; border: 1px solid var(--border); border-radius: 8px; padding: 1.25rem;">
+                <h3 style="font-size: 1rem; color: var(--primary); margin-bottom: 0.75rem; border-bottom: 1px solid var(--border); padding-bottom: 0.35rem;">
+                    📰 {% if site_lang == 'hi' %}विज्ञापन व प्रकाशन विवरण (Ad Details){% else %}Advertisement Details{% endif %}
+                </h3>
+                <p style="margin-bottom: 0.4rem;"><strong>{% if site_lang == 'hi' %}स्थान व आकार:{% else %}Placement:{% endif %}</strong> {{ bill.get_placement_type_display }}</p>
+                {% if bill.custom_size_text %}
+                <p style="margin-bottom: 0.4rem;"><strong>{% if site_lang == 'hi' %}विशिष्ट माप:{% else %}Dimensions:{% endif %}</strong> {{ bill.custom_size_text }}</p>
+                {% endif %}
+                <p style="margin-bottom: 0.4rem;"><strong>{% if site_lang == 'hi' %}संस्करण:{% else %}Edition:{% endif %}</strong> {{ bill.get_edition_name_display }}</p>
+                <p style="margin-bottom: 0.4rem;"><strong>{% if site_lang == 'hi' %}प्रकाशन दिनांक:{% else %}Edition Date:{% endif %}</strong> {{ bill.edition_date|date:"d/m/Y" }}</p>
+                {% if bill.page_number %}
+                <p style="margin-bottom: 0.4rem;"><strong>{% if site_lang == 'hi' %}पृष्ठ क्रमांक:{% else %}Page No:{% endif %}</strong> {{ bill.page_number }}</p>
+                {% endif %}
+                {% if bill.ad_title %}
+                <p style="margin-bottom: 0.4rem;"><strong>{% if site_lang == 'hi' %}शीर्षक:{% else %}Title / Theme:{% endif %}</strong> {{ bill.ad_title }}</p>
+                {% endif %}
+                {% if bill.epaper_link %}
+                <p style="margin-bottom: 0.4rem; word-break: break-all;">
+                    <strong>{% if site_lang == 'hi' %}ई-पेपर लिंक:{% else %}Epaper Link:{% endif %}</strong>
+                    <a href="{{ bill.epaper_link }}" target="_blank" style="color: var(--primary); font-weight: 600;">
+                        {{ bill.epaper_link }} ↗
+                    </a>
+                </p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Right Column: Financials & Payment Actions -->
+        <div>
+            <!-- Financial Card -->
+            <div style="background: #ffffff; border: 2px solid var(--border); border-radius: 8px; padding: 1.25rem; margin-bottom: 1.5rem; box-shadow: var(--shadow-sm);">
+                <h3 style="font-size: 1rem; color: var(--secondary); margin-bottom: 0.75rem; border-bottom: 1px solid var(--border); padding-bottom: 0.35rem;">
+                    💰 {% if site_lang == 'hi' %}वित्तीय विवरण (Financials){% else %}Financial Breakdown{% endif %}
+                </h3>
+                <table style="width: 100%; border-collapse: collapse; font-size: 0.95rem;">
+                    <tr>
+                        <td style="padding: 0.4rem 0;">{% if site_lang == 'hi' %}मूल राशि (Base Amount):{% else %}Base Amount:{% endif %}</td>
+                        <td style="text-align: right; font-weight: 600;">₹{{ bill.base_amount|floatformat:2 }}</td>
+                    </tr>
+                    {% if bill.discount_amount > 0 %}
+                    <tr style="color: var(--danger);">
+                        <td style="padding: 0.4rem 0;">{% if site_lang == 'hi' %}छूट (Discount):{% else %}Discount:{% endif %}</td>
+                        <td style="text-align: right; font-weight: 600;">- ₹{{ bill.discount_amount|floatformat:2 }}</td>
+                    </tr>
+                    {% endif %}
+                    <tr style="border-top: 2px solid var(--border); font-size: 1.15rem; color: var(--primary);">
+                        <td style="padding: 0.6rem 0; font-weight: 700;">{% if site_lang == 'hi' %}कुल देय राशि (Net Total):{% else %}Net Total Amount:{% endif %}</td>
+                        <td style="text-align: right; font-weight: 700;">₹{{ bill.total_amount|floatformat:2 }}</td>
+                    </tr>
+                    <tr style="color: var(--success);">
+                        <td style="padding: 0.4rem 0;">{% if site_lang == 'hi' %}प्राप्त राशि (Paid):{% else %}Amount Received:{% endif %}</td>
+                        <td style="text-align: right; font-weight: 600;">₹{{ bill.amount_paid|floatformat:2 }}</td>
+                    </tr>
+                    <tr style="color: var(--danger); font-weight: 700;">
+                        <td style="padding: 0.4rem 0;">{% if site_lang == 'hi' %}शेष बकाया (Balance):{% else %}Balance Outstanding:{% endif %}</td>
+                        <td style="text-align: right;">₹{{ bill.balance_amount|floatformat:2 }}</td>
+                    </tr>
+                </table>
+
+                <div style="background: var(--primary-light); padding: 0.75rem; border-radius: 6px; margin-top: 1rem; font-size: 0.85rem; color: var(--primary-hover);">
+                    <strong>In Words:</strong> {{ amount_words.combined }}
+                </div>
+            </div>
+
+            <!-- UPI QR Code & Bank Info -->
+            {% if qr_code_base64 and bill.balance_amount > 0 %}
+            <div style="background: #f8fafc; border: 1px solid var(--border); border-radius: 8px; padding: 1.25rem; display: flex; align-items: center; gap: 1.25rem; margin-bottom: 1.5rem;">
+                <img src="{{ qr_code_base64 }}" alt="UPI QR Code" style="width: 110px; height: 110px; border-radius: 4px; border: 1px solid #cbd5e1; background: #ffffff;">
+                <div style="font-size: 0.85rem;">
+                    <strong style="color: var(--secondary); font-size: 0.95rem; display: block; margin-bottom: 0.25rem;">
+                        📲 {% if site_lang == 'hi' %}स्कैन कर भुगतान करें{% else %}Scan & Pay via UPI{% endif %}
+                    </strong>
+                    <p style="color: var(--text-muted); margin-bottom: 0.25rem;">
+                        Pay directly ₹{{ bill.balance_amount|floatformat:2 }} via GPay, PhonePe, or Paytm
+                    </p>
+                    <p><strong>UPI ID:</strong> <code>{{ payment_info.upi_id }}</code></p>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Quick Payment Update Card -->
+            <div style="background: #ffffff; border: 1px solid var(--border); border-radius: 8px; padding: 1.25rem;">
+                <h3 style="font-size: 1rem; color: var(--secondary); margin-bottom: 0.75rem; border-bottom: 1px solid var(--border); padding-bottom: 0.35rem;">
+                    ⚡ {% if site_lang == 'hi' %}भुगतान स्थिति अपडेट करें{% else %}Update Payment Status{% endif %}
+                </h3>
+                <form action="{% url 'billing:bill_payment_update' bill.pk %}" method="post">
+                    {% csrf_token %}
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 0.75rem;">
+                        <div>
+                            <label class="form-label" style="font-size: 0.8rem;">Status</label>
+                            {{ payment_form.payment_status }}
+                        </div>
+                        <div>
+                            <label class="form-label" style="font-size: 0.8rem;">Amount Received (₹)</label>
+                            {{ payment_form.amount_paid }}
+                        </div>
+                        <div>
+                            <label class="form-label" style="font-size: 0.8rem;">Method</label>
+                            {{ payment_form.payment_method }}
+                        </div>
+                        <div>
+                            <label class="form-label" style="font-size: 0.8rem;">UTR / Cheque Ref</label>
+                            {{ payment_form.payment_note }}
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-secondary" style="width: 100%;">
+                        💾 {% if site_lang == 'hi' %}सहेजें (Save Payment){% else %}Save Payment{% endif %}
+                    </button>
+                </form>
+            </div>
+
+        </div>
+
+    </div>
+</div>
+{% endblock %}

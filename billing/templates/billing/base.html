@@ -1,0 +1,77 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="{{ site_lang|default:'en' }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{% if site_lang == 'hi' %}विश्वगुरु विज्ञापन बिलिंग{% else %}Vishwaguru Ad Billing{% endif %}{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'billing/css/style.css' %}">
+    {% block extra_head %}{% endblock %}
+</head>
+<body>
+    <header class="navbar">
+        <div class="nav-container">
+            <a href="{% url 'billing:bill_create' %}" class="brand-link">
+                <img src="{% static 'billing/img/logo.png' %}" alt="विश्वगुरु" style="height: 40px; max-width: 170px; object-fit: contain;">
+                <div class="brand-text">
+                    <h1>{% if site_lang == 'hi' %}विज्ञापन बिलिंग पोर्टल{% else %}Advertisement Billing{% endif %}</h1>
+                    <p>Vishwaguru Newspaper</p>
+                </div>
+            </a>
+            <nav class="nav-links">
+                <a href="{% url 'billing:bill_create' %}" class="nav-item {% if request.resolver_match.url_name == 'bill_create' %}active{% endif %}">
+                    {% if site_lang == 'hi' %}➕ नया बिल (New Bill){% else %}➕ New Bill{% endif %}
+                </a>
+                <a href="{% url 'billing:bill_search' %}" class="nav-item {% if request.resolver_match.url_name == 'bill_search' %}active{% endif %}">
+                    {% if site_lang == 'hi' %}🔍 बिल सूची (Search Bills){% else %}🔍 Search Bills{% endif %}
+                </a>
+                <a href="{% url 'admin:index' %}" class="nav-item" target="_blank">
+                    ⚙️ {% if site_lang == 'hi' %}सेटिंग्स (Admin){% else %}Admin{% endif %}
+                </a>
+
+                <!-- Language Switcher Toggle -->
+                <div style="display: flex; align-items: center; background: #f1f5f9; border-radius: 20px; padding: 2px 4px; margin-left: 0.5rem; font-size: 0.8rem; font-weight: 600;">
+                    <a href="{% url 'billing:set_language' 'en' %}" style="text-decoration: none; padding: 3px 8px; border-radius: 14px; {% if site_lang != 'hi' %}background: var(--primary); color: #fff;{% else %}color: var(--text-muted);{% endif %}">
+                        English
+                    </a>
+                    <a href="{% url 'billing:set_language' 'hi' %}" style="text-decoration: none; padding: 3px 8px; border-radius: 14px; {% if site_lang == 'hi' %}background: var(--primary); color: #fff;{% else %}color: var(--text-muted);{% endif %}">
+                        हिंदी
+                    </a>
+                </div>
+
+                {% if user.is_authenticated %}
+                <div class="nav-user">
+                    <span>👤 {{ user.username }}</span>
+                    <form action="{% url 'logout' %}" method="post" style="display:inline;">
+                        {% csrf_token %}
+                        <button type="submit" class="btn-logout">
+                            {% if site_lang == 'hi' %}लॉगआउट{% else %}Logout{% endif %}
+                        </button>
+                    </form>
+                </div>
+                {% endif %}
+            </nav>
+        </div>
+    </header>
+
+    <main class="main-content">
+        {% if messages %}
+        <div class="alert-messages">
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags|default:'info' }}">
+                <span>{{ message }}</span>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer class="footer">
+        <p>&copy; {% now "Y" %} Vishwaguru Newspaper (विश्वगुरु समाचार पत्र). All Rights Reserved.</p>
+    </footer>
+
+    {% block extra_js %}{% endblock %}
+</body>
+</html>
