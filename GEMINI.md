@@ -59,7 +59,7 @@
 
 3. **Client Information:**
    - `client_name` (Required)
-   - `client_phone` (Required — used for payment follow-ups & 1-click WhatsApp sharing)
+   - `client_phone` (Optional — used for payment follow-ups & 1-click WhatsApp sharing; if omitted, bills can still be created and WhatsApp share button opens recipient chooser)
    - `client_address` (Optional)
    - `client_gstin` (Optional PAN / GSTIN reference for B2B clients)
 
@@ -89,11 +89,23 @@
 * **Documentation files:** `HLD.md`, `LLD.md`, `PROJECT_CONTEXT.md`, `REQUIREMENTS.md`, `README.md`, `GEMINI.md`.
 * **Git configuration:** `.gitignore` configured for Django, `.env`, SQLite, virtual environments.
 * **Active branch:** `main` tracking `origin/main`.
-* **Code status: Core Implementation Complete & Fully Verified.**
+* **Code status: Client Memory, Old Pending Due in Bill, and Lowered PDF Layout Complete.**
   - Django project (`config`) and billing app (`billing`) active on port 8080.
-  - Models (`Bill`, `PaymentInfo`) migrated.
-  - All 7 automated unit tests passed (100% OK).
-  - Seed data populated with default user `admin` / `admin123`.
+  - Models (`Bill`, `PaymentInfo`, `Client`) migrated.
+  - All 12 automated unit tests passed (100% OK).
+  - High-speed **2-Column POS Billing Workstation**:
+    - **Client Autocomplete & Memory:** Suggests past clients dynamically as staff types; auto-fills phone, address, and GSTIN/PAN.
+    - **Old Pending (Previous Due / पुराना बकाया):** Automatically detects unpaid balances for returning clients; 1-click **[Add to Bill]** shortcut updates total payable amount `(Base - Discount) + Previous Due`.
+    - **Step-by-step inputs** on the left with progressive disclosure.
+    - **1-Click Preset Chips** for common ad placements (`Front Full`, `Front Half`, `Front Quarter`, `Inside Half`, `Ear Panel`, `Custom Size`).
+    - **Smart Defaults:** `edition_date` defaults to today (`timezone.localdate()`) with `[ Today ] [ Tomorrow ]` shortcuts; `edition_name` defaults to Indore; `payment_status` defaults to Paid.
+    - **1-Click Status Pills:** `[ Paid in Full ]` (auto-fills total amount), `[ Unpaid ]`, and `[ Partial ]`.
+    - **1-Click Method Pills:** `[ Cash ]`, `[ UPI / QR ]`, `[ Cheque ]`, `[ NEFT ]`.
+    - **Sticky Live POS Invoice Receipt:** Real-time synchronization of client name, placement, edition date, previous due, calculations, balance due, and prominent "Generate Bill & Print" action button.
+    - **Lowered PDF Layout:** A4 invoice positions totals and bank/QR details in the lower section of the page with balanced spacing, eliminating empty void at the bottom.
+    - **Live Dashboard Stats Bar:** Displays Today's Bills, Total Billed, Total Collected, and Pending Due.
+    - **Recent Bills Quick Drawer:** Instant reprint, PDF download, and WhatsApp sharing without leaving the creation screen.
+    - Modern CSS design system with responsive mobile breakpoints and 48px+ touch targets.
 
 ---
 
@@ -114,5 +126,10 @@
 ---
 
 ## 6. Pending Actions / Next Steps
-* Awaiting user testing and feedback on UI / PDF appearance.
+* Awaiting user testing on:
+  - Client autocomplete suggestions while typing client name.
+  - 1-Click addition of old pending due into bills.
+  - Lowered amount and bank details layout on A4 PDF invoices.
 * When instructed by the user, run `git commit` to commit the codebase (NO push!).
+
+

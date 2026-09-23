@@ -3,7 +3,7 @@ from django.test import TestCase, Client
 from django.contrib.auth.models import User
 from django.urls import reverse
 
-from billing.models import Bill, PaymentInfo, PlacementType, PaymentStatus, EditionChoice
+from billing.models import Bill, PaymentInfo, PlacementType, PaymentStatus, EditionChoice, Client as ClientModel
 from billing.utils import (
     generate_bill_number,
     generate_upi_qr_base64,
@@ -140,3 +140,179 @@ class VishwaguruBillingTests(TestCase):
         res2 = self.client.get(reverse('billing:set_language', args=['en']), follow=True)
         self.assertEqual(self.client.session.get('site_lang'), 'en')
         self.assertEqual(res2.status_code, 200)
+
+    def test_bill_form_language_placeholders_and_choices(self):
+        """Test that English mode contains English placeholders/choices and Hindi mode contains Hindi"""
+        from billing.forms import BillForm
+
+        # English Form
+        form_en = BillForm(site_lang='en')
+        self.assertEqual(form_en.fields['client_name'].widget.attrs['placeholder'], 'e.g. Shri Ram Traders')
+        self.assertEqual(form_en.fields['client_phone'].widget.attrs['placeholder'], '10-digit mobile number (Optional)')
+        self.assertFalse(form_en.fields['client_phone'].required)
+        placement_labels_en = [label for _, label in form_en.fields['placement_type'].choices]
+        self.assertIn('Front Page — Full Page', placement_labels_en)
+        edition_labels_en = [label for _, label in form_en.fields['edition_name'].choices]
+        self.assertIn('Indore', edition_labels_en)
+        status_labels_en = [label for _, label in form_en.fields['payment_status'].choices]
+        self.assertIn('Unpaid', status_labels_en)
+
+        # Hindi Form
+        form_hi = BillForm(site_lang='hi')
+        self.assertEqual(form_hi.fields['client_name'].widget.attrs['placeholder'], 'उदा. श्री राम ट्रेडर्स')
+        self.assertEqual(form_hi.fields['client_phone'].widget.attrs['placeholder'], '10 अंकों का मोबाइल नंबर (वैकल्पिक)')
+        self.assertFalse(form_hi.fields['client_phone'].required)
+        placement_labels_hi = [label for _, label in form_hi.fields['placement_type'].choices]
+        self.assertIn('मुख्य पृष्ठ - पूरा पेज', placement_labels_hi)
+        edition_labels_hi = [label for _, label in form_hi.fields['edition_name'].choices]
+        self.assertIn('इंदौर', edition_labels_hi)
+        status_labels_hi = [label for _, label in form_hi.fields['payment_status'].choices]
+        self.assertIn('अदत्त', status_labels_hi)
+
+    def test_bill_create_without_phone(self):
+        """Test creating a bill without entering a client phone number"""
+        url = reverse('billing:bill_create')
+        data = {
+            'bill_language': 'en',
+            'client_name': 'Walk-in Client',
+            'client_phone': '',
+            'client_address': '',
+            'client_gstin': '',
+            'placement_type': PlacementType.INSIDE_QUARTER,
+            'custom_size_text': '',
+            'ad_title': 'Classified Ad',
+            'edition_date': '2026-09-23',
+            'edition_name': EditionChoice.INDORE,
+            'page_number': 'Page 5',
+            'epaper_link': '',
+            'base_amount': '1500.00',
+            'discount_amount': '0.00',
+            'payment_status': PaymentStatus.PAID,
+            'amount_paid': '1500.00',
+            'payment_method': 'Cash',
+            'payment_note': '',
+        }
+        response = self.client.post(url, data, follow=True)
+        self.assertEqual(response.status_code, 200)
+        bill = Bill.objects.filter(client_name='Walk-in Client').first()
+        self.assertIsNotNone(bill)
+        self.assertEqual(bill.client_phone, '')
+        self.assertTrue(bill.whatsapp_share_url.startswith('https://wa.me/?text='))
+
+    def test_client_memory_and_auto_sync(self):
+        """Test that creating a bill automatically remembers/updates Client directory"""
+        url = reverse('billing:bill_create')
+        data = {
+            'bill_language': 'en',
+            'client_name': 'Kothari Jewellers',
+            'client_phone': '9826199999',
+            'client_address': 'MG Road, Indore',
+            'client_gstin': '23ABCDE9999Z1',
+            'placement_type': PlacementType.FRONT_FULL,
+            'custom_size_text': '',
+            'ad_title': 'Gold Scheme Launch',
+            'edition_date': '2026-09-24',
+            'edition_name': EditionChoice.INDORE,
+            'page_number': 'Page 1',
+            'epaper_link': '',
+            'base_amount': '5000.00',
+            'discount_amount': '0.00',
+            'previous_due': '0.00',
+            'payment_status': PaymentStatus.PAID,
+            'amount_paid': '5000.00',
+            'payment_method': 'Cash',
+            'payment_note': '',
+        }
+        res = self.client.post(url, data, follow=True)
+        self.assertEqual(res.status_code, 200)
+
+        # Verify Client record was created
+        client_rec = ClientModel.objects.filter(name='Kothari Jewellers').first()
+        self.assertIsNotNone(client_rec)
+        self.assertEqual(client_rec.phone, '9826199999')
+        self.assertEqual(client_rec.address, 'MG Road, Indore')
+        self.assertEqual(client_rec.gstin, '23ABCDE9999Z1')
+
+    def test_client_search_api_and_pending_due(self):
+        """Test client search API endpoint returns matching clients and unpaid pending balance"""
+        # Create client directory entry
+        ClientModel.objects.create(
+            name='Malwa Automotives',
+            phone='9893055555',
+            address='Vijay Nagar, Indore',
+            gstin='23XYZ1234'
+        )
+
+        # Create an unpaid bill for this client
+        Bill.objects.create(
+            bill_number='VG-2026-0101',
+            client_name='Malwa Automotives',
+            client_phone='9893055555',
+            placement_type=PlacementType.FRONT_HALF,
+            base_amount=Decimal('4000.00'),
+            discount_amount=Decimal('500.00'),
+            previous_due=Decimal('0.00'),
+            payment_status=PaymentStatus.UNPAID,
+            amount_paid=Decimal('0.00'),
+            created_by=self.user
+        )
+
+        # Query API for 'Malwa'
+        url = reverse('billing:client_search_api') + '?q=Malwa'
+        res = self.client.get(url)
+        self.assertEqual(res.status_code, 200)
+        json_data = res.json()
+        self.assertIn('clients', json_data)
+        self.assertEqual(len(json_data['clients']), 1)
+        client_item = json_data['clients'][0]
+        self.assertEqual(client_item['name'], 'Malwa Automotives')
+        self.assertEqual(client_item['phone'], '9893055555')
+        # Total due for 4000 - 500 = 3500 unpaid
+        self.assertEqual(client_item['pending_due'], 3500.0)
+
+    def test_bill_with_previous_due(self):
+        """Test creating a bill with previous due adds to total amount and renders properly"""
+        url = reverse('billing:bill_create')
+        data = {
+            'bill_language': 'en',
+            'client_name': 'Apex Coaching',
+            'client_phone': '9893044444',
+            'client_address': 'Bhawarkua, Indore',
+            'client_gstin': '',
+            'placement_type': PlacementType.INSIDE_HALF,
+            'custom_size_text': '',
+            'ad_title': 'Admissions Open 2026',
+            'edition_date': '2026-09-24',
+            'edition_name': EditionChoice.INDORE,
+            'page_number': 'Page 4',
+            'epaper_link': '',
+            'base_amount': '3000.00',
+            'discount_amount': '200.00',
+            'previous_due': '1500.00',
+            'payment_status': PaymentStatus.PARTIAL,
+            'amount_paid': '2000.00',
+            'payment_method': 'UPI',
+            'payment_note': 'Paytm 9988',
+        }
+        res = self.client.post(url, data, follow=True)
+        self.assertEqual(res.status_code, 200)
+
+        bill = Bill.objects.filter(client_name='Apex Coaching').first()
+        self.assertIsNotNone(bill)
+        # (3000 - 200) + 1500 = 4300
+        self.assertEqual(bill.total_amount, Decimal('4300.00'))
+        # Balance = 4300 - 2000 = 2300
+        self.assertEqual(bill.balance_amount, Decimal('2300.00'))
+        self.assertEqual(bill.previous_due, Decimal('1500.00'))
+
+        # Check detail page contains Previous Due
+        detail_res = self.client.get(reverse('billing:bill_detail', args=[bill.pk]))
+        self.assertEqual(detail_res.status_code, 200)
+        self.assertContains(detail_res, '1500.00')
+
+        # Check PDF view contains Previous Due
+        pdf_res = self.client.get(reverse('billing:bill_pdf', args=[bill.pk]))
+        self.assertEqual(pdf_res.status_code, 200)
+        self.assertContains(pdf_res, '1500.00')
+
+
