@@ -216,3 +216,18 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Django & Environment
+*.env
+.env
+.env.*
+db.sqlite3
+db.sqlite3-journal
+media/
+staticfiles/
+.venv/
+venv/
+ENV/
+env/
+.idea/
+.vscode/
