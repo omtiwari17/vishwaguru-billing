@@ -2,32 +2,67 @@
 {% load static %}
 
 {% block title %}
-    {% if site_lang == 'hi' %}नया विज्ञापन बिल बनाएं | विश्वगुरु बिलिंग{% else %}Create New Bill | Vishwaguru Billing{% endif %}
+    {% if site_lang == 'hi' %}नया बिल बनाएं | विश्वगुरु बिलिंग{% else %}Create Bill | Vishwaguru Billing{% endif %}
 {% endblock %}
 
 {% block content %}
-<div class="card">
-    <div class="card-header">
-        <div>
-            <h2 class="card-title">
-                {% if site_lang == 'hi' %}📝 नया विज्ञापन बिल बनाएं (New Bill){% else %}📝 Create Advertisement Bill{% endif %}
-            </h2>
-            <p class="card-subtitle">
-                {% if site_lang == 'hi' %}सभी आवश्यक विवरण भरें। राशि की गणना स्वतः होगी।{% else %}Enter billing details below. Amounts are calculated live.{% endif %}
-            </p>
+<!-- Top Quick Stats Bar -->
+<div class="dashboard-stats-grid">
+    <div class="stat-chip">
+        <div class="stat-chip-icon primary">
+            <i class="bi bi-receipt"></i>
         </div>
-        <a href="{% url 'billing:bill_search' %}" class="btn btn-secondary">
-            {% if site_lang == 'hi' %}📋 पिछले बिल देखें{% else %}📋 Past Bills{% endif %}
-        </a>
+        <div class="stat-chip-body">
+            <span class="stat-chip-title">{% if site_lang == 'hi' %}आज के बिल{% else %}Today's Bills{% endif %}</span>
+            <span class="stat-chip-value">{{ today_count }}</span>
+        </div>
     </div>
 
-    <form method="post" id="billForm">
-        {% csrf_token %}
+    <div class="stat-chip">
+        <div class="stat-chip-icon blue">
+            <i class="bi bi-cash-stack"></i>
+        </div>
+        <div class="stat-chip-body">
+            <span class="stat-chip-title">{% if site_lang == 'hi' %}आज का कुल बिलिंग{% else %}Today's Billed{% endif %}</span>
+            <span class="stat-chip-value">₹{{ today_billed|floatformat:0 }}</span>
+        </div>
+    </div>
 
-        {% if form.errors %}
-        <div class="alert alert-danger">
-            <strong>{% if site_lang == 'hi' %}कृपया त्रुटियों को सुधारें:{% else %}Please correct the errors below:{% endif %}</strong>
-            <ul>
+    <div class="stat-chip">
+        <div class="stat-chip-icon success">
+            <i class="bi bi-check2-circle"></i>
+        </div>
+        <div class="stat-chip-body">
+            <span class="stat-chip-title">{% if site_lang == 'hi' %}प्राप्त राशि{% else %}Collected Today{% endif %}</span>
+            <span class="stat-chip-value">₹{{ today_paid|floatformat:0 }}</span>
+        </div>
+    </div>
+
+    <div class="stat-chip">
+        <div class="stat-chip-icon warning">
+            <i class="bi bi-clock-history"></i>
+        </div>
+        <div class="stat-chip-body">
+            <span class="stat-chip-title">{% if site_lang == 'hi' %}शेष बकाया{% else %}Pending Due{% endif %}</span>
+            <span class="stat-chip-value">₹{{ today_pending|floatformat:0 }}</span>
+        </div>
+    </div>
+</div>
+
+<!-- Main Form Form Tag (wraps both columns) -->
+<form method="post" id="billForm">
+    {% csrf_token %}
+
+    <!-- Hidden Bill Language field (synced with receipt) -->
+    <div style="display: none;">
+        {{ form.bill_language }}
+    </div>
+
+    {% if form.errors %}
+    <div class="alert alert-danger" style="margin-bottom: 1.25rem;">
+        <div>
+            <strong><i class="bi bi-exclamation-triangle-fill"></i> {% if site_lang == 'hi' %}कृपया त्रुटियों को सुधारें:{% else %}Please correct the following errors:{% endif %}</strong>
+            <ul style="margin: 0.35rem 0 0 1.25rem; font-size: 0.85rem;">
                 {% for field in form %}
                     {% for error in field.errors %}
                         <li>{{ field.label }}: {{ error }}</li>
@@ -38,192 +73,484 @@
                 {% endfor %}
             </ul>
         </div>
-        {% endif %}
+    </div>
+    {% endif %}
 
-        <!-- Top Settings: Bill Language -->
-        <div style="background: #f8fafc; border: 1px solid var(--border); border-radius: 8px; padding: 1rem; margin-bottom: 1.5rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem;">
-            <div>
-                <strong style="color: var(--secondary); font-size: 0.95rem;">
-                    🌐 {% if site_lang == 'hi' %}बिल की भाषा (Generated Bill Language){% else %}Generated Bill Language{% endif %}
-                </strong>
-                <p style="font-size: 0.8rem; color: var(--text-muted);">
-                    {% if site_lang == 'hi' %}चुनी गई भाषा में पीडीएफ और व्हाट्सएप संदेश बनेगा{% else %}Controls language printed on the PDF and WhatsApp text{% endif %}
-                </p>
-            </div>
-            <div style="min-width: 200px;">
-                {{ form.bill_language }}
-            </div>
-        </div>
+    <!-- 2-Column POS Billing Workspace -->
+    <div class="billing-workspace">
 
-        <!-- Section 1: Client Information -->
-        <h3 class="form-section-title">
-            <span>👤 1. {% if site_lang == 'hi' %}विज्ञापनदाता विवरण (Client Details){% else %}Client Details{% endif %}</span>
-        </h3>
-        <div class="form-grid">
-            <div class="form-group">
-                <label class="form-label" for="{{ form.client_name.id_for_label }}">
-                    {% if site_lang == 'hi' %}विज्ञापनदाता का नाम (Client Name) *{% else %}Client / Firm Name *{% endif %}
-                </label>
-                {{ form.client_name }}
-            </div>
+        <!-- Left Column: Step-by-Step Core Inputs -->
+        <div class="billing-form-pane">
 
-            <div class="form-group">
-                <label class="form-label" for="{{ form.client_phone.id_for_label }}">
-                    {% if site_lang == 'hi' %}मोबाइल नंबर (Phone / WhatsApp) *{% else %}Phone Number (WhatsApp) *{% endif %}
-                    <span class="sub">(10 digits)</span>
-                </label>
-                {{ form.client_phone }}
-            </div>
-
-            <div class="form-group full-width">
-                <label class="form-label" for="{{ form.client_address.id_for_label }}">
-                    {% if site_lang == 'hi' %}पता व शहर (Address / City){% else %}Address / City{% endif %}
-                </label>
-                {{ form.client_address }}
-            </div>
-
-            <div class="form-group">
-                <label class="form-label" for="{{ form.client_gstin.id_for_label }}">
-                    {% if site_lang == 'hi' %}पैन / जीएसटी नंबर (GSTIN or PAN){% else %}Client GSTIN or PAN (Optional){% endif %}
-                </label>
-                {{ form.client_gstin }}
-            </div>
-        </div>
-
-        <!-- Section 2: Ad Placement & Edition Details -->
-        <h3 class="form-section-title">
-            <span>📰 2. {% if site_lang == 'hi' %}विज्ञापन व प्रकाशन विवरण (Ad Details){% else %}Advertisement & Edition Details{% endif %}</span>
-        </h3>
-        <div class="form-grid">
-            <div class="form-group">
-                <label class="form-label" for="{{ form.placement_type.id_for_label }}">
-                    {% if site_lang == 'hi' %}स्थान व आकार (Placement Preset) *{% else %}Placement / Size Preset *{% endif %}
-                </label>
-                {{ form.placement_type }}
-            </div>
-
-            <div class="form-group" id="custom_size_container">
-                <label class="form-label" for="{{ form.custom_size_text.id_for_label }}">
-                    {% if site_lang == 'hi' %}विशिष्ट माप (Custom Dimensions){% else %}Custom Size / Dimensions (e.g. 12x8 cm){% endif %}
-                </label>
-                {{ form.custom_size_text }}
-            </div>
-
-            <div class="form-group">
-                <label class="form-label" for="{{ form.edition_date.id_for_label }}">
-                    {% if site_lang == 'hi' %}प्रकाशन दिनांक (Edition Date) *{% else %}Edition Date *{% endif %}
-                </label>
-                {{ form.edition_date }}
-            </div>
-
-            <div class="form-group">
-                <label class="form-label" for="{{ form.edition_name.id_for_label }}">
-                    {% if site_lang == 'hi' %}संस्करण (Edition Name) *{% else %}Edition *{% endif %}
-                </label>
-                {{ form.edition_name }}
-            </div>
-
-            <div class="form-group">
-                <label class="form-label" for="{{ form.page_number.id_for_label }}">
-                    {% if site_lang == 'hi' %}पृष्ठ क्रमांक (Page Number){% else %}Page Number (e.g. Page 1, Page 4){% endif %}
-                </label>
-                {{ form.page_number }}
-            </div>
-
-            <div class="form-group">
-                <label class="form-label" for="{{ form.ad_title.id_for_label }}">
-                    {% if site_lang == 'hi' %}विज्ञापन शीर्षक / विषय (Ad Title){% else %}Ad Title / Description{% endif %}
-                </label>
-                {{ form.ad_title }}
-            </div>
-
-            <div class="form-group full-width">
-                <label class="form-label" for="{{ form.epaper_link.id_for_label }}">
-                    {% if site_lang == 'hi' %}ई-पेपर सत्यापन लिंक (Epaper Link){% else %}Epaper Online Verification Link (URL){% endif %}
-                </label>
-                {{ form.epaper_link }}
-            </div>
-        </div>
-
-        <!-- Section 3: Financials & Live Calculation -->
-        <h3 class="form-section-title">
-            <span>💰 3. {% if site_lang == 'hi' %}बिल राशि व छूट (Financials){% else %}Billing & Amounts{% endif %}</span>
-        </h3>
-        <div class="form-grid">
-            <div class="form-group">
-                <label class="form-label" for="{{ form.base_amount.id_for_label }}">
-                    {% if site_lang == 'hi' %}मूल राशि (Base Amount ₹) *{% else %}Base Rate / Amount (₹) *{% endif %}
-                </label>
-                {{ form.base_amount }}
-            </div>
-
-            <div class="form-group">
-                <label class="form-label" for="{{ form.discount_amount.id_for_label }}">
-                    {% if site_lang == 'hi' %}छूट (Discount ₹){% else %}Discount (₹, Optional){% endif %}
-                </label>
-                {{ form.discount_amount }}
-            </div>
-        </div>
-
-        <!-- Live Total Box -->
-        <div class="live-total-box">
-            <div>
-                <div class="live-total-label">
-                    {% if site_lang == 'hi' %}कुल देय राशि (Net Payable Amount){% else %}Net Payable Amount{% endif %}
+            <!-- Step 1: Client Information -->
+            <div class="step-card">
+                <div class="step-header">
+                    <div class="step-title">
+                        <span class="step-badge">1</span>
+                        {% if site_lang == 'hi' %}विज्ञापनदाता विवरण (Client Details){% else %}Client Information{% endif %}
+                    </div>
+                    <span class="step-subtitle">{% if site_lang == 'hi' %}ग्राहक / फर्म का नाम{% else %}Name & contact{% endif %}</span>
                 </div>
-                <div class="live-total-words">
-                    {% if site_lang == 'hi' %}मूल राशि - छूट = शुद्ध देय राशि{% else %}Base Amount - Discount = Net Total{% endif %}
+
+                <div class="form-grid">
+                    <div class="form-group" style="grid-column: span 2; position: relative;">
+                        <label class="form-label" for="{{ form.client_name.id_for_label }}">
+                            <i class="bi bi-person-fill"></i> {% if site_lang == 'hi' %}विज्ञापनदाता का नाम *{% else %}Client / Business Name *{% endif %}
+                            <span class="sub" style="font-weight: 500; color: var(--primary);">
+                                <i class="bi bi-magic"></i> {% if site_lang == 'hi' %}(पूर्व ग्राहक स्वतः सुझाव){% else %}(Auto-suggests past clients){% endif %}
+                            </span>
+                        </label>
+                        {{ form.client_name }}
+                        <!-- Client suggestions popup -->
+                        <div id="client_suggestions_box" class="client-suggestions-dropdown" style="display: none;"></div>
+                    </div>
+
+                    <div class="form-group" style="grid-column: span 2;">
+                        <label class="form-label" for="{{ form.client_phone.id_for_label }}">
+                            <i class="bi bi-whatsapp" style="color: #25d366;"></i> {% if site_lang == 'hi' %}मोबाइल नंबर (वैकल्पिक){% else %}Phone Number (WhatsApp, Optional){% endif %}
+                            <span class="sub">{% if site_lang == 'hi' %}(10 अंक){% else %}(10 digits){% endif %}</span>
+                        </label>
+                        {{ form.client_phone }}
+                    </div>
+                </div>
+
+                <!-- Client Old Pending Balance Banner (Shown if client has unpaid balance) -->
+                <div id="client_pending_alert" style="display: none; margin-top: 0.75rem; background: #fef2f2; border: 1.5px solid #fecaca; border-radius: 8px; padding: 0.75rem 1rem;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
+                        <div>
+                            <span style="color: #991b1b; font-weight: 700; font-size: 0.85rem;">
+                                <i class="bi bi-exclamation-triangle-fill"></i>
+                                {% if site_lang == 'hi' %}इस ग्राहक का पुराना बकाया:{% else %}Previous Outstanding Balance:{% endif %}
+                            </span>
+                            <span id="client_pending_amount_badge" style="color: #b91c1c; font-weight: 800; font-size: 1rem; margin-left: 0.35rem;">₹0.00</span>
+                        </div>
+                        <button type="button" id="btn_add_pending_due" class="btn" style="background: #b91c1c; color: #fff; font-size: 0.775rem; font-weight: 700; padding: 0.35rem 0.75rem; border-radius: 6px; border: none; cursor: pointer;">
+                            <i class="bi bi-plus-circle"></i> {% if site_lang == 'hi' %}बिल में जोड़ें (+ पुराना बकाया){% else %}Add to Bill (+ Old Due){% endif %}
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Progressive Disclosure: Address & GSTIN -->
+                <details id="client_address_details" class="progressive-details" {% if form.client_address.value or form.client_gstin.value %}open{% endif %}>
+                    <summary class="progressive-summary">
+                        <span><i class="bi bi-geo-alt"></i> {% if site_lang == 'hi' %}+ पता व जीएसटी/पैन जोड़ें (वैकल्पिक){% else %}+ Add Address & GSTIN / PAN (Optional){% endif %}</span>
+                        <i class="bi bi-chevron-down"></i>
+                    </summary>
+                    <div class="progressive-content">
+                        <div class="form-grid">
+                            <div class="form-group full-width">
+                                <label class="form-label" for="{{ form.client_address.id_for_label }}">
+                                    {% if site_lang == 'hi' %}दुकान / कार्यालय का पता{% else %}Address / City{% endif %}
+                                </label>
+                                {{ form.client_address }}
+                            </div>
+                            <div class="form-group full-width">
+                                <label class="form-label" for="{{ form.client_gstin.id_for_label }}">
+                                    {% if site_lang == 'hi' %}पैन / जीएसटी नंबर{% else %}Client GSTIN or PAN{% endif %}
+                                </label>
+                                {{ form.client_gstin }}
+                            </div>
+                        </div>
+                    </div>
+                </details>
+            </div>
+
+            <!-- Step 2: Advertisement & Publication Details -->
+            <div class="step-card">
+                <div class="step-header">
+                    <div class="step-title">
+                        <span class="step-badge">2</span>
+                        {% if site_lang == 'hi' %}विज्ञापन व प्रकाशन विवरण{% else %}Advertisement & Edition{% endif %}
+                    </div>
+                    <span class="step-subtitle">{% if site_lang == 'hi' %}स्थान, आकार व दिनांक{% else %}Placement & date{% endif %}</span>
+                </div>
+
+                <!-- Placement Presets Chips -->
+                <label class="form-label" style="margin-bottom: 0.35rem;">
+                    <i class="bi bi-layout-text-window-reverse"></i> {% if site_lang == 'hi' %}स्थान व आकार चुनें *{% else %}Placement / Size Preset *{% endif %}
+                </label>
+                <div class="chip-grid">
+                    <button type="button" class="chip-btn" data-value="Front Page — Full Page">
+                        <i class="bi bi-newspaper"></i> {% if site_lang == 'hi' %}मुख्य पृष्ठ (पूरा){% else %}Front Full{% endif %}
+                    </button>
+                    <button type="button" class="chip-btn" data-value="Front Page — Half Page">
+                        <i class="bi bi-layout-split"></i> {% if site_lang == 'hi' %}मुख्य पृष्ठ (आधा){% else %}Front Half{% endif %}
+                    </button>
+                    <button type="button" class="chip-btn" data-value="Front Page — Quarter">
+                        <i class="bi bi-grid-fill"></i> {% if site_lang == 'hi' %}मुख्य पृष्ठ (चौथाई){% else %}Front Quarter{% endif %}
+                    </button>
+                    <button type="button" class="chip-btn" data-value="Inside Page — Half Page">
+                        <i class="bi bi-book"></i> {% if site_lang == 'hi' %}अंदर का पृष्ठ (आधा){% else %}Inside Half{% endif %}
+                    </button>
+                    <button type="button" class="chip-btn" data-value="Ear Panel (Top Header)">
+                        <i class="bi bi-pin-angle-fill"></i> {% if site_lang == 'hi' %}ईयर पैनल (शीर्ष){% else %}Ear Panel{% endif %}
+                    </button>
+                    <button type="button" class="chip-btn" data-value="Back Page — Full Page">
+                        <i class="bi bi-file-earmark-text"></i> {% if site_lang == 'hi' %}अंतिम पृष्ठ (बैक){% else %}Back Page{% endif %}
+                    </button>
+                    <button type="button" class="chip-btn" data-value="Custom Size">
+                        <i class="bi bi-aspect-ratio"></i> {% if site_lang == 'hi' %}विशिष्ट आकार (Custom){% else %}Custom Size{% endif %}
+                    </button>
+                </div>
+
+                <!-- Dropdown selector (synced with chips) -->
+                <div style="margin-bottom: 1rem;">
+                    {{ form.placement_type }}
+                </div>
+
+                <!-- Custom Size Input Container -->
+                <div class="form-group" id="custom_size_container" style="display: none; margin-bottom: 1rem; background: #fffbeb; padding: 0.75rem; border-radius: 6px; border: 1px solid #fde68a;">
+                    <label class="form-label" for="{{ form.custom_size_text.id_for_label }}" style="color: #92400e;">
+                        <i class="bi bi-rulers"></i> {% if site_lang == 'hi' %}विशिष्ट माप (उदा. 12x8 सेमी) *{% else %}Custom Dimensions (e.g. 12cm x 8cm) *{% endif %}
+                    </label>
+                    {{ form.custom_size_text }}
+                </div>
+
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label class="form-label" for="{{ form.edition_date.id_for_label }}">
+                            <i class="bi bi-calendar-event"></i> {% if site_lang == 'hi' %}प्रकाशन दिनांक *{% else %}Edition Date *{% endif %}
+                        </label>
+                        {{ form.edition_date }}
+                        <div class="date-shortcuts">
+                            <button type="button" class="date-btn" data-offset="0">
+                                {% if site_lang == 'hi' %}आज{% else %}Today{% endif %}
+                            </button>
+                            <button type="button" class="date-btn" data-offset="1">
+                                {% if site_lang == 'hi' %}कल{% else %}Tomorrow{% endif %}
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="{{ form.edition_name.id_for_label }}">
+                            <i class="bi bi-geo"></i> {% if site_lang == 'hi' %}संस्करण *{% else %}Edition *{% endif %}
+                        </label>
+                        {{ form.edition_name }}
+                    </div>
+                </div>
+
+                <!-- Progressive Disclosure: Page No, Title, E-paper URL -->
+                <details class="progressive-details" {% if form.page_number.value or form.ad_title.value or form.epaper_link.value %}open{% endif %}>
+                    <summary class="progressive-summary">
+                        <span><i class="bi bi-plus-circle"></i> {% if site_lang == 'hi' %}+ पृष्ठ क्रमांक, शीर्षक व ई-पेपर लिंक जोड़ें{% else %}+ Add Page No, Ad Title & E-paper Link{% endif %}</span>
+                        <i class="bi bi-chevron-down"></i>
+                    </summary>
+                    <div class="progressive-content">
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label class="form-label" for="{{ form.page_number.id_for_label }}">
+                                    {% if site_lang == 'hi' %}पृष्ठ संख्या (Page No){% else %}Page Number{% endif %}
+                                </label>
+                                {{ form.page_number }}
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label" for="{{ form.ad_title.id_for_label }}">
+                                    {% if site_lang == 'hi' %}विज्ञापन शीर्षक / विषय{% else %}Ad Title / Description{% endif %}
+                                </label>
+                                {{ form.ad_title }}
+                            </div>
+                            <div class="form-group full-width">
+                                <label class="form-label" for="{{ form.epaper_link.id_for_label }}">
+                                    <i class="bi bi-link-45deg"></i> {% if site_lang == 'hi' %}ई-पेपर सत्यापन लिंक (URL){% else %}Epaper Online Link (URL){% endif %}
+                                </label>
+                                {{ form.epaper_link }}
+                            </div>
+                        </div>
+                    </div>
+                </details>
+            </div>
+
+            <!-- Step 3: Billing & Instant Payment -->
+            <div class="step-card">
+                <div class="step-header">
+                    <div class="step-title">
+                        <span class="step-badge">3</span>
+                        {% if site_lang == 'hi' %}राशि व भुगतान स्थिति{% else %}Pricing & Payment{% endif %}
+                    </div>
+                    <span class="step-subtitle">{% if site_lang == 'hi' %}राशि, छूट व माध्यम{% else %}Amounts & settlement{% endif %}</span>
+                </div>
+
+                <div class="form-grid" style="margin-bottom: 1.25rem;">
+                    <div class="form-group">
+                        <label class="form-label" for="{{ form.base_amount.id_for_label }}" style="font-size: 0.95rem;">
+                            <i class="bi bi-currency-rupee"></i> {% if site_lang == 'hi' %}मूल विज्ञापन राशि (₹) *{% else %}Base Rate / Amount (₹) *{% endif %}
+                        </label>
+                        {{ form.base_amount }}
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="{{ form.discount_amount.id_for_label }}" style="font-size: 0.95rem;">
+                            <i class="bi bi-tag"></i> {% if site_lang == 'hi' %}छूट (₹, यदि कोई हो){% else %}Discount (₹, Optional){% endif %}
+                        </label>
+                        {{ form.discount_amount }}
+                    </div>
+
+                    <div class="form-group" style="grid-column: span 2;">
+                        <label class="form-label" for="{{ form.previous_due.id_for_label }}" style="font-size: 0.95rem; color: #b91c1c;">
+                            <i class="bi bi-clock-history"></i> {% if site_lang == 'hi' %}पुराना बकाया जोड़ें (₹, यदि कोई हो){% else %}Old Pending / Previous Due (₹, Optional){% endif %}
+                            <span class="sub" style="font-weight: 500; color: #b91c1c;">
+                                {% if site_lang == 'hi' %}(कुल देय राशि में जुड़ेगा){% else %}(Adds to total payable amount){% endif %}
+                            </span>
+                        </label>
+                        {{ form.previous_due }}
+                    </div>
+                </div>
+
+                <!-- 1-Click Payment Status Pills -->
+                <label class="form-label" style="margin-bottom: 0.4rem;">
+                    <i class="bi bi-wallet2"></i> {% if site_lang == 'hi' %}भुगतान स्थिति चुनें *{% else %}Payment Status *{% endif %}
+                </label>
+                <div class="pill-row">
+                    <button type="button" class="pill-choice active-paid" data-status="Paid">
+                        <i class="bi bi-check-circle-fill"></i> {% if site_lang == 'hi' %}पूर्ण भुगतान (Paid){% else %}Paid in Full{% endif %}
+                    </button>
+                    <button type="button" class="pill-choice" data-status="Unpaid">
+                        <i class="bi bi-x-circle-fill"></i> {% if site_lang == 'hi' %}अदत्त (Unpaid){% else %}Unpaid{% endif %}
+                    </button>
+                    <button type="button" class="pill-choice" data-status="Partial">
+                        <i class="bi bi-clock-history"></i> {% if site_lang == 'hi' %}आंशिक (Partial){% else %}Partial{% endif %}
+                    </button>
+                </div>
+
+                <!-- Hidden select for payment status -->
+                <div style="display: none;">
+                    {{ form.payment_status }}
+                </div>
+
+                <!-- Partial Amount Input (shown when Partial is active) -->
+                <div id="partial_amount_container" style="display: none; margin-bottom: 1rem; background: #fffbeb; padding: 0.85rem; border-radius: 8px; border: 1px solid #fde68a;">
+                    <label class="form-label" for="{{ form.amount_paid.id_for_label }}" style="color: #92400e;">
+                        <i class="bi bi-cash"></i> {% if site_lang == 'hi' %}प्राप्त राशि (₹) दर्ज करें *{% else %}Amount Received Now (₹) *{% endif %}
+                    </label>
+                    {{ form.amount_paid }}
+                </div>
+
+                <!-- Payment Method Pills -->
+                <label class="form-label" style="margin-bottom: 0.4rem;">
+                    <i class="bi bi-credit-card-2-front"></i> {% if site_lang == 'hi' %}भुगतान माध्यम *{% else %}Payment Method *{% endif %}
+                </label>
+                <div class="pill-row">
+                    <button type="button" class="pill-choice active-method" data-method="Cash">
+                        <i class="bi bi-cash-stack"></i> {% if site_lang == 'hi' %}नकद (Cash){% else %}Cash{% endif %}
+                    </button>
+                    <button type="button" class="pill-choice" data-method="UPI">
+                        <i class="bi bi-qr-code-scan"></i> {% if site_lang == 'hi' %}UPI / QR कोड{% else %}UPI / QR{% endif %}
+                    </button>
+                    <button type="button" class="pill-choice" data-method="Cheque">
+                        <i class="bi bi-card-heading"></i> {% if site_lang == 'hi' %}चेक (Cheque){% else %}Cheque{% endif %}
+                    </button>
+                    <button type="button" class="pill-choice" data-method="NEFT">
+                        <i class="bi bi-bank"></i> {% if site_lang == 'hi' %}NEFT / बैंक{% else %}NEFT / Bank{% endif %}
+                    </button>
+                </div>
+
+                <!-- Hidden select for payment method -->
+                <div style="display: none;">
+                    {{ form.payment_method }}
+                </div>
+
+                <!-- Progressive Disclosure: Payment Note / UTR -->
+                <details class="progressive-details" {% if form.payment_note.value %}open{% endif %}>
+                    <summary class="progressive-summary">
+                        <span><i class="bi bi-receipt-cutoff"></i> {% if site_lang == 'hi' %}+ UTR / चेक नं. / लेन-देन संदर्भ जोड़ें{% else %}+ Add Transaction Ref / UTR / Cheque No.{% endif %}</span>
+                        <i class="bi bi-chevron-down"></i>
+                    </summary>
+                    <div class="progressive-content">
+                        <div class="form-group full-width">
+                            <label class="form-label" for="{{ form.payment_note.id_for_label }}">
+                                {% if site_lang == 'hi' %}भुगतान संदर्भ (UTR / Cheque No.){% else %}Payment Reference / Note{% endif %}
+                            </label>
+                            {{ form.payment_note }}
+                        </div>
+                    </div>
+                </details>
+            </div>
+
+        </div>
+
+        <!-- Right Column: Sticky Live POS Invoice Receipt -->
+        <div class="billing-receipt-pane">
+            <div class="receipt-card">
+                <!-- Receipt Header with Language Selector -->
+                <div class="receipt-header">
+                    <div class="receipt-title">
+                        <i class="bi bi-receipt"></i> {% if site_lang == 'hi' %}लाइव बिल रसीद{% else %}Invoice Summary{% endif %}
+                    </div>
+                    <select id="receipt_bill_language" class="receipt-lang-select" title="Bill Print Language">
+                        <option value="en">English Bill</option>
+                        <option value="hi">हिंदी बिल</option>
+                        <option value="bi">द्विभाषी (Bilingual)</option>
+                    </select>
+                </div>
+
+                <!-- Receipt Body -->
+                <div class="receipt-body">
+                    <div style="text-align: center; margin-bottom: 0.75rem;">
+                        <span style="font-weight: 800; font-size: 1.05rem; color: var(--secondary);">विश्वगुरु समाचार पत्र</span>
+                        <div style="font-size: 0.75rem; color: var(--text-muted);">Vishwaguru Newspaper Billing</div>
+                    </div>
+
+                    <div class="receipt-divider"></div>
+
+                    <div class="receipt-row strong">
+                        <span>{% if site_lang == 'hi' %}विज्ञापनदाता:{% else %}Client:{% endif %}</span>
+                        <span id="receipt_client" style="text-align: right; max-width: 170px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                            {% if site_lang == 'hi' %}ग्राहक का नाम{% else %}Client Name{% endif %}
+                        </span>
+                    </div>
+
+                    <div class="receipt-row">
+                        <span>{% if site_lang == 'hi' %}स्थान व आकार:{% else %}Placement:{% endif %}</span>
+                        <span id="receipt_placement" style="text-align: right; font-weight: 600; color: var(--secondary);">
+                            Front Full
+                        </span>
+                    </div>
+
+                    <div class="receipt-row">
+                        <span>{% if site_lang == 'hi' %}प्रकाशन दिनांक:{% else %}Edition Date:{% endif %}</span>
+                        <span id="receipt_date">--/--/----</span>
+                    </div>
+
+                    <div class="receipt-divider"></div>
+
+                    <div class="receipt-row">
+                        <span>{% if site_lang == 'hi' %}मूल दर (Base):{% else %}Base Rate:{% endif %}</span>
+                        <span id="receipt_base" style="font-weight: 600;">₹0.00</span>
+                    </div>
+
+                    <div class="receipt-row" id="receipt_discount_row" style="display: none; color: var(--danger);">
+                        <span>{% if site_lang == 'hi' %}छूट (Discount):{% else %}Discount:{% endif %}</span>
+                        <span id="receipt_discount" style="font-weight: 600;">- ₹0.00</span>
+                    </div>
+
+                    <div class="receipt-row" id="receipt_previous_due_row" style="display: none; color: #b91c1c;">
+                        <span>{% if site_lang == 'hi' %}पुराना बकाया:{% else %}Previous Due:{% endif %}</span>
+                        <span id="receipt_previous_due" style="font-weight: 700;">+ ₹0.00</span>
+                    </div>
+
+                    <div class="receipt-divider"></div>
+
+                    <div class="receipt-total-row">
+                        <span class="receipt-total-label">
+                            {% if site_lang == 'hi' %}शुद्ध देय राशि:{% else %}Net Total:{% endif %}
+                        </span>
+                        <span class="receipt-total-val" id="receipt_total">
+                            ₹0.00
+                        </span>
+                    </div>
+
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 0.5rem;">
+                        <span style="font-size: 0.8rem; color: var(--text-muted);">{% if site_lang == 'hi' %}स्थिति:{% else %}Status:{% endif %}</span>
+                        <span id="receipt_status_badge" class="badge badge-paid">
+                            <i class="bi bi-check-circle-fill"></i> {% if site_lang == 'hi' %}पूर्ण भुगतान{% else %}Paid in Full{% endif %}
+                        </span>
+                    </div>
+
+                    <div class="receipt-due-row" id="receipt_paid_row" style="display: none;">
+                        <span>{% if site_lang == 'hi' %}प्राप्त राशि:{% else %}Paid Now:{% endif %}</span>
+                        <span id="receipt_paid" style="color: var(--success);">₹0.00</span>
+                    </div>
+
+                    <div class="receipt-due-row">
+                        <span>{% if site_lang == 'hi' %}शेष देय राशि:{% else %}Balance Due:{% endif %}</span>
+                        <span id="receipt_balance" style="color: var(--danger);">₹0.00</span>
+                    </div>
+                </div>
+
+                <!-- Receipt Sticky Footer Action -->
+                <div class="receipt-footer-actions">
+                    <button type="submit" class="btn-generate" id="submitBillBtn">
+                        <i class="bi bi-printer-fill"></i> {% if site_lang == 'hi' %}बिल बनाएं व प्रिंट करें{% else %}Generate Bill & Print{% endif %}
+                    </button>
+                    <div style="text-align: center; margin-top: 0.5rem; font-size: 0.725rem; color: var(--text-muted);">
+                        <i class="bi bi-shield-check"></i> {% if site_lang == 'hi' %}तुरंत वीज़ीप्रिंट पीडीएफ व व्हाट्सएप लिंक{% else %}Instant WeasyPrint PDF & WhatsApp link{% endif %}
+                    </div>
                 </div>
             </div>
-            <div class="live-total-value" id="live_total_display">₹0.00</div>
         </div>
 
-        <!-- Section 4: Payment Status -->
-        <h3 class="form-section-title">
-            <span>💳 4. {% if site_lang == 'hi' %}भुगतान स्थिति (Payment Status){% else %}Payment Status{% endif %}</span>
-        </h3>
-        <div class="form-grid">
-            <div class="form-group">
-                <label class="form-label" for="{{ form.payment_status.id_for_label }}">
-                    {% if site_lang == 'hi' %}भुगतान स्थिति (Status) *{% else %}Payment Status *{% endif %}
-                </label>
-                {{ form.payment_status }}
-            </div>
+    </div>
+</form>
 
-            <div class="form-group">
-                <label class="form-label" for="{{ form.amount_paid.id_for_label }}">
-                    {% if site_lang == 'hi' %}प्राप्त राशि (Amount Paid ₹){% else %}Amount Paid (₹){% endif %}
-                </label>
-                {{ form.amount_paid }}
-            </div>
-
-            <div class="form-group">
-                <label class="form-label" for="{{ form.payment_method.id_for_label }}">
-                    {% if site_lang == 'hi' %}भुगतान माध्यम (Method) *{% else %}Payment Method *{% endif %}
-                </label>
-                {{ form.payment_method }}
-            </div>
-
-            <div class="form-group">
-                <label class="form-label" for="{{ form.payment_note.id_for_label }}">
-                    {% if site_lang == 'hi' %}भुगतान संदर्भ / UTR (Payment Note){% else %}Payment Reference / UTR / Cheque No.{% endif %}
-                </label>
-                {{ form.payment_note }}
-            </div>
+<!-- Recent Bills Quick Drawer (at bottom for easy access without page switching) -->
+{% if recent_bills %}
+<div class="step-card" style="margin-top: 2rem;">
+    <div class="step-header">
+        <div class="step-title">
+            <i class="bi bi-clock-history" style="color: var(--primary);"></i>
+            {% if site_lang == 'hi' %}हाल ही में बनाए गए बिल (Recent Bills){% else %}Recently Generated Invoices{% endif %}
         </div>
+        <a href="{% url 'billing:bill_search' %}" class="btn btn-secondary" style="padding: 0.35rem 0.75rem; font-size: 0.8rem;">
+            <i class="bi bi-search"></i> {% if site_lang == 'hi' %}सभी बिल खोजें{% else %}View All Bills{% endif %}
+        </a>
+    </div>
 
-        <div style="margin-top: 2rem; display: flex; gap: 1rem; justify-content: flex-end;">
-            <a href="{% url 'billing:bill_search' %}" class="btn btn-secondary">
-                {% if site_lang == 'hi' %}रद्द करें{% else %}Cancel{% endif %}
-            </a>
-            <button type="submit" class="btn btn-primary" style="font-size: 1.05rem; padding: 0.75rem 2rem;">
-                🚀 {% if site_lang == 'hi' %}बिल बनाएं व प्रिंट देखें{% else %}Generate Bill & View PDF{% endif %}
-            </button>
-        </div>
-    </form>
+    <div class="table-container">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>{% if site_lang == 'hi' %}बिल क्र.{% else %}Invoice No{% endif %}</th>
+                    <th>{% if site_lang == 'hi' %}विज्ञापनदाता{% else %}Client{% endif %}</th>
+                    <th>{% if site_lang == 'hi' %}स्थान व आकार{% else %}Placement{% endif %}</th>
+                    <th>{% if site_lang == 'hi' %}कुल राशि{% else %}Total (₹){% endif %}</th>
+                    <th>{% if site_lang == 'hi' %}स्थिति{% else %}Status{% endif %}</th>
+                    <th style="text-align: right;">{% if site_lang == 'hi' %}त्वरित क्रियाएं{% else %}Actions{% endif %}</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for b in recent_bills %}
+                <tr>
+                    <td>
+                        <a href="{% url 'billing:bill_detail' b.pk %}" style="font-weight: 700; color: var(--primary); text-decoration: none;">
+                            {{ b.bill_number }}
+                        </a>
+                    </td>
+                    <td>
+                        <strong>{{ b.client_name }}</strong>
+                        {% if b.client_phone %}
+                        <br><small style="color: var(--text-muted);"><i class="bi bi-telephone"></i> {{ b.client_phone }}</small>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if site_lang == 'hi' %}{{ b.placement_hindi }}{% else %}{{ b.get_placement_type_display }}{% endif %}
+                    </td>
+                    <td style="font-weight: 700; color: var(--secondary);">
+                        ₹{{ b.total_amount|floatformat:2 }}
+                    </td>
+                    <td>
+                        {% if b.payment_status == 'Paid' %}
+                            <span class="badge badge-paid"><i class="bi bi-check-circle-fill"></i> {% if site_lang == 'hi' %}पूर्ण भुगतान{% else %}Paid{% endif %}</span>
+                        {% elif b.payment_status == 'Partial' %}
+                            <span class="badge badge-partial"><i class="bi bi-clock-history"></i> {% if site_lang == 'hi' %}आंशिक{% else %}Partial{% endif %}</span>
+                        {% else %}
+                            <span class="badge badge-unpaid"><i class="bi bi-x-circle-fill"></i> {% if site_lang == 'hi' %}अदत्त{% else %}Unpaid{% endif %}</span>
+                        {% endif %}
+                    </td>
+                    <td style="text-align: right; white-space: nowrap;">
+                        <a href="{% url 'billing:bill_detail' b.pk %}" class="btn btn-secondary" style="padding: 0.35rem 0.6rem; font-size: 0.775rem;" title="View Details">
+                            <i class="bi bi-eye"></i>
+                        </a>
+                        <a href="{% url 'billing:bill_pdf' b.pk %}?download=1" class="btn btn-pdf" style="padding: 0.35rem 0.6rem; font-size: 0.775rem;" title="Download PDF">
+                            <i class="bi bi-download"></i>
+                        </a>
+                        <a href="{{ b.whatsapp_share_url }}" target="_blank" class="btn btn-whatsapp" style="padding: 0.35rem 0.6rem; font-size: 0.775rem;" title="Share WhatsApp">
+                            <i class="bi bi-whatsapp"></i>
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
 </div>
+{% endif %}
+
 {% endblock %}
 
 {% block extra_js %}
+<script>
+    window.siteLang = "{{ site_lang|default:'en' }}";
+</script>
 <script src="{% static 'billing/js/calculator.js' %}"></script>
 {% endblock %}
