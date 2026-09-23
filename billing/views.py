@@ -1,13 +1,14 @@
 from decimal import Decimal
 from django.shortcuts import render, redirect, get_object_or_404
-from django.http import HttpResponse, Http404
+from django.http import HttpResponse, Http404, JsonResponse
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.template.loader import render_to_string
 from django.db.models import Q, Sum, Count
 from django.core.paginator import Paginator
+from django.utils import timezone
 
-from billing.models import Bill, PaymentInfo, PaymentStatus
+from billing.models import Bill, PaymentInfo, PaymentStatus, PAYMENT_STATUS_CHOICES_HI, Client
 from billing.forms import BillForm, BillPaymentUpdateForm
 from billing.utils import (
     generate_bill_number,
@@ -22,26 +23,63 @@ def bill_create(request):
     Create a new advertisement bill.
     Live total calculation happens client-side, recalculated server-side.
     """
+    site_lang = request.session.get('site_lang', 'en')
+
     if request.method == 'POST':
-        form = BillForm(request.POST)
+        form = BillForm(request.POST, site_lang=site_lang)
         if form.is_valid():
             bill = form.save(commit=False)
             bill.created_by = request.user
             bill.bill_number = generate_bill_number()
             bill.save()
-            messages.success(
-                request,
-                f"बिल सफलतापूर्वक बनाया गया! बिल क्रमांक: {bill.bill_number} (Bill created successfully)"
+
+            # Automatically remember / update client master record
+            if bill.client_name:
+                Client.objects.update_or_create(
+                    name=bill.client_name.strip(),
+                    defaults={
+                        'phone': bill.client_phone or '',
+                        'address': bill.client_address or '',
+                        'gstin': bill.client_gstin or '',
+                    }
+                )
+
+            msg = (
+                f"बिल सफलतापूर्वक बनाया गया! बिल क्रमांक: {bill.bill_number}"
+                if site_lang == 'hi'
+                else f"Bill created successfully! Invoice No: {bill.bill_number}"
             )
+            messages.success(request, msg)
             return redirect('billing:bill_detail', pk=bill.pk)
     else:
-        form = BillForm()
+        form = BillForm(site_lang=site_lang)
+
+    # Today's quick dashboard statistics
+    today = timezone.localdate()
+    today_bills = Bill.objects.filter(created_at__date=today)
+    today_stats = today_bills.aggregate(
+        count=Count('id'),
+        billed=Sum('total_amount'),
+        paid=Sum('amount_paid'),
+    )
+    today_count = today_stats['count'] or 0
+    today_billed = today_stats['billed'] or Decimal('0.00')
+    today_paid = today_stats['paid'] or Decimal('0.00')
+    today_pending = max(Decimal('0.00'), today_billed - today_paid)
+
+    # 5 Most recent bills for quick-access drawer
+    recent_bills = Bill.objects.select_related('created_by').order_by('-created_at')[:5]
 
     payment_info = PaymentInfo.get_solo()
     context = {
         'form': form,
         'payment_info': payment_info,
-        'title': 'नया विज्ञापन बिल बनाएं (Create New Bill)',
+        'title': 'नया विज्ञापन बिल बनाएं' if site_lang == 'hi' else 'Create Advertisement Bill',
+        'today_count': today_count,
+        'today_billed': today_billed,
+        'today_paid': today_paid,
+        'today_pending': today_pending,
+        'recent_bills': recent_bills,
     }
     return render(request, 'billing/bill_form.html', context)
 
@@ -62,12 +100,13 @@ def bill_detail(request, pk):
         bill_number=bill.bill_number,
     )
 
+    site_lang = request.session.get('site_lang', 'en')
     context = {
         'bill': bill,
         'payment_info': payment_info,
         'amount_words': amount_words,
         'qr_code_base64': qr_code_base64,
-        'payment_form': BillPaymentUpdateForm(instance=bill),
+        'payment_form': BillPaymentUpdateForm(instance=bill, site_lang=site_lang),
     }
     return render(request, 'billing/bill_detail.html', context)
 
@@ -175,6 +214,9 @@ def bill_search(request):
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
 
+    site_lang = request.session.get('site_lang', 'en')
+    status_choices = PAYMENT_STATUS_CHOICES_HI if site_lang == 'hi' else PaymentStatus.choices
+
     context = {
         'bills': page_obj,
         'page_obj': page_obj,
@@ -182,12 +224,12 @@ def bill_search(request):
         'status': status,
         'start_date': start_date,
         'end_date': end_date,
-        'status_choices': PaymentStatus.choices,
+        'status_choices': status_choices,
         'total_count': stats['total_count'] or 0,
         'total_billed': total_billed,
         'total_collected': total_collected,
         'total_outstanding': total_outstanding,
-        'title': 'बिल खोजें व विवरण (Search Bills & Log)',
+        'title': 'बिल खोजें व विवरण' if site_lang == 'hi' else 'Search Invoices & Bills',
     }
     return render(request, 'billing/bill_search.html', context)
 
@@ -197,15 +239,18 @@ def bill_payment_update(request, pk):
     """
     Quick endpoint to update payment status and received amount.
     """
+    site_lang = request.session.get('site_lang', 'en')
     bill = get_object_or_404(Bill, pk=pk)
     if request.method == 'POST':
-        form = BillPaymentUpdateForm(request.POST, instance=bill)
+        form = BillPaymentUpdateForm(request.POST, instance=bill, site_lang=site_lang)
         if form.is_valid():
             form.save()
-            messages.success(
-                request,
-                f"बिल {bill.bill_number} की भुगतान स्थिति अपडेट कर दी गई है। (Payment status updated)"
+            msg = (
+                f"बिल {bill.bill_number} की भुगतान स्थिति अपडेट कर दी गई है।"
+                if site_lang == 'hi'
+                else f"Payment status for bill {bill.bill_number} updated successfully."
             )
+            messages.success(request, msg)
     return redirect('billing:bill_detail', pk=bill.pk)
 
 
@@ -217,3 +262,36 @@ def set_site_language(request, lang_code):
         request.session['site_lang'] = lang_code
     referer = request.META.get('HTTP_REFERER') or '/bills/new/'
     return redirect(referer)
+
+
+@login_required
+def client_search_api(request):
+    """
+    API endpoint for client autocomplete and pending balance lookup.
+    Returns matching client profiles with phone, address, GSTIN, and old pending balance.
+    """
+    q = request.GET.get('q', '').strip()
+    if not q:
+        clients = Client.objects.all().order_by('-updated_at')[:10]
+    else:
+        clients = Client.objects.filter(
+            Q(name__icontains=q) | Q(phone__icontains=q)
+        ).order_by('name')[:15]
+
+    data = []
+    for c in clients:
+        unpaid_bills = Bill.objects.filter(
+            client_name__iexact=c.name,
+            payment_status__in=[PaymentStatus.UNPAID, PaymentStatus.PARTIAL]
+        )
+        total_pending = sum((b.balance_amount for b in unpaid_bills), Decimal('0.00'))
+        data.append({
+            'id': c.id,
+            'name': c.name,
+            'phone': c.phone,
+            'address': c.address,
+            'gstin': c.gstin,
+            'pending_due': float(total_pending),
+        })
+
+    return JsonResponse({'clients': data})

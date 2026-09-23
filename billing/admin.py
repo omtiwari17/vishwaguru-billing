@@ -1,5 +1,23 @@
 from django.contrib import admin
-from billing.models import Bill, PaymentInfo
+from billing.models import Bill, PaymentInfo, Client
+
+
+@admin.register(Client)
+class ClientAdmin(admin.ModelAdmin):
+    list_display = [
+        'name',
+        'phone',
+        'address',
+        'gstin',
+        'created_at',
+    ]
+    search_fields = [
+        'name',
+        'phone',
+        'address',
+        'gstin',
+    ]
+    ordering = ['name']
 
 
 @admin.register(Bill)

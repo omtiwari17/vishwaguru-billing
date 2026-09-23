@@ -6,46 +6,115 @@ from django.utils import timezone
 
 
 class PlacementType(models.TextChoices):
-    FRONT_FULL = 'Front Page Full', 'मुख्य पृष्ठ - पूरा पेज (Front Page Full)'
-    FRONT_HALF = 'Front Page Half', 'मुख्य पृष्ठ - आधा पेज (Front Page Half)'
-    FRONT_QUARTER = 'Front Page Quarter', 'मुख्य पृष्ठ - चौथाई / 1/4 (Front Quarter)'
-    INSIDE_FULL = 'Inside Page Full', 'अंदर का पृष्ठ - पूरा पेज (Inside Page Full)'
-    INSIDE_HALF = 'Inside Page Half', 'अंदर का पृष्ठ - आधा पेज (Inside Page Half)'
-    INSIDE_QUARTER = 'Inside Page Quarter', 'अंदर का पृष्ठ - चौथाई / 1/4 (Inside Quarter)'
-    BACK_FULL = 'Back Page Full', 'अंतिम पृष्ठ - पूरा पेज (Back Page Full)'
-    BACK_HALF = 'Back Page Half', 'अंतिम पृष्ठ - आधा पेज (Back Page Half)'
-    BACK_QUARTER = 'Back Page Quarter', 'अंतिम पृष्ठ - चौथाई / 1/4 (Back Quarter)'
-    EAR_PANEL = 'Ear Panel', 'शीर्ष विज्ञापन - ईयर पैनल (Ear Panel)'
-    CUSTOM = 'Custom Size', 'अन्य आकार (Custom Size / Specific Dimensions)'
+    FRONT_FULL = 'Front Page Full', 'Front Page — Full Page'
+    FRONT_HALF = 'Front Page Half', 'Front Page — Half Page'
+    FRONT_QUARTER = 'Front Page Quarter', 'Front Page — Quarter (1/4)'
+    INSIDE_FULL = 'Inside Page Full', 'Inside Page — Full Page'
+    INSIDE_HALF = 'Inside Page Half', 'Inside Page — Half Page'
+    INSIDE_QUARTER = 'Inside Page Quarter', 'Inside Page — Quarter (1/4)'
+    BACK_FULL = 'Back Page Full', 'Back Page — Full Page'
+    BACK_HALF = 'Back Page Half', 'Back Page — Half Page'
+    BACK_QUARTER = 'Back Page Quarter', 'Back Page — Quarter (1/4)'
+    EAR_PANEL = 'Ear Panel', 'Ear Panel (Top Header)'
+    CUSTOM = 'Custom Size', 'Custom Size / Dimensions'
 
 
 class EditionChoice(models.TextChoices):
-    INDORE = 'Indore', 'इंदौर (Indore)'
-    BHOPAL = 'Bhopal', 'भोपाल (Bhopal)'
-    UJJAIN = 'Ujjain', 'उज्जैन (Ujjain)'
-    GWALIOR = 'Gwalior', 'ग्वालियर (Gwalior)'
-    JABALPUR = 'Jabalpur', 'जबलपुर (Jabalpur)'
-    STATE = 'State Combined', 'समस्त संस्करण (All Editions / Combined)'
-    OTHER = 'Other', 'अन्य (Other)'
+    INDORE = 'Indore', 'Indore'
+    BHOPAL = 'Bhopal', 'Bhopal'
+    UJJAIN = 'Ujjain', 'Ujjain'
+    GWALIOR = 'Gwalior', 'Gwalior'
+    JABALPUR = 'Jabalpur', 'Jabalpur'
+    STATE = 'State Combined', 'All Editions (State Combined)'
+    OTHER = 'Other', 'Other'
 
 
 class PaymentStatus(models.TextChoices):
-    UNPAID = 'Unpaid', 'अदत्त (Unpaid)'
-    PAID = 'Paid', 'पूर्ण भुगतान (Paid)'
-    PARTIAL = 'Partial', 'आंशिक भुगतान (Partial)'
+    UNPAID = 'Unpaid', 'Unpaid'
+    PAID = 'Paid', 'Paid'
+    PARTIAL = 'Partial', 'Partial'
 
 
 class PaymentMethod(models.TextChoices):
-    CASH = 'Cash', 'नकद (Cash)'
-    UPI = 'UPI', 'यूपीआई (UPI / QR Code)'
-    BANK_TRANSFER = 'Bank Transfer', 'बैंक ट्रांसफर (Bank Transfer / NEFT)'
-    CHEQUE = 'Cheque', 'चेक (Cheque)'
+    CASH = 'Cash', 'Cash'
+    UPI = 'UPI', 'UPI / QR Code'
+    BANK_TRANSFER = 'Bank Transfer', 'Bank Transfer / NEFT'
+    CHEQUE = 'Cheque', 'Cheque'
 
 
 class BillLanguage(models.TextChoices):
     ENGLISH = 'en', 'English'
-    HINDI = 'hi', 'हिंदी (Hindi)'
-    BILINGUAL = 'bi', 'Bilingual (हिंदी + English)'
+    HINDI = 'hi', 'Hindi'
+    BILINGUAL = 'bi', 'Bilingual (Hindi + English)'
+
+
+# Language-specific choice mappings
+PLACEMENT_CHOICES_HI = [
+    ('Front Page Full', 'मुख्य पृष्ठ - पूरा पेज'),
+    ('Front Page Half', 'मुख्य पृष्ठ - आधा पेज'),
+    ('Front Page Quarter', 'मुख्य पृष्ठ - चौथाई'),
+    ('Inside Page Full', 'अंदर का पृष्ठ - पूरा पेज'),
+    ('Inside Page Half', 'अंदर का पृष्ठ - आधा पेज'),
+    ('Inside Page Quarter', 'अंदर का पृष्ठ - चौथाई'),
+    ('Back Page Full', 'अंतिम पृष्ठ - पूरा पेज'),
+    ('Back Page Half', 'अंतिम पृष्ठ - आधा पेज'),
+    ('Back Page Quarter', 'अंतिम पृष्ठ - चौथाई'),
+    ('Ear Panel', 'शीर्ष विज्ञापन (ईयर पैनल)'),
+    ('Custom Size', 'अन्य विशिष्ट आकार'),
+]
+
+PLACEMENT_CHOICES_BI = [
+    ('Front Page Full', 'मुख्य पृष्ठ - पूरा पेज (Front Page Full)'),
+    ('Front Page Half', 'मुख्य पृष्ठ - आधा पेज (Front Page Half)'),
+    ('Front Page Quarter', 'मुख्य पृष्ठ - चौथाई (Front Quarter)'),
+    ('Inside Page Full', 'अंदर का पृष्ठ - पूरा पेज (Inside Page Full)'),
+    ('Inside Page Half', 'अंदर का पृष्ठ - आधा पेज (Inside Page Half)'),
+    ('Inside Page Quarter', 'अंदर का पृष्ठ - चौथाई (Inside Quarter)'),
+    ('Back Page Full', 'अंतिम पृष्ठ - पूरा पेज (Back Page Full)'),
+    ('Back Page Half', 'अंतिम पृष्ठ - आधा पेज (Back Page Half)'),
+    ('Back Page Quarter', 'अंतिम पृष्ठ - चौथाई (Back Quarter)'),
+    ('Ear Panel', 'शीर्ष विज्ञापन - ईयर पैनल (Ear Panel)'),
+    ('Custom Size', 'अन्य आकार (Custom Size)'),
+]
+
+EDITION_CHOICES_HI = [
+    ('Indore', 'इंदौर'),
+    ('Bhopal', 'भोपाल'),
+    ('Ujjain', 'उज्जैन'),
+    ('Gwalior', 'ग्वालियर'),
+    ('Jabalpur', 'जबलपुर'),
+    ('State Combined', 'समस्त संस्करण'),
+    ('Other', 'अन्य'),
+]
+
+EDITION_CHOICES_BI = [
+    ('Indore', 'इंदौर (Indore)'),
+    ('Bhopal', 'भोपाल (Bhopal)'),
+    ('Ujjain', 'उज्जैन (Ujjain)'),
+    ('Gwalior', 'ग्वालियर (Gwalior)'),
+    ('Jabalpur', 'जबलपुर (Jabalpur)'),
+    ('State Combined', 'समस्त संस्करण (All Editions)'),
+    ('Other', 'अन्य (Other)'),
+]
+
+PAYMENT_STATUS_CHOICES_HI = [
+    ('Unpaid', 'अदत्त'),
+    ('Paid', 'पूर्ण भुगतान'),
+    ('Partial', 'आंशिक भुगतान'),
+]
+
+PAYMENT_METHOD_CHOICES_HI = [
+    ('Cash', 'नकद'),
+    ('UPI', 'यूपीआई (UPI / QR Code)'),
+    ('Bank Transfer', 'बैंक ट्रांसफर (NEFT/RTGS)'),
+    ('Cheque', 'चेक'),
+]
+
+BILL_LANG_CHOICES_HI = [
+    ('en', 'अंग्रेजी (English)'),
+    ('hi', 'हिंदी (Hindi)'),
+    ('bi', 'द्विभाषी (हिंदी + English)'),
+]
 
 
 class PaymentInfo(models.Model):
@@ -123,6 +192,46 @@ class PaymentInfo(models.Model):
         return obj
 
 
+class Client(models.Model):
+    """
+    Client / Advertiser master directory for autocomplete, quick recall,
+    and outstanding pending balance tracking.
+    """
+    name = models.CharField(
+        max_length=200,
+        unique=True,
+        db_index=True,
+        verbose_name='विज्ञापनदाता का नाम / Client Name'
+    )
+    phone = models.CharField(
+        max_length=20,
+        blank=True,
+        default='',
+        verbose_name='फ़ोन नंबर / Client Phone'
+    )
+    address = models.TextField(
+        blank=True,
+        default='',
+        verbose_name='पता व शहर / Client Address'
+    )
+    gstin = models.CharField(
+        max_length=50,
+        blank=True,
+        default='',
+        verbose_name='पैन / जीएसटी नंबर / GSTIN or PAN'
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['name']
+        verbose_name = 'ग्राहक / विज्ञापनदाता (Client)'
+        verbose_name_plural = 'ग्राहक सूची (Clients)'
+
+    def __str__(self):
+        return f"{self.name} ({self.phone or 'No Phone'})"
+
+
 class Bill(models.Model):
     bill_number = models.CharField(
         max_length=30,
@@ -143,6 +252,8 @@ class Bill(models.Model):
     )
     client_phone = models.CharField(
         max_length=20,
+        blank=True,
+        default='',
         verbose_name='फ़ोन नंबर / Client Phone'
     )
     client_address = models.TextField(
@@ -211,6 +322,12 @@ class Bill(models.Model):
         default=Decimal('0.00'),
         verbose_name='छूट / Discount (₹)'
     )
+    previous_due = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        default=Decimal('0.00'),
+        verbose_name='पुराना बकाया / Previous Due (₹)'
+    )
     total_amount = models.DecimalField(
         max_digits=10,
         decimal_places=2,
@@ -271,12 +388,19 @@ class Bill(models.Model):
         return f"{self.bill_number} - {self.client_name} (₹{self.total_amount})"
 
     def save(self, *args, **kwargs):
-        # Enforce server-side calculation
+        # Enforce server-side calculation: (Base - Discount) + Previous Due
         self.base_amount = Decimal(str(self.base_amount or '0.00'))
         self.discount_amount = Decimal(str(self.discount_amount or '0.00'))
-        calculated_total = self.base_amount - self.discount_amount
+        self.previous_due = Decimal(str(self.previous_due or '0.00'))
+        net_ad = self.base_amount - self.discount_amount
+        calculated_total = net_ad + self.previous_due
         self.total_amount = max(Decimal('0.00'), calculated_total)
         super().save(*args, **kwargs)
+
+    @property
+    def current_ad_total(self):
+        """Current ad charges after discount, excluding previous due."""
+        return max(Decimal('0.00'), (self.base_amount or Decimal('0.00')) - (self.discount_amount or Decimal('0.00')))
 
     @property
     def balance_amount(self):
@@ -284,16 +408,41 @@ class Bill(models.Model):
         return max(Decimal('0.00'), self.total_amount - (self.amount_paid or Decimal('0.00')))
 
     @property
+    def placement_hindi(self):
+        return dict(PLACEMENT_CHOICES_HI).get(self.placement_type, self.placement_type)
+
+    @property
+    def placement_bilingual(self):
+        return dict(PLACEMENT_CHOICES_BI).get(self.placement_type, self.placement_type)
+
+    @property
+    def edition_hindi(self):
+        return dict(EDITION_CHOICES_HI).get(self.edition_name, self.edition_name)
+
+    @property
+    def edition_bilingual(self):
+        return dict(EDITION_CHOICES_BI).get(self.edition_name, self.edition_name)
+
+    @property
+    def payment_status_hindi(self):
+        return dict(PAYMENT_STATUS_CHOICES_HI).get(self.payment_status, self.payment_status)
+
+    @property
+    def payment_method_hindi(self):
+        return dict(PAYMENT_METHOD_CHOICES_HI).get(self.payment_method, self.payment_method)
+
+    @property
+    def bill_language_hindi(self):
+        return dict(BILL_LANG_CHOICES_HI).get(self.bill_language, self.bill_language)
+
+    @property
     def whatsapp_share_url(self):
         """
         Generate a pre-filled direct WhatsApp message URL in English or Hindi.
         """
-        clean_phone = ''.join(c for c in self.client_phone if c.isdigit())
+        clean_phone = ''.join(c for c in (self.client_phone or '') if c.isdigit())
         if len(clean_phone) == 10:
             clean_phone = '91' + clean_phone
-
-        edition_display = self.get_edition_name_display()
-        placement_display = self.get_placement_type_display()
 
         if self.bill_language == 'en':
             lines = [
@@ -301,20 +450,21 @@ class Bill(models.Model):
                 f"Greetings from *Vishwaguru Newspaper*.",
                 f"Here are your advertisement bill details:",
                 f"",
-                f"📄 *Invoice No:* {self.bill_number}",
-                f"📅 *Edition Date:* {self.edition_date.strftime('%d/%m/%Y')}",
-                f"📍 *Placement:* {self.placement_type}",
+                f"• *Invoice No:* {self.bill_number}",
+                f"• *Edition Date:* {self.edition_date.strftime('%d/%m/%Y')}",
+                f"• *Edition:* {self.get_edition_name_display()}",
+                f"• *Placement:* {self.get_placement_type_display()}",
             ]
             if self.custom_size_text:
-                lines.append(f"📐 *Dimensions:* {self.custom_size_text}")
+                lines.append(f"• *Dimensions:* {self.custom_size_text}")
             if self.page_number:
-                lines.append(f"📑 *Page No:* {self.page_number}")
+                lines.append(f"• *Page No:* {self.page_number}")
             lines.extend([
-                f"💰 *Total Amount:* Rs. {self.total_amount:,.2f}",
-                f"💳 *Payment Status:* {self.payment_status}",
+                f"• *Total Amount:* Rs. {self.total_amount:,.2f}",
+                f"• *Payment Status:* {self.get_payment_status_display()}",
             ])
             if self.epaper_link:
-                lines.append(f"🌐 *Epaper Verification:* {self.epaper_link}")
+                lines.append(f"• *Epaper Verification:* {self.epaper_link}")
             lines.extend([
                 "",
                 "Please review the invoice and complete payment.",
@@ -326,20 +476,21 @@ class Bill(models.Model):
                 f"सादर नमस्ते {self.client_name} जी,",
                 f"*विश्वगुरु समाचार पत्र* में आपके विज्ञापन का बिल विवरण निम्न अनुसार है:",
                 f"",
-                f"📄 *बिल क्रमांक:* {self.bill_number}",
-                f"📅 *प्रकाशन दिनांक:* {self.edition_date.strftime('%d/%m/%Y')}",
-                f"📍 *स्थान व आकार:* {placement_display}",
+                f"• *बिल क्रमांक:* {self.bill_number}",
+                f"• *प्रकाशन दिनांक:* {self.edition_date.strftime('%d/%m/%Y')}",
+                f"• *संस्करण:* {self.edition_hindi}",
+                f"• *स्थान व आकार:* {self.placement_hindi}",
             ]
             if self.custom_size_text:
-                lines.append(f"📐 *माप:* {self.custom_size_text}")
+                lines.append(f"• *माप:* {self.custom_size_text}")
             if self.page_number:
-                lines.append(f"📑 *पृष्ठ क्रमांक:* {self.page_number}")
+                lines.append(f"• *पृष्ठ क्रमांक:* {self.page_number}")
             lines.extend([
-                f"💰 *कुल देय राशि:* ₹{self.total_amount:,.2f}",
-                f"💳 *भुगतान स्थिति:* {self.get_payment_status_display()}",
+                f"• *कुल देय राशि:* ₹{self.total_amount:,.2f}",
+                f"• *भुगतान स्थिति:* {self.payment_status_hindi}",
             ])
             if self.epaper_link:
-                lines.append(f"🌐 *ई-पेपर लिंक:* {self.epaper_link}")
+                lines.append(f"• *ई-पेपर लिंक:* {self.epaper_link}")
             lines.extend([
                 "",
                 "कृपया बिल का अवलोकन कर भुगतान सुनिश्चित करें।",

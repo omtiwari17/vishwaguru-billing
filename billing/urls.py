@@ -10,4 +10,5 @@ urlpatterns = [
     path('<int:pk>/update-payment/', views.bill_payment_update, name='bill_payment_update'),
     path('search/', views.bill_search, name='bill_search'),
     path('set-lang/<str:lang_code>/', views.set_site_language, name='set_language'),
+    path('api/clients/search/', views.client_search_api, name='client_search_api'),
 ]
