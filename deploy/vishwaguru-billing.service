@@ -1,0 +1,22 @@
+[Unit]
+Description=Gunicorn daemon for Vishwaguru Newspaper Billing
+After=network.target postgresql.service
+
+[Service]
+User=ubuntu
+Group=www-data
+WorkingDirectory=/home/ubuntu/vishwaguru-billing
+EnvironmentFile=/home/ubuntu/vishwaguru-billing/.env
+ExecStart=/home/ubuntu/vishwaguru-billing/.venv/bin/gunicorn \
+          --workers 3 \
+          --bind 127.0.0.1:8000 \
+          --timeout 60 \
+          --access-logfile /var/log/vishwaguru-billing/access.log \
+          --error-logfile /var/log/vishwaguru-billing/error.log \
+          config.wsgi:application
+
+Restart=always
+RestartSec=5s
+
+[Install]
+WantedBy=multi-user.target
