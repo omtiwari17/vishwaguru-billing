@@ -6,6 +6,7 @@
     <title>
         {% if pdf_lang == 'hi' %}बिल - {{ bill.bill_number }} | विश्वगुरु{% else %}Invoice - {{ bill.bill_number }} | Vishwaguru{% endif %}
     </title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+Devanagari:wght@400;500;600;700&display=swap');
 
@@ -32,6 +33,18 @@
             background: #ffffff;
             font-size: 9.5pt;
             line-height: 1.4;
+            width: 210mm;
+            min-height: 297mm;
+            margin: 0 auto;
+        }
+
+        @media print {
+            html, body {
+                width: 210mm;
+                min-height: 297mm;
+                margin: 0;
+                padding: 0;
+            }
         }
 
         .invoice-wrapper {
@@ -39,6 +52,7 @@
             border-radius: 6px;
             padding: 16px;
             position: relative;
+            min-height: calc(297mm - 20mm);
         }
 
         .header-table {
@@ -228,10 +242,10 @@
             &nbsp;|&nbsp;
         </span>
         <button onclick="window.print()" style="background: #b91c1c; color: white; border: none; padding: 6px 16px; border-radius: 4px; font-weight: bold; cursor: pointer;">
-            🖨️ {% if pdf_lang == 'hi' %}प्रिंट करें (Print){% else %}Print / Save as PDF{% endif %}
+            <i class="bi bi-printer"></i> {% if pdf_lang == 'hi' %}प्रिंट करें (Print){% else %}Print / Save as PDF{% endif %}
         </button>
         <a href="{% url 'billing:bill_detail' bill.pk %}" style="color: #38bdf8; margin-left: 14px; text-decoration: none;">
-            ← {% if pdf_lang == 'hi' %}वापस जाएं (Back){% else %}Back to Bill Details{% endif %}
+            <i class="bi bi-arrow-left"></i> {% if pdf_lang == 'hi' %}वापस जाएं (Back){% else %}Back to Bill Details{% endif %}
         </a>
     </div>
 
@@ -287,10 +301,12 @@
                             <span class="info-label">{% if pdf_lang == 'en' %}Name:{% elif pdf_lang == 'hi' %}नाम:{% else %}नाम (Name):{% endif %}</span>
                             <span class="info-value">{{ bill.client_name }}</span>
                         </div>
+                        {% if bill.client_phone %}
                         <div class="info-row">
                             <span class="info-label">{% if pdf_lang == 'en' %}Phone:{% elif pdf_lang == 'hi' %}फ़ोन:{% else %}फ़ोन (Phone):{% endif %}</span>
                             <span class="info-value">{{ bill.client_phone }}</span>
                         </div>
+                        {% endif %}
                         {% if bill.client_address %}
                         <div class="info-row">
                             <span class="info-label">{% if pdf_lang == 'en' %}Address:{% elif pdf_lang == 'hi' %}पता:{% else %}पता (Address):{% endif %}</span>
@@ -313,13 +329,13 @@
                         <div class="info-row">
                             <span class="info-label">{% if pdf_lang == 'en' %}Edition:{% elif pdf_lang == 'hi' %}संस्करण:{% else %}संस्करण (Edition):{% endif %}</span>
                             <span class="info-value">
-                                {% if pdf_lang == 'en' %}{{ bill.edition_name }}{% else %}{{ bill.get_edition_name_display }}{% endif %}
+                                {% if pdf_lang == 'en' %}{{ bill.get_edition_name_display }}{% elif pdf_lang == 'hi' %}{{ bill.edition_hindi }}{% else %}{{ bill.edition_bilingual }}{% endif %}
                             </span>
                         </div>
                         <div class="info-row">
                             <span class="info-label">{% if pdf_lang == 'en' %}Placement:{% elif pdf_lang == 'hi' %}स्थान व आकार:{% else %}स्थान व आकार:{% endif %}</span>
                             <span class="info-value">
-                                {% if pdf_lang == 'en' %}{{ bill.placement_type }}{% else %}{{ bill.get_placement_type_display }}{% endif %}
+                                {% if pdf_lang == 'en' %}{{ bill.get_placement_type_display }}{% elif pdf_lang == 'hi' %}{{ bill.placement_hindi }}{% else %}{{ bill.placement_bilingual }}{% endif %}
                             </span>
                         </div>
                         {% if bill.custom_size_text %}
@@ -339,7 +355,7 @@
                             <span class="info-label">{% if pdf_lang == 'en' %}Epaper Proof:{% elif pdf_lang == 'hi' %}ई-पेपर लिंक:{% else %}ई-पेपर लिंक:{% endif %}</span>
                             <span class="info-value">
                                 <a href="{{ bill.epaper_link }}" style="color: #b91c1c; text-decoration: underline;">
-                                    {% if pdf_lang == 'en' %}Verify Publication Online ↗{% else %}सत्यापन लिंक देखें ↗{% endif %}
+                                    {% if pdf_lang == 'en' %}Verify Publication Online &rarr;{% else %}सत्यापन लिंक देखें &rarr;{% endif %}
                                 </a>
                             </span>
                         </div>
@@ -379,11 +395,11 @@
                             {% endif %}
                         </strong>
                         <div style="font-size: 7.5pt; color: #64748b; margin-top: 2px;">
-                            {% if pdf_lang == 'en' %}Date: {{ bill.edition_date|date:"d/m/Y" }} | {{ bill.edition_name }} Edition{% else %}दिनांक: {{ bill.edition_date|date:"d/m/Y" }} | {{ bill.get_edition_name_display }} संस्करण{% endif %}
+                            {% if pdf_lang == 'en' %}Date: {{ bill.edition_date|date:"d/m/Y" }} | {{ bill.get_edition_name_display }} Edition{% elif pdf_lang == 'hi' %}दिनांक: {{ bill.edition_date|date:"d/m/Y" }} | {{ bill.edition_hindi }} संस्करण{% else %}दिनांक / Date: {{ bill.edition_date|date:"d/m/Y" }} | {{ bill.edition_bilingual }}{% endif %}
                         </div>
                     </td>
                     <td>
-                        {% if pdf_lang == 'en' %}{{ bill.placement_type }}{% else %}{{ bill.get_placement_type_display }}{% endif %}
+                        {% if pdf_lang == 'en' %}{{ bill.get_placement_type_display }}{% elif pdf_lang == 'hi' %}{{ bill.placement_hindi }}{% else %}{{ bill.placement_bilingual }}{% endif %}
                         {% if bill.custom_size_text %}<br><small>({{ bill.custom_size_text }})</small>{% endif %}
                     </td>
                     <td class="text-right">
@@ -401,8 +417,24 @@
                     </td>
                 </tr>
                 {% endif %}
+                {% if bill.previous_due > 0 %}
+                <tr>
+                    <td class="text-center">{% if bill.discount_amount > 0 %}3{% else %}2{% endif %}</td>
+                    <td colspan="2" style="color: #b91c1c;">
+                        <strong>
+                            {% if pdf_lang == 'en' %}Previous Outstanding Balance / Old Due{% elif pdf_lang == 'hi' %}पुराना बकाया राशि{% else %}पुराना बकाया (Previous Pending Due){% endif %}
+                        </strong>
+                    </td>
+                    <td class="text-right" style="color: #b91c1c; font-weight: 700;">
+                        + ₹{{ bill.previous_due|floatformat:2 }}
+                    </td>
+                </tr>
+                {% endif %}
             </tbody>
         </table>
+
+        <!-- Vertical Spacer pushing totals and payment details to lower section -->
+        <div style="height: {% if bill.discount_amount > 0 and bill.previous_due > 0 %}32mm{% elif bill.discount_amount > 0 or bill.previous_due > 0 %}40mm{% else %}48mm{% endif %};"></div>
 
         <!-- Totals & In Words -->
         <table class="totals-table">
@@ -426,7 +458,7 @@
                     <table style="width: 100%; border-collapse: collapse;">
                         <tr>
                             <td style="padding: 3px 0; font-size: 8.5pt;">
-                                {% if pdf_lang == 'en' %}Gross Amount:{% elif pdf_lang == 'hi' %}मूल राशि:{% else %}मूल राशि (Gross):{% endif %}
+                                {% if pdf_lang == 'en' %}Gross Ad Amount:{% elif pdf_lang == 'hi' %}विज्ञापन राशि:{% else %}विज्ञापन राशि (Gross):{% endif %}
                             </td>
                             <td style="padding: 3px 0; text-align: right; font-size: 8.5pt;">₹{{ bill.base_amount|floatformat:2 }}</td>
                         </tr>
@@ -436,6 +468,14 @@
                                 {% if pdf_lang == 'en' %}Discount:{% elif pdf_lang == 'hi' %}छूट:{% else %}छूट (Discount):{% endif %}
                             </td>
                             <td style="padding: 3px 0; text-align: right; font-size: 8.5pt;">- ₹{{ bill.discount_amount|floatformat:2 }}</td>
+                        </tr>
+                        {% endif %}
+                        {% if bill.previous_due > 0 %}
+                        <tr style="color: #b91c1c;">
+                            <td style="padding: 3px 0; font-size: 8.5pt;">
+                                {% if pdf_lang == 'en' %}Previous Due:{% elif pdf_lang == 'hi' %}पुराना बकाया:{% else %}पुराना बकाया (Prev Due):{% endif %}
+                            </td>
+                            <td style="padding: 3px 0; text-align: right; font-size: 8.5pt; font-weight: 600;">+ ₹{{ bill.previous_due|floatformat:2 }}</td>
                         </tr>
                         {% endif %}
                         <tr style="border-top: 2px solid #b91c1c; font-size: 11pt; font-weight: 700; color: #b91c1c;">
@@ -484,11 +524,11 @@
                     <img src="{{ qr_code_base64 }}" class="qr-img" alt="UPI QR Code"><br>
                     <span style="font-size: 7.5pt; color: #475569; font-weight: 600;">
                         {% if pdf_lang == 'en' %}
-                            📲 Scan & Pay via UPI<br>(GPay / PhonePe / Paytm)
+                            Scan & Pay via UPI<br>(GPay / PhonePe / Paytm)
                         {% elif pdf_lang == 'hi' %}
-                            📲 स्कैन कर भुगतान करें<br>(GPay / PhonePe / Paytm)
+                            स्कैन कर भुगतान करें<br>(GPay / PhonePe / Paytm)
                         {% else %}
-                            📲 स्कैन कर भुगतान करें<br>Scan & Pay via UPI
+                            स्कैन कर भुगतान करें<br>Scan & Pay via UPI
                         {% endif %}
                     </span>
                     {% endif %}
