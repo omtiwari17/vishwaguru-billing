@@ -315,4 +315,116 @@ class VishwaguruBillingTests(TestCase):
         self.assertEqual(pdf_res.status_code, 200)
         self.assertContains(pdf_res, '1500.00')
 
+    def test_customer_portal_and_upi_intent(self):
+        """Test customer portal rendering, outstanding balance calculation, and UPI deep-link generation"""
+        client_obj = ClientModel.objects.create(
+            name='Rajesh Electronics',
+            phone='9893099999',
+            address='MG Road, Indore'
+        )
+        self.assertIsNotNone(client_obj.access_token)
+
+        # Unpaid Bill 1
+        b1 = Bill.objects.create(
+            bill_number='VG-2026-0091',
+            client=client_obj,
+            client_name='Rajesh Electronics',
+            placement_type=PlacementType.FRONT_HALF,
+            base_amount=Decimal('4000.00'),
+            discount_amount=Decimal('0.00'),
+            payment_status=PaymentStatus.UNPAID,
+            amount_paid=Decimal('0.00'),
+            created_by=self.user
+        )
+
+        # Paid Bill 2
+        b2 = Bill.objects.create(
+            bill_number='VG-2026-0092',
+            client=client_obj,
+            client_name='Rajesh Electronics',
+            placement_type=PlacementType.INSIDE_HALF,
+            base_amount=Decimal('2500.00'),
+            discount_amount=Decimal('0.00'),
+            payment_status=PaymentStatus.PAID,
+            amount_paid=Decimal('2500.00'),
+            created_by=self.user
+        )
+
+        self.assertEqual(client_obj.total_billed, Decimal('6500.00'))
+        self.assertEqual(client_obj.total_paid, Decimal('2500.00'))
+        self.assertEqual(client_obj.total_outstanding, Decimal('4000.00'))
+
+        # Access customer portal without staff authentication (unauthenticated client)
+        anon_client = Client()
+        portal_url = reverse('billing:customer_portal', kwargs={'token': str(client_obj.access_token)})
+        response = anon_client.get(portal_url)
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'Rajesh Electronics')
+        self.assertContains(response, '4000.00') # Balance Due
+        self.assertContains(response, 'VG-2026-0091') # Unpaid bill
+        self.assertContains(response, 'VG-2026-0092') # Paid bill
+
+        # Check short redirect route: /c/<token>/
+        short_url = reverse('billing:customer_portal_short', kwargs={'token': str(client_obj.access_token)})
+        short_res = anon_client.get(short_url)
+        self.assertEqual(short_res.status_code, 302)
+        self.assertIn(str(client_obj.access_token), short_res.url)
+
+        # Check customer bill PDF access without staff login
+        pdf_url = reverse('billing:customer_bill_pdf', kwargs={'token': str(client_obj.access_token), 'bill_id': b1.id})
+        pdf_res = anon_client.get(pdf_url)
+        self.assertEqual(pdf_res.status_code, 200)
+
+    def test_customer_payment_submission_and_staff_verification(self):
+        """Test customer submitting UTR reference and staff verifying it to clear bill"""
+        client_obj = ClientModel.objects.create(
+            name='Khandelwal Jewellers',
+            phone='9893088888',
+        )
+        bill = Bill.objects.create(
+            bill_number='VG-2026-0095',
+            client=client_obj,
+            client_name='Khandelwal Jewellers',
+            placement_type=PlacementType.FRONT_FULL,
+            base_amount=Decimal('8000.00'),
+            discount_amount=Decimal('0.00'),
+            payment_status=PaymentStatus.UNPAID,
+            amount_paid=Decimal('0.00'),
+            created_by=self.user
+        )
+
+        # 1. Customer submits UTR on public portal
+        anon_client = Client()
+        submit_url = reverse('billing:customer_payment_submit', kwargs={'token': str(client_obj.access_token)})
+        post_data = {
+            'bill': bill.id,
+            'amount': '8000.00',
+            'utr_number': 'UTR123456789012',
+            'notes': 'Paid via PhonePe by Ramesh',
+        }
+        submit_res = anon_client.post(submit_url, post_data, follow=True)
+        self.assertEqual(submit_res.status_code, 200)
+
+        # Check submission created in database with status 'pending'
+        from billing.models import PaymentSubmission
+        submission = PaymentSubmission.objects.filter(utr_number='UTR123456789012').first()
+        self.assertIsNotNone(submission)
+        self.assertEqual(submission.status, 'pending')
+        self.assertEqual(submission.amount, Decimal('8000.00'))
+
+        # 2. Staff views bill_detail and verifies payment submission
+        verify_url = reverse('billing:verify_payment_submission', args=[submission.id])
+        verify_res = self.client.post(verify_url, {'action': 'verify'}, follow=True)
+        self.assertEqual(verify_res.status_code, 200)
+
+        # Verify bill is now marked PAID with UTR recorded
+        bill.refresh_from_db()
+        submission.refresh_from_db()
+        self.assertEqual(submission.status, 'verified')
+        self.assertEqual(bill.payment_status, PaymentStatus.PAID)
+        self.assertEqual(bill.amount_paid, Decimal('8000.00'))
+        self.assertEqual(bill.balance_amount, Decimal('0.00'))
+        self.assertIn('UTR123456789012', bill.payment_note)
+
+
 

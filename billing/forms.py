@@ -12,6 +12,7 @@ from billing.models import (
     PAYMENT_STATUS_CHOICES_HI,
     PAYMENT_METHOD_CHOICES_HI,
     BILL_LANG_CHOICES_HI,
+    PaymentSubmission,
 )
 
 
@@ -206,3 +207,33 @@ class BillPaymentUpdateForm(forms.ModelForm):
             self.fields['payment_status'].choices = PaymentStatus.choices
             self.fields['payment_method'].choices = PaymentMethod.choices
             self.fields['payment_note'].widget.attrs['placeholder'] = 'Transaction Reference / UTR / Cheque No.'
+
+
+class CustomerPaymentSubmissionForm(forms.ModelForm):
+    class Meta:
+        model = PaymentSubmission
+        fields = ['bill', 'amount', 'utr_number', 'notes']
+        widgets = {
+            'bill': forms.Select(attrs={'class': 'form-select'}),
+            'amount': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01', 'min': '1', 'required': True}),
+            'utr_number': forms.TextInput(attrs={'class': 'form-control', 'required': True}),
+            'notes': forms.TextInput(attrs={'class': 'form-control'}),
+        }
+
+    def __init__(self, *args, client=None, lang='hi', **kwargs):
+        super().__init__(*args, **kwargs)
+        if client:
+            unpaid_bills = client.get_unpaid_bills()
+            self.fields['bill'].queryset = Bill.objects.filter(id__in=[b.id for b in unpaid_bills])
+            self.fields['bill'].empty_label = 'समस्त बकाया (All Outstanding Dues)' if lang == 'hi' else 'All Outstanding Dues'
+            self.fields['bill'].required = False
+
+        if lang == 'hi':
+            self.fields['amount'].widget.attrs['placeholder'] = 'उदा. 2500'
+            self.fields['utr_number'].widget.attrs['placeholder'] = '12 अंकों का यूटीआर (UTR) या UPI संदर्भ क्रमांक'
+            self.fields['notes'].widget.attrs['placeholder'] = 'प्रेषक का नाम / फ़ोनपे / गूगल पे विवरण (वैकल्पिक)'
+        else:
+            self.fields['amount'].widget.attrs['placeholder'] = 'e.g. 2500'
+            self.fields['utr_number'].widget.attrs['placeholder'] = '12-digit UTR or UPI Reference No.'
+            self.fields['notes'].widget.attrs['placeholder'] = 'Sender Name / GPay / PhonePe Note (Optional)'
+

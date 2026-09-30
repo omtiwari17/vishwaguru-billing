@@ -88,24 +88,33 @@
 ## 4. Current Repository State
 * **Documentation files:** `HLD.md`, `LLD.md`, `PROJECT_CONTEXT.md`, `REQUIREMENTS.md`, `README.md`, `GEMINI.md`.
 * **Git configuration:** `.gitignore` configured for Django, `.env`, SQLite, virtual environments.
-* **Active branch:** `main` tracking `origin/main`.
-* **Code status: Client Memory, Old Pending Due in Bill, and Lowered PDF Layout Complete.**
+* **Active branch:** `feature/customer-statement-portal` (created from `main`).
+* **Code status: Customer Self-Service Statement Portal & Zero-Fee UPI Payment Complete.**
   - Django project (`config`) and billing app (`billing`) active on port 8080.
-  - Models (`Bill`, `PaymentInfo`, `Client`) migrated.
-  - All 12 automated unit tests passed (100% OK).
-  - High-speed **2-Column POS Billing Workstation**:
-    - **Client Autocomplete & Memory:** Suggests past clients dynamically as staff types; auto-fills phone, address, and GSTIN/PAN.
-    - **Old Pending (Previous Due / पुराना बकाया):** Automatically detects unpaid balances for returning clients; 1-click **[Add to Bill]** shortcut updates total payable amount `(Base - Discount) + Previous Due`.
-    - **Step-by-step inputs** on the left with progressive disclosure.
-    - **1-Click Preset Chips** for common ad placements (`Front Full`, `Front Half`, `Front Quarter`, `Inside Half`, `Ear Panel`, `Custom Size`).
-    - **Smart Defaults:** `edition_date` defaults to today (`timezone.localdate()`) with `[ Today ] [ Tomorrow ]` shortcuts; `edition_name` defaults to Indore; `payment_status` defaults to Paid.
-    - **1-Click Status Pills:** `[ Paid in Full ]` (auto-fills total amount), `[ Unpaid ]`, and `[ Partial ]`.
-    - **1-Click Method Pills:** `[ Cash ]`, `[ UPI / QR ]`, `[ Cheque ]`, `[ NEFT ]`.
-    - **Sticky Live POS Invoice Receipt:** Real-time synchronization of client name, placement, edition date, previous due, calculations, balance due, and prominent "Generate Bill & Print" action button.
-    - **Lowered PDF Layout:** A4 invoice positions totals and bank/QR details in the lower section of the page with balanced spacing, eliminating empty void at the bottom.
-    - **Live Dashboard Stats Bar:** Displays Today's Bills, Total Billed, Total Collected, and Pending Due.
-    - **Recent Bills Quick Drawer:** Instant reprint, PDF download, and WhatsApp sharing without leaving the creation screen.
-    - Modern CSS design system with responsive mobile breakpoints and 48px+ touch targets.
+  - Models (`Bill`, `PaymentInfo`, `Client`, `PaymentSubmission`) fully migrated.
+  - All 14 automated unit tests passed (100% OK).
+  - **Customer Self-Service Statement Portal (`/statement/<uuid:token>/` & `/c/<uuid:token>/`):**
+    - Secure, unguessable UUID token per client (`Client.access_token`) — zero login required for clients.
+    - Mobile-first, bilingual statement view (`[ English | हिन्दी ]`).
+    - 4 Financial Ledger Summary Cards: Total Ads Published, Total Billed, Total Paid, and Outstanding Balance Due (कुल शेष बकाया).
+    - Distinct ledger sections: Unpaid/Pending Advertisements vs. Cleared/Paid in Full History.
+    - Public bill PDF download directly from statement portal without staff credentials (`/statement/<token>/bill/<id>/pdf/`).
+    - 1-click verification of online published ads via e-paper link.
+  - **Zero-Fee Native UPI Payment Integration:**
+    - Deep-linking (`upi://pay?pa=...&pn=...&am=...&tn=...&cu=INR`) opens user's installed UPI app (Google Pay, PhonePe, Paytm, BHIM, Cred) with prefilled amount and payee.
+    - Zero intermediary transaction fees (100% direct bank-to-bank settlement).
+    - Dynamic UPI QR Code for desktop/tablet scanning.
+    - Bank details (Account Number, IFSC, UPI ID) with 1-click copy buttons.
+    - Individual bill UPI payment or total balance settlement.
+  - **Customer UTR Submission & Staff Verification Flow:**
+    - Customers submit their 12-digit UTR or UPI reference ID directly on their statement page.
+    - Creates `PaymentSubmission` records in database.
+    - Shows real-time pending verification alert banners on the customer's portal.
+    - Staff dashboard (`/bills/submissions/`) and Bill Detail screen (`/bills/<id>/`) feature 1-click **[ Verify & Confirm Paid ]** action buttons that instantly credit the bill and update payment notes with the UTR.
+  - **Staff Sharing & Management:**
+    - 1-Click WhatsApp statement share button on `bill_detail.html` pre-formatted with balance due and statement URL.
+    - Direct Customer Portal preview link on `bill_detail.html` and `bill_search.html`.
+    - Navigation link to UPI Verifications in top navbar.
 
 ---
 
@@ -126,10 +135,28 @@
 ---
 
 ## 6. Pending Actions / Next Steps
-* Awaiting user testing on:
-  - Client autocomplete suggestions while typing client name.
-  - 1-Click addition of old pending due into bills.
-  - Lowered amount and bank details layout on A4 PDF invoices.
-* When instructed by the user, run `git commit` to commit the codebase (NO push!).
+* Feature implemented and verified on branch `feature/customer-statement-portal`.
+* Automated test suite: 14/14 tests passing.
+* User explicitly instructed to commit and push on this branch.
+
+
+---
+
+## 7. Android Termux Co-Hosting Configuration
+* **Host Device:** Xiaomi Redmi Note 8 Pro (MIUI 12.5.10 / Android 11, arm64-v8a)
+* **Static IP:** `192.168.1.50`, SSH Port: `8022`
+* **Port Isolation:**
+  - Site 1 (Filvora): Port `8000` (`~/Filvora`, log `~/filvora.log`)
+  - Site 2 (Vishwaguru Billing): Port `8080` (`~/vishwaguru-billing`, log `~/vishwaguru-billing.log`, pid `~/vishwaguru-billing.pid`)
+* **Process Isolation:** Strict port-specific control commands (`pkill -f "runserver 0.0.0.0:8080"` or `fuser -k 8080/tcp`) to guarantee Filvora on 8000 is never touched.
+* **SQLite Concurrency on Android:** WAL mode (`PRAGMA journal_mode = WAL;`) and connection timeout (20s) auto-configured in `billing/apps.py` and `config/settings.py`.
+* **Termux Operational Helpers (Global $PREFIX/bin):**
+  - `status` / `update`: Filvora (Site 1, Port 8000).
+  - `status2` (`$PREFIX/bin/status2`): Checks if Vishwaguru Billing is alive on port 8080, checks PID, tests HTTP response at `http://192.168.1.50:8080/`, and prints log or error output.
+  - `update2` (`$PREFIX/bin/update2`): Safely stops port 8080 (`pkill -f "runserver 0.0.0.0:8080"` and `fuser -k 8080/tcp`), runs `git pull` in `~/vishwaguru-billing`, runs migrations, and starts the server in background on port 8080 logging to `~/vishwaguru-billing.log`.
+* **Network & Host Isolation:** `ALLOWED_HOSTS = ['*']` configured by default in `config/settings.py` so any PC on home Wi-Fi (`192.168.1.50`, `filvora`) and all devices on Tailscale (`filvora`, `*.ts.net`, 100.x IPs) connect without `DisallowedHost` blocks.
+* **Cloudflare Tunnel (Custom Domain):**
+  - `SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')` and `USE_X_FORWARDED_HOST = True` configured in `config/settings.py` so HTTPS over Cloudflare Tunnels does not trigger 403 CSRF verification failures.
+  - Tunnel runs on Termux using `cloudflared tunnel run --token <TOKEN>` routing `https://billing.yourdomain.com` to `127.0.0.1:8080`.
 
 

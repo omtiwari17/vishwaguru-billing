@@ -28,10 +28,24 @@
         </div>
 
         <div class="detail-actions" style="display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center;">
-            <!-- WhatsApp Share Button -->
-            <a href="{{ bill.whatsapp_share_url }}" target="_blank" class="btn btn-whatsapp" title="Share via WhatsApp">
-                <i class="bi bi-whatsapp"></i> WhatsApp
+            <!-- WhatsApp Share Bill Button -->
+            <a href="{{ bill.whatsapp_share_url }}" target="_blank" class="btn btn-whatsapp" title="Share Bill via WhatsApp">
+                <i class="bi bi-whatsapp"></i> {% if site_lang == 'hi' %}बिल साझा करें{% else %}Share Bill{% endif %}
             </a>
+
+            <!-- WhatsApp Share Full Statement Button -->
+            {% if whatsapp_portal_share_url %}
+            <a href="{{ whatsapp_portal_share_url }}" target="_blank" class="btn btn-whatsapp" style="background: #059669;" title="Share Full Statement & Ledger on WhatsApp">
+                <i class="bi bi-chat-dots-fill"></i> {% if site_lang == 'hi' %}खाता विवरण साझा करें{% else %}Share Statement{% endif %}
+            </a>
+            {% endif %}
+
+            <!-- Customer Portal Direct Preview Link -->
+            {% if portal_url %}
+            <a href="{{ portal_url }}" target="_blank" class="btn" style="background: #ffffff; border: 1.5px solid var(--accent); color: var(--accent); font-weight: 700; padding: 0.5rem 0.85rem;" title="Open Customer Statement View">
+                <i class="bi bi-person-lines-fill"></i> {% if site_lang == 'hi' %}ग्राहक पोर्टल ↗{% else %}Client Portal ↗{% endif %}
+            </a>
+            {% endif %}
 
             <!-- PDF Language Options -->
             <div class="pdf-btn-group" style="display: inline-flex; border: 1.5px solid var(--border); border-radius: var(--radius-sm); overflow: hidden;">
@@ -56,6 +70,44 @@
             </a>
         </div>
     </div>
+
+    <!-- Client Pending Payment Submissions Alert Banner -->
+    {% if pending_submissions %}
+    <div style="background: #fffbeb; border: 2px solid #f59e0b; border-radius: var(--radius-md); padding: 1rem 1.25rem; margin-bottom: 1.25rem; box-shadow: var(--shadow-sm);">
+        <div style="font-weight: 800; color: #92400e; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem; font-size: 1rem;">
+            <i class="bi bi-bell-fill" style="color: #d97706;"></i>
+            {% if site_lang == 'hi' %}ग्राहक द्वारा यूपीआई भुगतान संदर्भ (UTR) दर्ज किया गया है:{% else %}Client Submitted UPI Payment Verification:{% endif %}
+        </div>
+        {% for sub in pending_submissions %}
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.75rem; background: #ffffff; padding: 0.85rem 1rem; border-radius: var(--radius-sm); border: 1px solid #fde68a; margin-top: 0.5rem;">
+            <div>
+                <strong>UTR / Ref No:</strong> <code style="font-size: 1.05rem; background: #fef08a; padding: 2px 7px; border-radius: 4px; font-weight: 700;">{{ sub.utr_number }}</code>
+                <span style="margin-left: 0.75rem; font-weight: 800; color: var(--success); font-size: 1.05rem;">₹{{ sub.amount|floatformat:2 }}</span>
+                <span style="margin-left: 0.75rem; font-size: 0.825rem; color: var(--text-muted);"><i class="bi bi-clock"></i> {{ sub.submitted_at|date:"d/m/Y H:i" }}</span>
+                {% if sub.notes %}<div style="font-size: 0.825rem; color: var(--text-muted); margin-top: 0.25rem;">टिप्पणी / Note: {{ sub.notes }}</div>{% endif %}
+            </div>
+            <div style="display: flex; gap: 0.5rem;">
+                <form action="{% url 'billing:verify_payment_submission' sub.id %}" method="POST" style="display: inline;">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="verify">
+                    <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                    <button type="submit" class="btn btn-sm" style="background: var(--success); color: #fff; font-weight: 700; padding: 0.45rem 0.85rem; border: none; border-radius: 4px; cursor: pointer;">
+                        <i class="bi bi-check-circle-fill"></i> {% if site_lang == 'hi' %}सत्यापित करें व भुगतान दर्ज करें{% else %}Verify & Confirm Paid{% endif %}
+                    </button>
+                </form>
+                <form action="{% url 'billing:verify_payment_submission' sub.id %}" method="POST" style="display: inline;">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="reject">
+                    <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                    <button type="submit" class="btn btn-sm" style="background: #f1f5f9; color: var(--danger); font-weight: 600; padding: 0.45rem 0.65rem; border: 1px solid var(--border); border-radius: 4px; cursor: pointer;">
+                        <i class="bi bi-x-circle"></i> {% if site_lang == 'hi' %}अस्वीकार{% else %}Reject{% endif %}
+                    </button>
+                </form>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
 
     <!-- Bill Content Breakdown Grid -->
     <div class="detail-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(280px, 100%), 1fr)); gap: 1.25rem;">

@@ -1,5 +1,6 @@
 from decimal import Decimal
 import urllib.parse
+import uuid
 from django.db import models
 from django.contrib.auth.models import User
 from django.utils import timezone
@@ -195,8 +196,15 @@ class PaymentInfo(models.Model):
 class Client(models.Model):
     """
     Client / Advertiser master directory for autocomplete, quick recall,
-    and outstanding pending balance tracking.
+    outstanding pending balance tracking, and customer self-service portal.
     """
+    access_token = models.UUIDField(
+        default=uuid.uuid4,
+        unique=True,
+        editable=False,
+        db_index=True,
+        verbose_name='सुरक्षित पोर्टल टोकन / Access Token'
+    )
     name = models.CharField(
         max_length=200,
         unique=True,
@@ -231,8 +239,80 @@ class Client(models.Model):
     def __str__(self):
         return f"{self.name} ({self.phone or 'No Phone'})"
 
+    def get_all_bills(self):
+        """Fetch all bills associated with this client by ForeignKey or by name."""
+        return Bill.objects.filter(
+            models.Q(client=self) | models.Q(client_name__iexact=self.name)
+        ).order_by('-edition_date', '-id')
+
+    @property
+    def total_billed(self):
+        """Sum of all bills for this client."""
+        bills = self.get_all_bills()
+        return sum((b.total_amount for b in bills), Decimal('0.00'))
+
+    @property
+    def total_paid(self):
+        """Sum of all payments made by this client."""
+        bills = self.get_all_bills()
+        return sum((b.amount_paid for b in bills), Decimal('0.00'))
+
+    @property
+    def total_outstanding(self):
+        """Total unpaid balance due across all bills."""
+        bills = self.get_all_bills()
+        return sum((b.balance_amount for b in bills), Decimal('0.00'))
+
+    def get_unpaid_bills(self):
+        """List of all bills with positive balance due."""
+        return [b for b in self.get_all_bills() if b.balance_amount > Decimal('0.00')]
+
+    def get_paid_bills(self):
+        """List of all fully cleared bills."""
+        return [b for b in self.get_all_bills() if b.balance_amount == Decimal('0.00')]
+
+    def get_portal_url(self, request=None):
+        from django.urls import reverse
+        rel_url = reverse('billing:customer_portal', kwargs={'token': str(self.access_token)})
+        if request:
+            return request.build_absolute_uri(rel_url)
+        return rel_url
+
+    def get_whatsapp_portal_share_url(self, request=None):
+        clean_phone = ''.join(c for c in (self.phone or '') if c.isdigit())
+        if len(clean_phone) == 10:
+            clean_phone = '91' + clean_phone
+
+        portal_url = self.get_portal_url(request)
+        outstanding = self.total_outstanding
+        total_count = len(self.get_all_bills())
+
+        lines = [
+            f"सादर नमस्ते {self.name} जी,",
+            f"*विश्वगुरु समाचार पत्र* में आपके विज्ञापनों का पूरा विवरण व खाता स्टेटमेंट निम्न लिंक पर उपलब्ध है:",
+            f"",
+            f"• कुल विज्ञापन संख्या: {total_count}",
+            f"• कुल शेष बकाया राशि (Outstanding): ₹{outstanding:,.2f}",
+            f"",
+            f"आप नीचे दिए गए लिंक पर जाकर सभी विज्ञापनों का विवरण देख सकते हैं, बिल डाउनलोड कर सकते हैं और सीधे यूपीआई (UPI) से भुगतान कर सकते हैं:",
+            f"{portal_url}",
+            f"",
+            f"धन्यवाद,",
+            f"*विश्वगुरु समाचार पत्र प्रबंधन*",
+        ]
+        msg = "\n".join(lines)
+        return f"https://wa.me/{clean_phone}?text={urllib.parse.quote(msg)}"
+
 
 class Bill(models.Model):
+    client = models.ForeignKey(
+        'Client',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='bills',
+        verbose_name='ग्राहक / Client'
+    )
     bill_number = models.CharField(
         max_length=30,
         unique=True,
@@ -388,6 +468,15 @@ class Bill(models.Model):
         return f"{self.bill_number} - {self.client_name} (₹{self.total_amount})"
 
     def save(self, *args, **kwargs):
+        # Auto-link client if not set and client_name is provided
+        if self.client_name and not self.client_id:
+            try:
+                matched_client = Client.objects.filter(name__iexact=self.client_name.strip()).first()
+                if matched_client:
+                    self.client = matched_client
+            except Exception:
+                pass
+
         # Enforce server-side calculation: (Base - Discount) + Previous Due
         self.base_amount = Decimal(str(self.base_amount or '0.00'))
         self.discount_amount = Decimal(str(self.discount_amount or '0.00'))
@@ -435,14 +524,18 @@ class Bill(models.Model):
     def bill_language_hindi(self):
         return dict(BILL_LANG_CHOICES_HI).get(self.bill_language, self.bill_language)
 
-    @property
-    def whatsapp_share_url(self):
+    def get_whatsapp_share_url(self, request=None):
         """
-        Generate a pre-filled direct WhatsApp message URL in English or Hindi.
+        Generate a pre-filled direct WhatsApp message URL in English or Hindi,
+        including customer statement and online payment link if available.
         """
         clean_phone = ''.join(c for c in (self.client_phone or '') if c.isdigit())
         if len(clean_phone) == 10:
             clean_phone = '91' + clean_phone
+
+        portal_url = ""
+        if self.client:
+            portal_url = self.client.get_portal_url(request)
 
         if self.bill_language == 'en':
             lines = [
@@ -465,6 +558,8 @@ class Bill(models.Model):
             ])
             if self.epaper_link:
                 lines.append(f"• *Epaper Verification:* {self.epaper_link}")
+            if portal_url:
+                lines.append(f"• *View Statement & Pay Online:* {portal_url}")
             lines.extend([
                 "",
                 "Please review the invoice and complete payment.",
@@ -491,6 +586,8 @@ class Bill(models.Model):
             ])
             if self.epaper_link:
                 lines.append(f"• *ई-पेपर लिंक:* {self.epaper_link}")
+            if portal_url:
+                lines.append(f"• *खाता विवरण व ऑनलाइन भुगतान:* {portal_url}")
             lines.extend([
                 "",
                 "कृपया बिल का अवलोकन कर भुगतान सुनिश्चित करें।",
@@ -501,3 +598,85 @@ class Bill(models.Model):
         msg = "\n".join(lines)
         encoded_msg = urllib.parse.quote(msg)
         return f"https://wa.me/{clean_phone}?text={encoded_msg}"
+
+    @property
+    def whatsapp_share_url(self):
+        return self.get_whatsapp_share_url()
+
+
+class PaymentSubmission(models.Model):
+    """
+    Customer-submitted UPI payment reference for staff verification.
+    Customers submit their 12-digit UTR on the public statement portal.
+    """
+    STATUS_CHOICES = [
+        ('pending', 'सत्यापन लंबित (Pending Verification)'),
+        ('verified', 'सत्यापित (Verified)'),
+        ('rejected', 'अस्वीकृत (Rejected)'),
+    ]
+
+    client = models.ForeignKey(
+        Client,
+        on_delete=models.CASCADE,
+        related_name='payment_submissions',
+        verbose_name='ग्राहक / Client'
+    )
+    bill = models.ForeignKey(
+        Bill,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='payment_submissions',
+        verbose_name='संबंधित बिल / Related Bill'
+    )
+    amount = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        verbose_name='भुगतान राशि / Paid Amount (₹)'
+    )
+    utr_number = models.CharField(
+        max_length=64,
+        verbose_name='यूटीआर / यूपीआई संदर्भ क्रमांक / UTR or UPI Reference No.'
+    )
+    payment_method = models.CharField(
+        max_length=30,
+        default='UPI',
+        verbose_name='भुगतान माध्यम / Method'
+    )
+    notes = models.TextField(
+        blank=True,
+        default='',
+        verbose_name='टिप्पणी / Client Note'
+    )
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default='pending',
+        verbose_name='सत्यापन स्थिति / Status'
+    )
+    submitted_at = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name='जमा समय / Submitted At'
+    )
+    verified_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        verbose_name='सत्यापन समय / Verified At'
+    )
+    verified_by = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='verified_submissions',
+        verbose_name='सत्यापनकर्ता / Verified By'
+    )
+
+    class Meta:
+        ordering = ['-submitted_at']
+        verbose_name = 'ग्राहक भुगतान संदर्भ (Payment Submission)'
+        verbose_name_plural = 'ग्राहक भुगतान संदर्भ (Payment Submissions)'
+
+    def __str__(self):
+        return f"{self.client.name} - UTR: {self.utr_number} (₹{self.amount}) [{self.status}]"
+

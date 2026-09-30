@@ -929,7 +929,7 @@ body {
     }
     .billing-receipt-pane {
         position: static;
-        order: -1;
+        order: 2;
     }
     .receipt-card {
         box-shadow: var(--shadow-sm);
@@ -944,13 +944,13 @@ body {
     /* --- Navbar Compact Mobile Layout --- */
     .nav-container {
         flex-direction: column;
-        gap: 0.5rem;
+        gap: 0.4rem;
         align-items: stretch;
         padding: 0.5rem 0.75rem;
     }
 
     .brand-link {
-        justify-content: center;
+        justify-content: flex-start;
     }
 
     .brand-link img {
@@ -969,17 +969,19 @@ body {
     .nav-links {
         width: 100%;
         display: flex;
-        justify-content: center;
+        justify-content: space-between;
+        align-items: center;
         flex-wrap: wrap;
-        gap: 0.3rem;
-        padding-top: 0.35rem;
+        gap: 0.35rem;
+        padding-top: 0.4rem;
         border-top: 1px solid #f1f5f9;
     }
 
     .nav-item {
-        font-size: 0.75rem;
-        padding: 0.4rem 0.6rem;
+        font-size: 0.775rem;
+        padding: 0.4rem 0.65rem;
         flex: 0 0 auto;
+        border-radius: 6px;
     }
 
     .nav-user {

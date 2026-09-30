@@ -15,7 +15,6 @@ document.addEventListener('DOMContentLoaded', function () {
     const clientPhoneInput = document.getElementById('id_client_phone');
     const clientAddressInput = document.getElementById('id_client_address');
     const clientGstinInput = document.getElementById('id_client_gstin');
-    const clientAddressDetails = document.getElementById('client_address_details');
     const clientSuggestionsBox = document.getElementById('client_suggestions_box');
     const clientPendingAlert = document.getElementById('client_pending_alert');
     const clientPendingAmountBadge = document.getElementById('client_pending_amount_badge');
@@ -322,11 +321,6 @@ document.addEventListener('DOMContentLoaded', function () {
                                 if (clientPhoneInput) clientPhoneInput.value = c.phone || '';
                                 if (clientAddressInput) clientAddressInput.value = c.address || '';
                                 if (clientGstinInput) clientGstinInput.value = c.gstin || '';
-
-                                // If address or GSTIN exists, open the progressive disclosure details drawer
-                                if ((c.address || c.gstin) && clientAddressDetails) {
-                                    clientAddressDetails.open = true;
-                                }
 
                                 // Sync client name to receipt
                                 syncClientAndAdDetails();

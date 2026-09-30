@@ -8,11 +8,24 @@ from django.db.models import Q, Sum, Count
 from django.core.paginator import Paginator
 from django.utils import timezone
 
-from billing.models import Bill, PaymentInfo, PaymentStatus, PAYMENT_STATUS_CHOICES_HI, Client
-from billing.forms import BillForm, BillPaymentUpdateForm
+from billing.models import (
+    Bill,
+    PaymentInfo,
+    PaymentStatus,
+    PAYMENT_STATUS_CHOICES_HI,
+    Client,
+    PaymentSubmission,
+    PaymentMethod,
+)
+from billing.forms import (
+    BillForm,
+    BillPaymentUpdateForm,
+    CustomerPaymentSubmissionForm,
+)
 from billing.utils import (
     generate_bill_number,
     generate_upi_qr_base64,
+    get_upi_intent_url,
     amount_in_words_bilingual,
 )
 
@@ -31,11 +44,10 @@ def bill_create(request):
             bill = form.save(commit=False)
             bill.created_by = request.user
             bill.bill_number = generate_bill_number()
-            bill.save()
 
-            # Automatically remember / update client master record
+            # Automatically remember / update client master record & link to bill
             if bill.client_name:
-                Client.objects.update_or_create(
+                client_obj, _ = Client.objects.update_or_create(
                     name=bill.client_name.strip(),
                     defaults={
                         'phone': bill.client_phone or '',
@@ -43,6 +55,9 @@ def bill_create(request):
                         'gstin': bill.client_gstin or '',
                     }
                 )
+                bill.client = client_obj
+
+            bill.save()
 
             msg = (
                 f"बिल सफलतापूर्वक बनाया गया! बिल क्रमांक: {bill.bill_number}"
@@ -88,6 +103,7 @@ def bill_create(request):
 def bill_detail(request, pk):
     """
     Display complete bill details, payment actions, and WhatsApp share button.
+    Includes customer portal statement link and checks for client payment submissions.
     """
     bill = get_object_or_404(Bill, pk=pk)
     payment_info = PaymentInfo.get_solo()
@@ -97,18 +113,35 @@ def bill_detail(request, pk):
         upi_id=payment_info.upi_id,
         payee_name=payment_info.account_holder_name or payment_info.newspaper_name,
         amount=bill.balance_amount if bill.balance_amount > 0 else bill.total_amount,
-        bill_number=bill.bill_number,
+        bill_number_or_note=bill.bill_number,
     )
+
+    # Pending submissions from customer for this bill or client
+    pending_submissions = []
+    client_obj = bill.client
+    if not client_obj and bill.client_name:
+        client_obj = Client.objects.filter(name__iexact=bill.client_name.strip()).first()
+        if client_obj and not bill.client:
+            bill.client = client_obj
+            bill.save(update_fields=['client'])
+
+    if client_obj:
+        pending_submissions = client_obj.payment_submissions.filter(status='pending')
 
     site_lang = request.session.get('site_lang', 'en')
     context = {
         'bill': bill,
+        'client': client_obj,
         'payment_info': payment_info,
         'amount_words': amount_words,
         'qr_code_base64': qr_code_base64,
         'payment_form': BillPaymentUpdateForm(instance=bill, site_lang=site_lang),
+        'pending_submissions': pending_submissions,
+        'portal_url': client_obj.get_portal_url(request) if client_obj else "",
+        'whatsapp_portal_share_url': client_obj.get_whatsapp_portal_share_url(request) if client_obj else "",
     }
     return render(request, 'billing/bill_detail.html', context)
+
 
 
 @login_required
@@ -295,3 +328,253 @@ def client_search_api(request):
         })
 
     return JsonResponse({'clients': data})
+
+
+def customer_portal(request, token):
+    """
+    Public, secure, tokenized statement portal for customers.
+    Shows complete advertisement ledger: which ads are unpaid/due, which are paid,
+    total outstanding balance, zero-fee direct UPI payment intent & QR code,
+    and a UTR verification submission form.
+    """
+    client = get_object_or_404(Client, access_token=token)
+    lang = request.GET.get('lang', 'hi')
+    if lang not in ('en', 'hi'):
+        lang = 'hi'
+
+    payment_info = PaymentInfo.get_solo()
+    all_bills = client.get_all_bills()
+    unpaid_bills = client.get_unpaid_bills()
+    paid_bills = client.get_paid_bills()
+
+    total_billed = client.total_billed
+    total_paid = client.total_paid
+    total_outstanding = client.total_outstanding
+
+    # Direct UPI Intent link and QR Code for total outstanding balance
+    payee_name = payment_info.account_holder_name or payment_info.newspaper_name
+    upi_total_intent = ""
+    upi_total_qr = None
+    if total_outstanding > Decimal('0.00'):
+        clean_name = client.name.replace('&', 'and')
+        upi_total_intent = get_upi_intent_url(
+            upi_id=payment_info.upi_id,
+            payee_name=payee_name,
+            amount=total_outstanding,
+            transaction_note=f"VG Dues {clean_name[:15]}"
+        )
+        upi_total_qr = generate_upi_qr_base64(
+            upi_id=payment_info.upi_id,
+            payee_name=payee_name,
+            amount=total_outstanding,
+            bill_number_or_note=f"VG Dues - {clean_name}"
+        )
+
+    # Attach UPI intent and QR to individual unpaid bills
+    for b in unpaid_bills:
+        b.upi_intent = get_upi_intent_url(
+            upi_id=payment_info.upi_id,
+            payee_name=payee_name,
+            amount=b.balance_amount,
+            transaction_note=f"{b.bill_number}"
+        )
+        b.upi_qr = generate_upi_qr_base64(
+            upi_id=payment_info.upi_id,
+            payee_name=payee_name,
+            amount=b.balance_amount,
+            bill_number_or_note=b.bill_number
+        )
+
+    # Pending UTR submissions from client awaiting staff review
+    pending_submissions = client.payment_submissions.filter(status='pending')
+
+    submission_form = CustomerPaymentSubmissionForm(
+        client=client,
+        lang=lang,
+        initial={'amount': total_outstanding if total_outstanding > 0 else ''}
+    )
+
+    context = {
+        'client': client,
+        'payment_info': payment_info,
+        'all_bills': all_bills,
+        'unpaid_bills': unpaid_bills,
+        'paid_bills': paid_bills,
+        'total_billed': total_billed,
+        'total_paid': total_paid,
+        'total_outstanding': total_outstanding,
+        'upi_total_intent': upi_total_intent,
+        'upi_total_qr': upi_total_qr,
+        'pending_submissions': pending_submissions,
+        'submission_form': submission_form,
+        'lang': lang,
+    }
+    return render(request, 'billing/customer_portal.html', context)
+
+
+def customer_portal_short(request, token):
+    """
+    Short URL redirect: /c/<uuid:token>/ -> /statement/<uuid:token>/
+    """
+    lang = request.GET.get('lang', '')
+    url = redirect('billing:customer_portal', token=token).url
+    if lang:
+        url = f"{url}?lang={lang}"
+    return redirect(url)
+
+
+def customer_payment_submit(request, token):
+    """
+    Handles customer UTR submission from the public statement portal.
+    """
+    client = get_object_or_404(Client, access_token=token)
+    lang = request.GET.get('lang', 'hi')
+
+    if request.method == 'POST':
+        form = CustomerPaymentSubmissionForm(request.POST, client=client, lang=lang)
+        if form.is_valid():
+            sub = form.save(commit=False)
+            sub.client = client
+            sub.status = 'pending'
+            sub.save()
+
+            if lang == 'hi':
+                msg = f"धन्यवाद! आपका यूटीआर संदर्भ क्रमांक ({sub.utr_number}) सफलतापूर्वक दर्ज हो गया है। सत्यापन के बाद आपका खाता स्वतः अद्यतन हो जाएगा।"
+            else:
+                msg = f"Thank you! Your payment reference ({sub.utr_number}) has been submitted. Our accounts team will verify and update your statement shortly."
+            messages.success(request, msg)
+        else:
+            if lang == 'hi':
+                messages.error(request, "कृपया सही राशि और यूटीआर संख्या दर्ज करें।")
+            else:
+                messages.error(request, "Please enter a valid amount and UTR reference number.")
+
+    return redirect(f"{client.get_portal_url()}?lang={lang}")
+
+
+def customer_bill_pdf(request, token, bill_id):
+    """
+    Allows a customer to download/view their bill PDF via their secure token
+    without needing staff login credentials.
+    """
+    client = get_object_or_404(Client, access_token=token)
+    bill = get_object_or_404(
+        Bill.objects.filter(
+            Q(client=client) | Q(client_name__iexact=client.name)
+        ),
+        pk=bill_id
+    )
+
+    payment_info = PaymentInfo.get_solo()
+    amount_words = amount_in_words_bilingual(bill.total_amount)
+    payable_for_qr = bill.balance_amount if bill.balance_amount > 0 else bill.total_amount
+    qr_code_base64 = generate_upi_qr_base64(
+        upi_id=payment_info.upi_id,
+        payee_name=payment_info.account_holder_name or payment_info.newspaper_name,
+        amount=payable_for_qr,
+        bill_number_or_note=bill.bill_number,
+    )
+
+    pdf_lang = request.GET.get('lang', getattr(bill, 'bill_language', 'en') or 'en')
+
+    context = {
+        'bill': bill,
+        'payment_info': payment_info,
+        'amount_words': amount_words,
+        'qr_code_base64': qr_code_base64,
+        'pdf_lang': pdf_lang,
+        'request': request,
+    }
+
+    html_content = render_to_string('billing/bill_pdf.html', context, request=request)
+
+    try:
+        from weasyprint import HTML
+        base_url = request.build_absolute_uri('/')
+        pdf_file = HTML(string=html_content, base_url=base_url).write_pdf()
+
+        response = HttpResponse(pdf_file, content_type='application/pdf')
+        filename = f"{bill.bill_number}.pdf"
+        if request.GET.get('download') == '1':
+            response['Content-Disposition'] = f'attachment; filename="{filename}"'
+        else:
+            response['Content-Disposition'] = f'inline; filename="{filename}"'
+        return response
+    except Exception as e:
+        return render(request, 'billing/bill_pdf.html', context)
+
+
+@login_required
+def verify_payment_submission(request, submission_id):
+    """
+    Staff action to verify or reject a customer payment submission.
+    """
+    submission = get_object_or_404(PaymentSubmission, pk=submission_id)
+    action = request.POST.get('action', 'verify')
+    site_lang = request.session.get('site_lang', 'en')
+
+    if action == 'verify':
+        submission.status = 'verified'
+        submission.verified_at = timezone.now()
+        submission.verified_by = request.user
+        submission.save()
+
+        # Apply payment to bill
+        bill = submission.bill
+        if not bill:
+            unpaid = submission.client.get_unpaid_bills()
+            bill = unpaid[0] if unpaid else None
+
+        if bill:
+            bill.amount_paid = (bill.amount_paid or Decimal('0.00')) + submission.amount
+            if bill.amount_paid >= bill.total_amount:
+                bill.payment_status = PaymentStatus.PAID
+            else:
+                bill.payment_status = PaymentStatus.PARTIAL
+            bill.payment_method = PaymentMethod.UPI
+            note_suffix = f"Portal UTR: {submission.utr_number}"
+            bill.payment_note = f"{bill.payment_note}; {note_suffix}" if bill.payment_note else note_suffix
+            bill.save()
+
+        msg = (
+            f"यूटीआर {submission.utr_number} (₹{submission.amount}) सत्यापित कर दिया गया है।"
+            if site_lang == 'hi'
+            else f"UTR {submission.utr_number} for ₹{submission.amount} has been verified and applied to bill."
+        )
+        messages.success(request, msg)
+
+    elif action == 'reject':
+        submission.status = 'rejected'
+        submission.verified_at = timezone.now()
+        submission.verified_by = request.user
+        submission.save()
+
+        msg = (
+            f"यूटीआर {submission.utr_number} अस्वीकृत कर दिया गया है।"
+            if site_lang == 'hi'
+            else f"Payment submission {submission.utr_number} was rejected."
+        )
+        messages.warning(request, msg)
+
+    next_url = request.POST.get('next') or request.META.get('HTTP_REFERER') or '/bills/search/'
+    return redirect(next_url)
+
+
+@login_required
+def payment_submissions_list(request):
+    """
+    Staff view to review all customer payment submissions.
+    """
+    status_filter = request.GET.get('status', 'pending')
+    submissions = PaymentSubmission.objects.select_related('client', 'bill', 'verified_by').all()
+    if status_filter in ('pending', 'verified', 'rejected'):
+        submissions = submissions.filter(status=status_filter)
+
+    site_lang = request.session.get('site_lang', 'en')
+    context = {
+        'submissions': submissions,
+        'status_filter': status_filter,
+        'title': 'ग्राहक यूपीआई भुगतान सत्यापन' if site_lang == 'hi' else 'Customer UPI Payment Submissions',
+    }
+    return render(request, 'billing/payment_submissions_list.html', context)
+

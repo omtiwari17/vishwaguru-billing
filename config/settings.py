@@ -18,10 +18,11 @@ SECRET_KEY = os.getenv(
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv('DEBUG', 'True').lower() in ('true', '1', 't')
 
-allowed_hosts_env = os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1,*.trycloudflare.com')
-ALLOWED_HOSTS = [h.strip() for h in allowed_hosts_env.split(',') if h.strip()]
-if DEBUG and 'testserver' not in ALLOWED_HOSTS:
-    ALLOWED_HOSTS.append('testserver')
+allowed_hosts_env = os.getenv('ALLOWED_HOSTS', '*')
+if allowed_hosts_env.strip() == '*':
+    ALLOWED_HOSTS = ['*']
+else:
+    ALLOWED_HOSTS = [h.strip() for h in allowed_hosts_env.split(',') if h.strip()]
 
 CSRF_TRUSTED_ORIGINS = [
     'https://*.trycloudflare.com',
@@ -29,11 +30,31 @@ CSRF_TRUSTED_ORIGINS = [
     'http://127.0.0.1:8000',
     'http://localhost:8001',
     'http://127.0.0.1:8001',
+    'http://192.168.1.50:8000',
+    'http://192.168.1.50:8001',
     'http://localhost:8080',
     'http://127.0.0.1:8080',
+    'http://192.168.1.50:8080',
+    'http://filvora:8080',
+    'http://filvora.local:8080',
+    'http://*.ts.net',
+    'https://*.ts.net',
+    'http://*.ts.net:8080',
+    'https://*.ts.net:8080',
     'http://localhost:8088',
     'http://127.0.0.1:8088',
 ]
+
+csrf_env = os.getenv('CSRF_TRUSTED_ORIGINS', '')
+if csrf_env:
+    for origin in csrf_env.split(','):
+        cleaned = origin.strip()
+        if cleaned and cleaned not in CSRF_TRUSTED_ORIGINS:
+            CSRF_TRUSTED_ORIGINS.append(cleaned)
+
+# Reverse proxy / Cloudflare Tunnel SSL & Host headers
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+USE_X_FORWARDED_HOST = True
 
 # Application definition
 INSTALLED_APPS = [
@@ -98,6 +119,9 @@ else:
         'default': {
             'ENGINE': 'django.db.backends.sqlite3',
             'NAME': BASE_DIR / 'db.sqlite3',
+            'OPTIONS': {
+                'timeout': 20,
+            },
         }
     }
 
