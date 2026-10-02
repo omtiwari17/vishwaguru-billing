@@ -14,7 +14,11 @@ from billing.models import (
     PAYMENT_METHOD_CHOICES_HI,
     BILL_LANG_CHOICES_HI,
     PaymentSubmission,
+    PAYMENT_METHOD_CHOICES_HI,
+    BILL_LANG_CHOICES_HI,
+    PaymentSubmission,
     PaymentInfo,
+
 )
 
 
@@ -239,7 +243,6 @@ class CustomerPaymentSubmissionForm(forms.ModelForm):
             self.fields['utr_number'].widget.attrs['placeholder'] = '12-digit UTR or UPI Reference No.'
             self.fields['notes'].widget.attrs['placeholder'] = 'Sender Name / GPay / PhonePe Note (Optional)'
 
-
 class PaymentInfoForm(forms.ModelForm):
     class Meta:
         model = PaymentInfo
@@ -338,5 +341,4 @@ class PaymentInfoForm(forms.ModelForm):
         if len(clean_acc) < 6:
             raise forms.ValidationError('Account number is too short.' if self.site_lang != 'hi' else 'खाता संख्या बहुत छोटी है।')
         return clean_acc
-
 

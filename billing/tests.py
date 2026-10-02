@@ -427,7 +427,6 @@ class VishwaguruBillingTests(TestCase):
         self.assertIn('UTR123456789012', bill.payment_note)
 
     def test_dashboard_view_authenticated(self):
-        """Test staff accessing the dashboard after login"""
         Bill.objects.create(
             bill_number='VG-2026-0099',
             client_name='Test Advertiser Ltd',
@@ -450,7 +449,6 @@ class VishwaguruBillingTests(TestCase):
         self.assertIn('recent_bills', response.context)
 
     def test_dashboard_view_unauthenticated(self):
-        """Test unauthenticated client redirected to login when accessing dashboard"""
         anon_client = Client()
         url = reverse('billing:dashboard')
         response = anon_client.get(url)
@@ -458,24 +456,20 @@ class VishwaguruBillingTests(TestCase):
         self.assertIn('/login/', response.url)
 
     def test_root_redirects_to_dashboard(self):
-        """Test root URL '/' redirects to dashboard"""
         response = self.client.get('/', follow=False)
         self.assertEqual(response.status_code, 302)
         self.assertEqual(response.url, reverse('billing:dashboard'))
 
     def test_payment_info_encryption_at_rest(self):
-        """Test sensitive bank account number is encrypted on disk and decrypted in Python"""
         from django.db import connection
         payment_info = PaymentInfo.get_solo()
         payment_info.account_number = '987654321098'
         payment_info.save()
 
-        # Check Python model transparently decrypts
         reloaded = PaymentInfo.objects.get(id=payment_info.id)
         self.assertEqual(reloaded.account_number, '987654321098')
         self.assertTrue(reloaded.masked_account_number.endswith('1098'))
 
-        # Inspect raw SQL column to ensure it is encrypted ciphertext
         with connection.cursor() as cursor:
             cursor.execute('SELECT account_number FROM billing_paymentinfo WHERE id = %s', [payment_info.id])
             raw_in_db = cursor.fetchone()[0]
@@ -483,15 +477,12 @@ class VishwaguruBillingTests(TestCase):
         self.assertNotIn('987654321098', raw_in_db)
 
     def test_payment_info_settings_view(self):
-        """Test viewing and updating bank details & UPI ID via settings page"""
         url = reverse('billing:payment_info_settings')
 
-        # GET request
         get_res = self.client.get(url)
         self.assertEqual(get_res.status_code, 200)
         self.assertContains(get_res, 'vishwaguru@sbi')
 
-        # POST update request
         post_data = {
             'newspaper_name': 'विश्वगुरु (Vishwaguru)',
             'tagline': 'दैनिक समाचार पत्र',
@@ -508,7 +499,6 @@ class VishwaguruBillingTests(TestCase):
         post_res = self.client.post(url, post_data, follow=True)
         self.assertEqual(post_res.status_code, 200)
 
-        # Verify updated values in singleton
         updated_info = PaymentInfo.get_solo()
         self.assertEqual(updated_info.bank_name, 'HDFC Bank')
         self.assertEqual(updated_info.account_number, '50100234567890')
@@ -516,13 +506,11 @@ class VishwaguruBillingTests(TestCase):
         self.assertEqual(updated_info.upi_id, 'vishwaguru@hdfc')
 
     def test_payment_info_settings_unauthenticated(self):
-        """Test unauthenticated client redirected from settings to login"""
         anon_client = Client()
         url = reverse('billing:payment_info_settings')
         response = anon_client.get(url)
         self.assertEqual(response.status_code, 302)
         self.assertIn('/login/', response.url)
-
 
 
 

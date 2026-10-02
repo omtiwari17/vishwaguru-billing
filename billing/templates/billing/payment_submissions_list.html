@@ -25,15 +25,23 @@
                 <a href="{% url 'billing:bill_create' %}" class="nav-item">
                     <i class="bi bi-plus-circle"></i> {% if site_lang == 'hi' %}नया बिल{% else %}New Bill{% endif %}
                 </a>
+
+                <a href="{% url 'billing:bill_create' %}" class="nav-item">
+                    <i class="bi bi-plus-circle"></i> {% if site_lang == 'hi' %}नया बिल{% else %}New Bill{% endif %}
+                </a>
                 <a href="{% url 'billing:bill_search' %}" class="nav-item">
                     <i class="bi bi-search"></i> {% if site_lang == 'hi' %}बिल सूची{% else %}Search Bills{% endif %}
                 </a>
                 <a href="{% url 'billing:payment_submissions_list' %}" class="nav-item active">
                     <i class="bi bi-wallet2"></i> {% if site_lang == 'hi' %}भुगतान सत्यापन{% else %}UPI Verifications{% endif %}
                 </a>
-                <a href="{% url 'billing:payment_info_settings' %}" class="nav-item">
-                    <i class="bi bi-bank"></i> {% if site_lang == 'hi' %}बैंक व UPI{% else %}Bank & UPI{% endif %}
+                <a href="{% url 'billing:payment_submissions_list' %}" class="nav-item active">
+                    <i class="bi bi-wallet2"></i> {% if site_lang == 'hi' %}भुगतान सत्यापन{% else %}UPI Verifications{% endif %}
                 </a>
+                <a href="{% url 'billing:payment_info_settings' %}" class="nav-item">
+                    <i class="bi bi-bank"></i> {% if site_lang == 'hi' %}बैंक व UPI{% else %}Bank &amp; UPI{% endif %}
+                </a>
+
                 <a href="{% url 'admin:index' %}" class="nav-item" target="_blank">
                     <i class="bi bi-gear"></i> Admin
                 </a>

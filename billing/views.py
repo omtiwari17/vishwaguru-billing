@@ -21,7 +21,11 @@ from billing.forms import (
     BillForm,
     BillPaymentUpdateForm,
     CustomerPaymentSubmissionForm,
+    BillForm,
+    BillPaymentUpdateForm,
+    CustomerPaymentSubmissionForm,
     PaymentInfoForm,
+
 )
 from billing.utils import (
     generate_bill_number,
@@ -705,13 +709,8 @@ def payment_submissions_list(request):
     }
     return render(request, 'billing/payment_submissions_list.html', context)
 
-
 @login_required
 def payment_info_settings(request):
-    """
-    Staff / admin settings page to view and update official bank details & UPI ID.
-    Supports live UPI QR preview and AES-256 transparent encryption of bank account number.
-    """
     site_lang = request.session.get('site_lang', 'en')
     payment_info = PaymentInfo.get_solo()
 
@@ -729,7 +728,6 @@ def payment_info_settings(request):
     else:
         form = PaymentInfoForm(instance=payment_info, site_lang=site_lang)
 
-    # Dynamic test QR code for current UPI ID (e.g. ₹100 test amount)
     test_qr_base64 = None
     if payment_info.upi_id:
         test_qr_base64 = generate_upi_qr_base64(
@@ -746,5 +744,4 @@ def payment_info_settings(request):
         'title': 'बैंक खाता व यूपीआई सेटिंग्स' if site_lang == 'hi' else 'Bank & UPI Settings',
     }
     return render(request, 'billing/payment_info_settings.html', context)
-
 

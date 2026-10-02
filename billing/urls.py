@@ -22,8 +22,12 @@ urlpatterns = [
     # Staff Verification for Customer UPI Payments
     path('submissions/', views.payment_submissions_list, name='payment_submissions_list'),
     path('submissions/<int:submission_id>/verify/', views.verify_payment_submission, name='verify_payment_submission'),
+    # Staff Verification for Customer UPI Payments
+    path('submissions/', views.payment_submissions_list, name='payment_submissions_list'),
+    path('submissions/<int:submission_id>/verify/', views.verify_payment_submission, name='verify_payment_submission'),
 
     # Bank Details & UPI ID Management with Field-Level Encryption
     path('settings/payment-info/', views.payment_info_settings, name='payment_info_settings'),
+
 ]
 
