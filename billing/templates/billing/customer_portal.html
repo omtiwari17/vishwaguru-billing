@@ -1,0 +1,1126 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="{{ lang|default:'hi' }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ client.name }} | {% if lang == 'hi' %}खाता स्टेटमेंट व ऑनलाइन भुगतान | विश्वगुरु समाचार पत्र{% else %}Account Statement & UPI Payment | Vishwaguru Newspaper{% endif %}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+Devanagari:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    
+    <style>
+        :root {
+            --primary: #b91c1c;
+            --primary-hover: #991b1b;
+            --primary-light: #fef2f2;
+            --secondary: #1e293b;
+            --accent: #2563eb;
+            --success: #15803d;
+            --success-light: #f0fdf4;
+            --warning: #b45309;
+            --warning-light: #fffbeb;
+            --danger: #dc2626;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --border: #e2e8f0;
+            --bg-page: #f8fafc;
+            --card-bg: #ffffff;
+            --radius-sm: 8px;
+            --radius-md: 14px;
+            --radius-lg: 20px;
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.06);
+            --shadow-md: 0 4px 14px rgba(0,0,0,0.08);
+            --shadow-lg: 0 10px 25px rgba(0,0,0,0.1);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', 'Noto Sans Devanagari', -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: var(--bg-page);
+            color: var(--text-main);
+            line-height: 1.5;
+            -webkit-font-smoothing: antialiased;
+            padding-bottom: 3rem;
+        }
+
+        .portal-header {
+            background: #ffffff;
+            border-bottom: 2px solid var(--border);
+            box-shadow: var(--shadow-sm);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .portal-header-container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 0.85rem 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+        }
+
+        .portal-brand {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .portal-brand img {
+            height: 42px;
+            max-width: 170px;
+            object-fit: contain;
+        }
+
+        .portal-brand-text h1 {
+            font-size: 1.1rem;
+            font-weight: 800;
+            color: var(--primary);
+            line-height: 1.2;
+        }
+
+        .portal-brand-text p {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+
+        .lang-switch {
+            display: inline-flex;
+            background: #f1f5f9;
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 3px;
+            font-size: 0.8rem;
+            font-weight: 700;
+        }
+
+        .lang-switch a {
+            text-decoration: none;
+            padding: 4px 10px;
+            border-radius: 16px;
+            color: var(--text-muted);
+            transition: all 0.15s ease;
+        }
+
+        .lang-switch a.active {
+            background: var(--primary);
+            color: #ffffff;
+            box-shadow: 0 1px 3px rgba(185, 28, 28, 0.3);
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 1.25rem auto 0;
+            padding: 0 1rem;
+        }
+
+        /* Client Welcome Banner */
+        .client-card {
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+            color: #ffffff;
+            border-radius: var(--radius-lg);
+            padding: 1.5rem;
+            box-shadow: var(--shadow-md);
+            margin-bottom: 1.5rem;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            gap: 1.25rem;
+        }
+
+        .client-info h2 {
+            font-size: 1.45rem;
+            font-weight: 800;
+            letter-spacing: -0.01em;
+            margin-bottom: 0.35rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .client-meta {
+            font-size: 0.875rem;
+            color: #cbd5e1;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .client-meta span {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+        }
+
+        .statement-badge {
+            background: rgba(255, 255, 255, 0.12);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 0.5rem 1rem;
+            border-radius: 30px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: #e2e8f0;
+            text-align: right;
+        }
+
+        /* 4 Stats Cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .stat-card {
+            background: #ffffff;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: 1.15rem;
+            box-shadow: var(--shadow-sm);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .stat-card .label {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            margin-bottom: 0.4rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .stat-card .value {
+            font-size: 1.65rem;
+            font-weight: 800;
+            color: var(--text-main);
+            line-height: 1.1;
+        }
+
+        .stat-card.due {
+            border: 2px solid #fca5a5;
+            background: #fff5f5;
+        }
+
+        .stat-card.due .label {
+            color: var(--danger);
+        }
+
+        .stat-card.due .value {
+            color: var(--danger);
+        }
+
+        .stat-card.cleared {
+            border: 2px solid #86efac;
+            background: #f0fdf4;
+        }
+
+        .stat-card.cleared .label {
+            color: var(--success);
+        }
+
+        .stat-card.cleared .value {
+            color: var(--success);
+        }
+
+        /* UPI Payment Center */
+        .payment-box {
+            background: #ffffff;
+            border: 2px solid #fecaca;
+            border-radius: var(--radius-lg);
+            padding: 1.5rem;
+            box-shadow: var(--shadow-md);
+            margin-bottom: 1.75rem;
+        }
+
+        .payment-box-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+            margin-bottom: 1.25rem;
+            padding-bottom: 0.85rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .payment-box-title {
+            font-size: 1.2rem;
+            font-weight: 800;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .zero-fee-pill {
+            background: #dcfce7;
+            color: #166534;
+            font-size: 0.75rem;
+            font-weight: 700;
+            padding: 0.25rem 0.65rem;
+            border-radius: 20px;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+            border: 1px solid #bbf7d0;
+        }
+
+        .upi-action-grid {
+            display: grid;
+            grid-template-columns: 1.3fr 1fr;
+            gap: 1.5rem;
+            align-items: start;
+        }
+
+        @media (max-width: 768px) {
+            .upi-action-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .btn-upi-large {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
+            background: linear-gradient(135deg, #16a34a 0%, #15803d 100%);
+            color: #ffffff !important;
+            text-decoration: none;
+            padding: 1.1rem 1.5rem;
+            border-radius: var(--radius-md);
+            font-size: 1.15rem;
+            font-weight: 800;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(22, 163, 74, 0.35);
+            transition: all 0.2s ease;
+            width: 100%;
+            margin-bottom: 0.85rem;
+        }
+
+        .btn-upi-large:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(22, 163, 74, 0.45);
+        }
+
+        .btn-upi-large i {
+            font-size: 1.4rem;
+        }
+
+        .upi-app-badges {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
+            font-size: 0.78rem;
+            color: var(--text-muted);
+            margin-bottom: 1.25rem;
+            font-weight: 600;
+        }
+
+        .qr-card {
+            background: #f8fafc;
+            border: 1px dashed #cbd5e1;
+            border-radius: var(--radius-md);
+            padding: 1rem;
+            text-align: center;
+        }
+
+        .qr-card img {
+            width: 160px;
+            height: 160px;
+            object-fit: contain;
+            border-radius: var(--radius-sm);
+            background: #ffffff;
+            padding: 6px;
+            box-shadow: var(--shadow-sm);
+            margin-bottom: 0.5rem;
+        }
+
+        .bank-details-card {
+            background: #f8fafc;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: 1rem;
+            font-size: 0.85rem;
+            margin-top: 1rem;
+        }
+
+        .bank-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.3rem 0;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .bank-row:last-child {
+            border-bottom: none;
+        }
+
+        .copy-chip {
+            background: #e2e8f0;
+            border: none;
+            padding: 2px 7px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            cursor: pointer;
+            color: var(--text-main);
+            margin-left: 0.4rem;
+            font-weight: 600;
+        }
+
+        /* UTR Submission Drawer */
+        .utr-form-card {
+            background: #fafaf9;
+            border: 1.5px solid #e7e5e4;
+            border-radius: var(--radius-md);
+            padding: 1.25rem;
+            margin-top: 1.25rem;
+        }
+
+        .utr-form-card h4 {
+            font-size: 0.95rem;
+            font-weight: 700;
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            color: var(--secondary);
+        }
+
+        .form-row-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 0.75rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .input-group label {
+            display: block;
+            font-size: 0.78rem;
+            font-weight: 700;
+            margin-bottom: 0.3rem;
+            color: var(--text-muted);
+        }
+
+        .form-control, .form-select {
+            width: 100%;
+            padding: 0.6rem 0.85rem;
+            border: 1.5px solid var(--border);
+            border-radius: var(--radius-sm);
+            font-size: 0.9rem;
+            font-family: inherit;
+            background: #ffffff;
+            transition: border-color 0.15s ease;
+        }
+
+        .form-control:focus, .form-select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(185, 28, 28, 0.15);
+        }
+
+        .btn-submit-utr {
+            background: var(--secondary);
+            color: #ffffff;
+            border: none;
+            padding: 0.7rem 1.25rem;
+            border-radius: var(--radius-sm);
+            font-size: 0.9rem;
+            font-weight: 700;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: background 0.15s ease;
+        }
+
+        .btn-submit-utr:hover {
+            background: #0f172a;
+        }
+
+        /* Section Headings */
+        .section-header {
+            margin: 2rem 0 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .section-title {
+            font-size: 1.25rem;
+            font-weight: 800;
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .count-badge {
+            background: #e2e8f0;
+            font-size: 0.8rem;
+            font-weight: 700;
+            padding: 0.15rem 0.55rem;
+            border-radius: 12px;
+            color: var(--text-muted);
+        }
+
+        /* Bill Card Styles */
+        .bills-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .bill-item-card {
+            background: #ffffff;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: 1.25rem;
+            box-shadow: var(--shadow-sm);
+            transition: transform 0.15s ease, box-shadow 0.15s ease;
+        }
+
+        .bill-item-card:hover {
+            box-shadow: var(--shadow-md);
+        }
+
+        .bill-item-card.unpaid {
+            border-left: 4px solid var(--danger);
+        }
+
+        .bill-item-card.paid {
+            border-left: 4px solid var(--success);
+        }
+
+        .bill-card-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .bill-title-info {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            flex-wrap: wrap;
+        }
+
+        .bill-no {
+            font-size: 1.05rem;
+            font-weight: 800;
+            color: var(--text-main);
+        }
+
+        .badge-status {
+            font-size: 0.75rem;
+            font-weight: 700;
+            padding: 0.25rem 0.65rem;
+            border-radius: 20px;
+        }
+
+        .badge-unpaid {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .badge-partial {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .badge-paid {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .bill-meta-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 0.5rem 1rem;
+            font-size: 0.875rem;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .bill-meta-grid strong {
+            color: var(--text-main);
+        }
+
+        .bill-card-bottom {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 0.85rem;
+        }
+
+        .bill-amount-summary {
+            display: flex;
+            align-items: baseline;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .bill-total-tag {
+            font-size: 1.15rem;
+            font-weight: 800;
+            color: var(--text-main);
+        }
+
+        .bill-due-tag {
+            font-size: 1.15rem;
+            font-weight: 800;
+            color: var(--danger);
+        }
+
+        .bill-actions {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .btn-sm {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            padding: 0.45rem 0.85rem;
+            border-radius: var(--radius-sm);
+            font-size: 0.825rem;
+            font-weight: 700;
+            text-decoration: none;
+            transition: all 0.15s ease;
+            border: 1px solid transparent;
+        }
+
+        .btn-upi-sm {
+            background: var(--success);
+            color: #ffffff;
+        }
+
+        .btn-upi-sm:hover {
+            background: #166534;
+        }
+
+        .btn-pdf-sm {
+            background: #ffffff;
+            border-color: var(--border);
+            color: var(--secondary);
+        }
+
+        .btn-pdf-sm:hover {
+            background: #f1f5f9;
+        }
+
+        .btn-epaper-sm {
+            background: #eff6ff;
+            border-color: #bfdbfe;
+            color: var(--accent);
+        }
+
+        .btn-epaper-sm:hover {
+            background: #dbeafe;
+        }
+
+        /* Success & Alert banners */
+        .portal-alert {
+            padding: 0.85rem 1.15rem;
+            border-radius: var(--radius-md);
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin-bottom: 1.25rem;
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+        }
+
+        .portal-alert-success {
+            background: #f0fdf4;
+            border: 1.5px solid #86efac;
+            color: #166534;
+        }
+
+        .portal-alert-warning {
+            background: #fffbeb;
+            border: 1.5px solid #fde68a;
+            color: #92400e;
+        }
+
+        /* Footer */
+        .portal-footer {
+            margin-top: 3rem;
+            text-align: center;
+            font-size: 0.825rem;
+            color: var(--text-muted);
+            border-top: 1px solid var(--border);
+            padding-top: 1.5rem;
+        }
+
+        .portal-footer a {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header / Masthead -->
+    <header class="portal-header">
+        <div class="portal-header-container">
+            <a href="{{ client.get_portal_url }}?lang={{ lang }}" class="portal-brand">
+                <img src="{% static 'billing/img/logo.png' %}" alt="विश्वगुरु">
+                <div class="portal-brand-text">
+                    <h1>{% if lang == 'hi' %}विज्ञापन खाता स्टेटमेंट{% else %}Advertisement Statement{% endif %}</h1>
+                    <p>{{ payment_info.newspaper_name }}</p>
+                </div>
+            </a>
+            
+            <!-- Language Switcher Toggle -->
+            <div class="lang-switch">
+                <a href="?lang=hi" class="{% if lang == 'hi' %}active{% endif %}">हिन्दी</a>
+                <a href="?lang=en" class="{% if lang == 'en' %}active{% endif %}">EN</a>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+
+        <!-- Flash messages -->
+        {% if messages %}
+            {% for message in messages %}
+                <div class="portal-alert {% if message.tags == 'success' %}portal-alert-success{% else %}portal-alert-warning{% endif %}">
+                    <i class="bi bi-info-circle-fill"></i>
+                    <span>{{ message }}</span>
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <!-- Client Profile Greeting -->
+        <div class="client-card">
+            <div class="client-info">
+                <h2>
+                    <i class="bi bi-person-check-fill" style="color: #60a5fa;"></i>
+                    {% if lang == 'hi' %}नमस्ते, {{ client.name }} जी{% else %}Welcome, {{ client.name }}{% endif %}
+                </h2>
+                <div class="client-meta">
+                    {% if client.phone %}
+                        <span><i class="bi bi-telephone"></i> {{ client.phone }}</span>
+                    {% endif %}
+                    {% if client.address %}
+                        <span><i class="bi bi-geo-alt"></i> {{ client.address }}</span>
+                    {% endif %}
+                    {% if client.gstin %}
+                        <span><i class="bi bi-card-text"></i> GSTIN/PAN: {{ client.gstin }}</span>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="statement-badge">
+                <div><i class="bi bi-calendar3"></i> {% if lang == 'hi' %}स्टेटमेंट दिनांक{% else %}Statement Date{% endif %}</div>
+                <div style="font-size: 1rem; font-weight: 700; color: #ffffff;">{% now "d M Y" %}</div>
+            </div>
+        </div>
+
+        <!-- 4 Financial Summary Cards -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="label">
+                    <span>{% if lang == 'hi' %}कुल विज्ञापन{% else %}Total Ads{% endif %}</span>
+                    <i class="bi bi-newspaper"></i>
+                </div>
+                <div class="value">{{ all_bills|length }}</div>
+            </div>
+            <div class="stat-card">
+                <div class="label">
+                    <span>{% if lang == 'hi' %}कुल बिल राशि{% else %}Total Billed{% endif %}</span>
+                    <i class="bi bi-cash-stack"></i>
+                </div>
+                <div class="value">₹{{ total_billed|floatformat:2 }}</div>
+            </div>
+            <div class="stat-card">
+                <div class="label">
+                    <span>{% if lang == 'hi' %}जमा राशि{% else %}Total Paid{% endif %}</span>
+                    <i class="bi bi-check2-circle"></i>
+                </div>
+                <div class="value" style="color: var(--success);">₹{{ total_paid|floatformat:2 }}</div>
+            </div>
+            <div class="stat-card {% if total_outstanding > 0 %}due{% else %}cleared{% endif %}">
+                <div class="label">
+                    <span>{% if lang == 'hi' %}कुल शेष बकाया{% else %}Total Balance Due{% endif %}</span>
+                    <i class="bi {% if total_outstanding > 0 %}bi-exclamation-circle-fill{% else %}bi-shield-check{% endif %}"></i>
+                </div>
+                <div class="value">₹{{ total_outstanding|floatformat:2 }}</div>
+            </div>
+        </div>
+
+        <!-- Pending UTR Verification notice if client submitted recently -->
+        {% if pending_submissions %}
+            {% for sub in pending_submissions %}
+            <div class="portal-alert portal-alert-warning">
+                <i class="bi bi-clock-history"></i>
+                <div>
+                    <strong>{% if lang == 'hi' %}सत्यापन लंबित (Verification Pending):{% else %}Verification Pending:{% endif %}</strong>
+                    {% if lang == 'hi' %}
+                        आपका यूटीआर संदर्भ क्रमांक <code>{{ sub.utr_number }}</code> (राशि: ₹{{ sub.amount|floatformat:2 }}) प्राप्त हो गया है। हमारे लेखा विभाग द्वारा बैंक से मिलान के पश्चात आपका खाता अद्यतन कर दिया जाएगा।
+                    {% else %}
+                        Your payment reference <code>{{ sub.utr_number }}</code> for ₹{{ sub.amount|floatformat:2 }} has been received and is being verified by accounts team.
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        {% endif %}
+
+        <!-- Direct UPI Payment Center (If there is outstanding balance) -->
+        {% if total_outstanding > 0 %}
+        <div class="payment-box">
+            <div class="payment-box-header">
+                <div class="payment-box-title">
+                    <i class="bi bi-qr-code-scan"></i>
+                    {% if lang == 'hi' %}सीधे यूपीआई (UPI) से तुरंत भुगतान करें{% else %}Instant UPI Direct Payment{% endif %}
+                </div>
+                <span class="zero-fee-pill">
+                    <i class="bi bi-shield-lock-fill"></i> {% if lang == 'hi' %}0% ट्रांजेक्शन शुल्क • सुरक्षित बैंक ट्रांसफर{% else %}Zero Fees • 100% Direct Bank Transfer{% endif %}
+                </span>
+            </div>
+
+            <div class="upi-action-grid">
+                <!-- Left: 1-Click Mobile Pay Button & Bank Details -->
+                <div>
+                    <!-- Native Mobile Deep Link Button -->
+                    {% if upi_total_intent %}
+                    <a href="{{ upi_total_intent }}" class="btn-upi-large" id="payViaUpiBtn">
+                        <i class="bi bi-wallet2"></i>
+                        <span>
+                            {% if lang == 'hi' %}
+                                यूपीआई से ₹{{ total_outstanding|floatformat:2 }} का भुगतान करें
+                            {% else %}
+                                Pay ₹{{ total_outstanding|floatformat:2 }} via UPI (1-Click)
+                            {% endif %}
+                        </span>
+                    </a>
+                    {% endif %}
+
+                    <div class="upi-app-badges">
+                        <span><i class="bi bi-check-circle-fill" style="color: var(--success);"></i> Google Pay</span>
+                        <span>•</span>
+                        <span>PhonePe</span>
+                        <span>•</span>
+                        <span>Paytm</span>
+                        <span>•</span>
+                        <span>BHIM</span>
+                        <span>•</span>
+                        <span>Any UPI App</span>
+                    </div>
+
+                    <!-- Direct Bank Transfer Details -->
+                    <div class="bank-details-card">
+                        <div style="font-weight: 700; color: var(--secondary); margin-bottom: 0.4rem; display: flex; align-items: center; justify-content: space-between;">
+                            <span><i class="bi bi-bank"></i> {% if lang == 'hi' %}बैंक खाता विवरण (NEFT / IMPS / UPI ID){% else %}Direct Bank Account Details{% endif %}</span>
+                        </div>
+                        <div class="bank-row">
+                            <span class="text-muted">UPI ID / VPA:</span>
+                            <span><strong>{{ payment_info.upi_id }}</strong> <button class="copy-chip" onclick="copyText('{{ payment_info.upi_id }}')">Copy</button></span>
+                        </div>
+                        <div class="bank-row">
+                            <span class="text-muted">{% if lang == 'hi' %}बैंक का नाम:{% else %}Bank Name:{% endif %}</span>
+                            <span><strong>{{ payment_info.bank_name }}</strong></span>
+                        </div>
+                        <div class="bank-row">
+                            <span class="text-muted">{% if lang == 'hi' %}खाता संख्या:{% else %}Account No:{% endif %}</span>
+                            <span><strong>{{ payment_info.account_number }}</strong> <button class="copy-chip" onclick="copyText('{{ payment_info.account_number }}')">Copy</button></span>
+                        </div>
+                        <div class="bank-row">
+                            <span class="text-muted">IFSC Code:</span>
+                            <span><strong>{{ payment_info.ifsc_code }}</strong> <button class="copy-chip" onclick="copyText('{{ payment_info.ifsc_code }}')">Copy</button></span>
+                        </div>
+                        <div class="bank-row">
+                            <span class="text-muted">{% if lang == 'hi' %}खाताधारक:{% else %}Beneficiary:{% endif %}</span>
+                            <span><strong>{{ payment_info.account_holder_name|default:payment_info.newspaper_name }}</strong></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right: Desktop Dynamic QR Code -->
+                <div>
+                    <div class="qr-card">
+                        {% if upi_total_qr %}
+                            <img src="{{ upi_total_qr }}" alt="UPI QR Code">
+                        {% else %}
+                            <div style="padding: 2rem; color: var(--text-muted);">QR Code Unavailable</div>
+                        {% endif %}
+                        <div style="font-size: 0.85rem; font-weight: 700; color: var(--secondary); margin-bottom: 0.2rem;">
+                            {% if lang == 'hi' %}किसी भी UPI ऐप से स्कैन करें{% else %}Scan with Any UPI App{% endif %}
+                        </div>
+                        <p style="font-size: 0.78rem; color: var(--text-muted);">
+                            {% if lang == 'hi' %}
+                                मोबाइल पर कैमरा या Google Pay / PhonePe खोलकर QR स्कैन करें।
+                            {% else %}
+                                Open GPay, PhonePe, or Paytm and scan to pay ₹{{ total_outstanding|floatformat:2 }}.
+                            {% endif %}
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- UTR / Payment Submission Box -->
+            <div class="utr-form-card">
+                <h4>
+                    <i class="bi bi-receipt"></i>
+                    {% if lang == 'hi' %}
+                        भुगतान कर दिया है? यूटीआर (UTR) संख्या दर्ज करें
+                    {% else %}
+                        Paid via UPI? Submit 12-Digit UTR for Verification
+                    {% endif %}
+                </h4>
+                <form action="{% url 'billing:customer_payment_submit' token=client.access_token %}?lang={{ lang }}" method="POST">
+                    {% csrf_token %}
+                    <div class="form-row-grid">
+                        <div class="input-group">
+                            <label>{% if lang == 'hi' %}भुगतान हेतु बिल चुनें:{% else %}Apply Payment To:{% endif %}</label>
+                            {{ submission_form.bill }}
+                        </div>
+                        <div class="input-group">
+                            <label>{% if lang == 'hi' %}भुगतान की गई राशि (₹):{% else %}Paid Amount (₹):{% endif %}</label>
+                            {{ submission_form.amount }}
+                        </div>
+                        <div class="input-group">
+                            <label>{% if lang == 'hi' %}12 अंकों का UTR / UPI संदर्भ क्रमांक:* (अनिवार्य){% else %}12-Digit UTR / Ref No:* (Required){% endif %}</label>
+                            {{ submission_form.utr_number }}
+                        </div>
+                    </div>
+                    <div class="input-group" style="margin-bottom: 0.85rem;">
+                        <label>{% if lang == 'hi' %}प्रेषक का नाम / विवरण (वैकल्पिक):{% else %}Sender Name / Remarks (Optional):{% endif %}</label>
+                        {{ submission_form.notes }}
+                    </div>
+                    <button type="submit" class="btn-submit-utr">
+                        <i class="bi bi-send-check"></i>
+                        {% if lang == 'hi' %}भुगतान विवरण भेजें (Submit Reference){% else %}Submit Payment Reference{% endif %}
+                    </button>
+                </form>
+            </div>
+        </div>
+        {% else %}
+        <!-- Congratulatory banner when all cleared -->
+        <div style="background: #f0fdf4; border: 2px solid #86efac; border-radius: var(--radius-lg); padding: 1.5rem; text-align: center; margin-bottom: 2rem;">
+            <i class="bi bi-patch-check-fill" style="font-size: 2.5rem; color: var(--success); display: block; margin-bottom: 0.5rem;"></i>
+            <h3 style="font-size: 1.25rem; font-weight: 800; color: var(--success); margin-bottom: 0.35rem;">
+                {% if lang == 'hi' %}समस्त भुगतान पूर्ण है! कोई बकाया राशि नहीं है।{% else %}All Dues Cleared! No Outstanding Balance.{% endif %}
+            </h3>
+            <p style="font-size: 0.9rem; color: #166534;">
+                {% if lang == 'hi' %}
+                    विश्वगुरु समाचार पत्र में आपके सभी विज्ञापनों का पूर्ण भुगतान प्राप्त हो चुका है। सहयोग के लिए धन्यवाद!
+                {% else %}
+                    All your advertisements in Vishwaguru Newspaper are fully paid. Thank you for your partnership!
+                {% endif %}
+            </p>
+        </div>
+        {% endif %}
+
+        <!-- Section 1: Unpaid / Pending Advertisements -->
+        {% if unpaid_bills %}
+        <div class="section-header">
+            <h3 class="section-title" style="color: var(--danger);">
+                <i class="bi bi-hourglass-split"></i>
+                {% if lang == 'hi' %}बकाया विज्ञापन (Pending Advertisements){% else %}Pending / Unpaid Advertisements{% endif %}
+            </h3>
+            <span class="count-badge">{{ unpaid_bills|length }}</span>
+        </div>
+
+        <div class="bills-list">
+            {% for bill in unpaid_bills %}
+            <div class="bill-item-card unpaid">
+                <div class="bill-card-top">
+                    <div class="bill-title-info">
+                        <span class="bill-no">{{ bill.bill_number }}</span>
+                        {% if bill.payment_status == 'Partial' %}
+                            <span class="badge-status badge-partial">{% if lang == 'hi' %}आंशिक भुगतान (Partial){% else %}Partial Paid{% endif %}</span>
+                        {% else %}
+                            <span class="badge-status badge-unpaid">{% if lang == 'hi' %}अदत्त (Unpaid){% else %}Unpaid{% endif %}</span>
+                        {% endif %}
+                        <span style="font-size: 0.8rem; color: var(--text-muted);"><i class="bi bi-calendar-event"></i> {{ bill.edition_date|date:"d/m/Y" }}</span>
+                    </div>
+                </div>
+
+                <div class="bill-meta-grid">
+                    <div>
+                        <strong>{% if lang == 'hi' %}संस्करण:{% else %}Edition:{% endif %}</strong> 
+                        {% if lang == 'hi' %}{{ bill.edition_hindi }}{% else %}{{ bill.get_edition_name_display }}{% endif %}
+                    </div>
+                    <div>
+                        <strong>{% if lang == 'hi' %}स्थान व आकार:{% else %}Placement:{% endif %}</strong> 
+                        {% if lang == 'hi' %}{{ bill.placement_hindi }}{% else %}{{ bill.get_placement_type_display }}{% endif %}
+                        {% if bill.custom_size_text %}({{ bill.custom_size_text }}){% endif %}
+                    </div>
+                    <div>
+                        <strong>{% if lang == 'hi' %}पृष्ठ संख्या:{% else %}Page No:{% endif %}</strong> 
+                        {{ bill.page_number|default:"Page 1" }}
+                    </div>
+                    {% if bill.ad_title %}
+                    <div>
+                        <strong>{% if lang == 'hi' %}शीर्षक:{% else %}Title:{% endif %}</strong> 
+                        {{ bill.ad_title }}
+                    </div>
+                    {% endif %}
+                </div>
+
+                <div class="bill-card-bottom">
+                    <div class="bill-amount-summary">
+                        <span class="bill-total-tag">{% if lang == 'hi' %}कुल बिल:{% else %}Total:{% endif %} ₹{{ bill.total_amount|floatformat:2 }}</span>
+                        {% if bill.amount_paid > 0 %}
+                            <span style="color: var(--success); font-weight: 700; font-size: 0.9rem;">
+                                {% if lang == 'hi' %}जमा:{% else %}Paid:{% endif %} ₹{{ bill.amount_paid|floatformat:2 }}
+                            </span>
+                        {% endif %}
+                        <span class="bill-due-tag">{% if lang == 'hi' %}बकाया देय:{% else %}Balance Due:{% endif %} ₹{{ bill.balance_amount|floatformat:2 }}</span>
+                    </div>
+
+                    <div class="bill-actions">
+                        <!-- Direct UPI Pay for this bill -->
+                        {% if bill.upi_intent %}
+                        <a href="{{ bill.upi_intent }}" class="btn-sm btn-upi-sm" title="Pay this bill via UPI">
+                            <i class="bi bi-wallet2"></i> {% if lang == 'hi' %}पे ₹{{ bill.balance_amount|floatformat:2 }}{% else %}Pay ₹{{ bill.balance_amount|floatformat:2 }}{% endif %}
+                        </a>
+                        {% endif %}
+
+                        <!-- View Bill PDF -->
+                        <a href="{% url 'billing:customer_bill_pdf' token=client.access_token bill_id=bill.id %}" target="_blank" class="btn-sm btn-pdf-sm">
+                            <i class="bi bi-file-earmark-pdf"></i> {% if lang == 'hi' %}बिल PDF{% else %}Bill PDF{% endif %}
+                        </a>
+
+                        <!-- Epaper verification link -->
+                        {% if bill.epaper_link %}
+                        <a href="{{ bill.epaper_link }}" target="_blank" class="btn-sm btn-epaper-sm">
+                            <i class="bi bi-box-arrow-up-right"></i> {% if lang == 'hi' %}ई-पेपर देखें{% else %}View Epaper{% endif %}
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- Section 2: Paid In Full History -->
+        <div class="section-header" style="margin-top: 2.5rem;">
+            <h3 class="section-title" style="color: var(--success);">
+                <i class="bi bi-check-circle-fill"></i>
+                {% if lang == 'hi' %}पूर्ण भुगतान किए गए विज्ञापन (Paid Advertisements){% else %}Paid Advertisement History{% endif %}
+            </h3>
+            <span class="count-badge">{{ paid_bills|length }}</span>
+        </div>
+
+        {% if paid_bills %}
+        <div class="bills-list">
+            {% for bill in paid_bills %}
+            <div class="bill-item-card paid">
+                <div class="bill-card-top">
+                    <div class="bill-title-info">
+                        <span class="bill-no">{{ bill.bill_number }}</span>
+                        <span class="badge-status badge-paid">
+                            <i class="bi bi-check-lg"></i> {% if lang == 'hi' %}पूर्ण भुगतान (Paid){% else %}Paid in Full{% endif %}
+                        </span>
+                        <span style="font-size: 0.8rem; color: var(--text-muted);"><i class="bi bi-calendar-check"></i> {{ bill.edition_date|date:"d/m/Y" }}</span>
+                    </div>
+                    <div style="font-weight: 800; font-size: 1.1rem; color: var(--success);">
+                        ₹{{ bill.amount_paid|floatformat:2 }}
+                    </div>
+                </div>
+
+                <div class="bill-meta-grid">
+                    <div>
+                        <strong>{% if lang == 'hi' %}संस्करण:{% else %}Edition:{% endif %}</strong> 
+                        {% if lang == 'hi' %}{{ bill.edition_hindi }}{% else %}{{ bill.get_edition_name_display }}{% endif %}
+                    </div>
+                    <div>
+                        <strong>{% if lang == 'hi' %}स्थान व आकार:{% else %}Placement:{% endif %}</strong> 
+                        {% if lang == 'hi' %}{{ bill.placement_hindi }}{% else %}{{ bill.get_placement_type_display }}{% endif %}
+                        {% if bill.custom_size_text %}({{ bill.custom_size_text }}){% endif %}
+                    </div>
+                    <div>
+                        <strong>{% if lang == 'hi' %}माध्यम:{% else %}Method:{% endif %}</strong> 
+                        {% if lang == 'hi' %}{{ bill.payment_method_hindi }}{% else %}{{ bill.get_payment_method_display }}{% endif %}
+                    </div>
+                    {% if bill.payment_note %}
+                    <div>
+                        <strong>{% if lang == 'hi' %}संदर्भ / UTR:{% else %}Reference:{% endif %}</strong> 
+                        {{ bill.payment_note }}
+                    </div>
+                    {% endif %}
+                </div>
+
+                <div class="bill-card-bottom" style="justify-content: flex-end;">
+                    <div class="bill-actions">
+                        <a href="{% url 'billing:customer_bill_pdf' token=client.access_token bill_id=bill.id %}" target="_blank" class="btn-sm btn-pdf-sm">
+                            <i class="bi bi-file-earmark-pdf"></i> {% if lang == 'hi' %}रसीद / बिल डाउनलोड{% else %}Download Invoice PDF{% endif %}
+                        </a>
+                        {% if bill.epaper_link %}
+                        <a href="{{ bill.epaper_link }}" target="_blank" class="btn-sm btn-epaper-sm">
+                            <i class="bi bi-box-arrow-up-right"></i> {% if lang == 'hi' %}ई-पेपर सत्यापन{% else %}Verify on Epaper{% endif %}
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div style="background: #ffffff; border: 1px dashed var(--border); border-radius: var(--radius-md); padding: 1.5rem; text-align: center; color: var(--text-muted); font-size: 0.9rem;">
+            {% if lang == 'hi' %}कोई पूर्व भुगतान रिकॉर्ड नहीं मिला।{% else %}No cleared bill history found yet.{% endif %}
+        </div>
+        {% endif %}
+
+        <!-- Office Contact Footer Card -->
+        <footer class="portal-footer">
+            <p><strong>{{ payment_info.newspaper_name }}</strong> — {{ payment_info.tagline }}</p>
+            <p style="margin-top: 0.25rem;">
+                <i class="bi bi-geo-alt"></i> {{ payment_info.office_address }}
+                {% if payment_info.phone_number %} | <i class="bi bi-telephone"></i> {{ payment_info.phone_number }}{% endif %}
+                {% if payment_info.email %} | <i class="bi bi-envelope"></i> {{ payment_info.email }}{% endif %}
+            </p>
+            <p style="margin-top: 0.75rem; color: #94a3b8; font-size: 0.75rem;">
+                {% if lang == 'hi' %}यह एक कम्प्यूटरीकृत खाता स्टेटमेंट है। किसी भी त्रुटि या संशोधन हेतु कृपया समाचार पत्र कार्यालय से संपर्क करें।{% else %}This is an authentic computerized advertisement statement. For any discrepancies, please contact our accounts department.{% endif %}
+            </p>
+        </footer>
+
+    </div>
+
+    <script>
+        function copyText(text) {
+            if (!text) return;
+            navigator.clipboard.writeText(text).then(function() {
+                alert('Copied to clipboard: ' + text);
+            }).catch(function() {
+                const ta = document.createElement('textarea');
+                ta.value = text;
+                document.body.appendChild(ta);
+                ta.select();
+                document.execCommand('copy');
+                document.body.removeChild(ta);
+                alert('Copied to clipboard: ' + text);
+            });
+        }
+    </script>
+</body>
+</html>
