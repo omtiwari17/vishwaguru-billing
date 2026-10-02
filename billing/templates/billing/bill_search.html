@@ -130,6 +130,9 @@
                     </td>
                     <td>
                         <strong>{{ b.client_name }}</strong>
+                        {% if b.client %}
+                        <br><a href="{{ b.client.get_portal_url }}" target="_blank" style="color: var(--primary); font-size: 0.75rem; font-weight: 700; text-decoration: none;"><i class="bi bi-person-badge"></i> {% if site_lang == 'hi' %}खाता देखें ↗{% else %}Statement ↗{% endif %}</a>
+                        {% endif %}
                         {% if b.client_phone %}
                         <br><small style="color: var(--text-muted);"><a href="tel:{{ b.client_phone }}" style="color: inherit;"><i class="bi bi-telephone"></i> {{ b.client_phone }}</a></small>
                         {% endif %}

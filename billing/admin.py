@@ -1,5 +1,6 @@
 from django.contrib import admin
-from billing.models import Bill, PaymentInfo, Client
+from django.utils.html import format_html
+from billing.models import Bill, PaymentInfo, Client, PaymentSubmission
 
 
 @admin.register(Client)
@@ -9,6 +10,7 @@ class ClientAdmin(admin.ModelAdmin):
         'phone',
         'address',
         'gstin',
+        'portal_link',
         'created_at',
     ]
     search_fields = [
@@ -17,7 +19,30 @@ class ClientAdmin(admin.ModelAdmin):
         'address',
         'gstin',
     ]
+    readonly_fields = ['access_token']
     ordering = ['name']
+
+    def portal_link(self, obj):
+        url = obj.get_portal_url()
+        return format_html('<a href="{}" target="_blank" style="font-weight:600; color:#1d4ed8;">View Statement ↗</a>', url)
+    portal_link.short_description = 'Customer Portal'
+
+
+@admin.register(PaymentSubmission)
+class PaymentSubmissionAdmin(admin.ModelAdmin):
+    list_display = [
+        'client',
+        'bill',
+        'amount',
+        'utr_number',
+        'status',
+        'submitted_at',
+        'verified_at',
+    ]
+    list_filter = ['status', 'submitted_at']
+    search_fields = ['utr_number', 'client__name', 'notes']
+    ordering = ['-submitted_at']
+
 
 
 @admin.register(Bill)

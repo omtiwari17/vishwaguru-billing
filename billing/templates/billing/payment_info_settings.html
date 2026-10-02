@@ -1,0 +1,320 @@
+{% extends 'billing/base.html' %}
+{% load static %}
+
+{% block title %}
+    {% if site_lang == 'hi' %}बैंक खाता व यूपीआई सेटिंग्स | विश्वगुरु बिलिंग{% else %}Bank & UPI Settings | Vishwaguru Billing{% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="card" style="margin-bottom: 1.5rem;">
+    <div class="card-header" style="flex-wrap: wrap; gap: 1rem;">
+        <div style="display: flex; align-items: center; gap: 0.85rem;">
+            <div style="width: 44px; height: 44px; background: #fee2e2; color: #b91c1c; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.4rem;">
+                <i class="bi bi-shield-lock-fill"></i>
+            </div>
+            <div>
+                <h1 class="card-title" style="margin: 0; font-size: 1.25rem;">
+                    {% if site_lang == 'hi' %}बैंक खाता व यूपीआई आईडी सेटिंग्स{% else %}Official Bank & UPI Settings{% endif %}
+                </h1>
+                <p class="card-subtitle" style="margin-top: 0.2rem;">
+                    {% if site_lang == 'hi' %}समाचार पत्र के भुगतान प्राप्त करने वाले खाते व क्यूआर कोड का प्रबंधन करें{% else %}Manage newspaper payment accounts, UPI IDs, and billing letterhead details{% endif %}
+                </p>
+            </div>
+        </div>
+        <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
+            <span class="badge" style="background: #f0fdf4; color: #166534; border: 1.5px solid #bbf7d0; font-size: 0.775rem; padding: 0.4rem 0.75rem;">
+                <i class="bi bi-lock-fill"></i> {% if site_lang == 'hi' %}डेटाबेस में AES-256 एन्क्रिप्शन सुरक्षित{% else %}AES-256 Encrypted at Rest{% endif %}
+            </span>
+            <a href="{% url 'billing:dashboard' %}" class="btn btn-secondary" style="font-size: 0.825rem; padding: 0.4rem 0.85rem;">
+                <i class="bi bi-arrow-left"></i> {% if site_lang == 'hi' %}डैशबोर्ड पर वापस{% else %}Back to Dashboard{% endif %}
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="dashboard-main-grid">
+
+    <!-- Left Column: Settings Form -->
+    <div class="dashboard-primary-col">
+        <form method="post" id="paymentSettingsForm">
+            {% csrf_token %}
+
+            {% if form.errors %}
+            <div class="alert alert-danger" style="margin-bottom: 1.25rem;">
+                <div>
+                    <strong><i class="bi bi-exclamation-triangle-fill"></i> {% if site_lang == 'hi' %}कृपया त्रुटियों को सुधारें:{% else %}Please correct the following errors:{% endif %}</strong>
+                    <ul style="margin: 0.35rem 0 0 1.25rem; font-size: 0.85rem;">
+                        {% for field in form %}
+                            {% for error in field.errors %}
+                                <li>{{ field.label }}: {{ error }}</li>
+                            {% endfor %}
+                        {% endfor %}
+                        {% for error in form.non_field_errors %}
+                            <li>{{ error }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Section 1: Bank & UPI Credentials -->
+            <div class="step-card" style="margin-bottom: 1.5rem;">
+                <div class="step-header">
+                    <div class="step-title">
+                        <i class="bi bi-bank" style="color: var(--primary);"></i>
+                        {% if site_lang == 'hi' %}बैंक खाता व यूपीआई विवरण (Payment Accounts){% else %}Bank Account & UPI Configuration{% endif %}
+                    </div>
+                    <span class="step-subtitle">{% if site_lang == 'hi' %}बिलों व पीडीएफ रसीदों पर मुद्रित होता है{% else %}Printed on invoices & statement portal{% endif %}</span>
+                </div>
+
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label class="form-label" for="{{ form.bank_name.id_for_label }}">
+                            <i class="bi bi-building"></i> {{ form.bank_name.label }}
+                        </label>
+                        {{ form.bank_name }}
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="{{ form.account_holder_name.id_for_label }}">
+                            <i class="bi bi-person-badge"></i> {{ form.account_holder_name.label }}
+                        </label>
+                        {{ form.account_holder_name }}
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="{{ form.account_number.id_for_label }}">
+                            <i class="bi bi-shield-lock" style="color: #059669;"></i> {{ form.account_number.label }}
+                            <span class="sub" style="color: #059669; font-weight: 700;">
+                                <i class="bi bi-check-circle"></i> {% if site_lang == 'hi' %}(एन्क्रिप्टेड){% else %}(Encrypted){% endif %}
+                            </span>
+                        </label>
+                        {{ form.account_number }}
+                        <small style="font-size: 0.725rem; color: var(--text-muted);">
+                            {% if site_lang == 'hi' %}
+                                बैंक खाता संख्या डेटाबेस डिस्क पर सुरक्षित एन्क्रिप्टेड साइफरटेक्स्ट के रूप में सहेजी जाती है।
+                            {% else %}
+                                Account number is transparently encrypted at rest in the database using Fernet/AES.
+                            {% endif %}
+                        </small>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="{{ form.ifsc_code.id_for_label }}">
+                            <i class="bi bi-upc-scan"></i> {{ form.ifsc_code.label }}
+                        </label>
+                        {{ form.ifsc_code }}
+                        <small style="font-size: 0.725rem; color: var(--text-muted);">
+                            {% if site_lang == 'hi' %}11 अक्षरों का मानक बैंक कोड (उदा. SBIN0001234){% else %}Standard 11-character bank code (e.g. SBIN0001234){% endif %}
+                        </small>
+                    </div>
+
+                    <div class="form-group full-width" style="background: #f0fdf4; border: 1.5px solid #bbf7d0; border-radius: 8px; padding: 1rem;">
+                        <label class="form-label" for="{{ form.upi_id.id_for_label }}" style="color: #166534; font-size: 0.95rem;">
+                            <i class="bi bi-qr-code-scan" style="font-size: 1.1rem;"></i> {{ form.upi_id.label }}
+                        </label>
+                        {{ form.upi_id }}
+                        <div style="font-size: 0.775rem; color: #166534; margin-top: 0.35rem; line-height: 1.4;">
+                            <i class="bi bi-info-circle-fill"></i>
+                            {% if site_lang == 'hi' %}
+                                इसी यूपीआई आईडी से बिल पीडीएफ और ग्राहक पोर्टल पर तुरंत बिना किसी बैंक शुल्क के 0% कमीशन क्यूआर कोड जनरेट होता है।
+                            {% else %}
+                                This UPI ID powers dynamic zero-fee UPI QR codes and deep-links on all invoices and the customer portal.
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section 2: Newspaper Masthead & Letterhead Info -->
+            <div class="step-card" style="margin-bottom: 1.5rem;">
+                <div class="step-header">
+                    <div class="step-title">
+                        <i class="bi bi-newspaper" style="color: var(--secondary);"></i>
+                        {% if site_lang == 'hi' %}समाचार पत्र व पत्रशीर्ष विवरण (Letterhead Info){% else %}Newspaper & Letterhead Information{% endif %}
+                    </div>
+                    <span class="step-subtitle">{% if site_lang == 'hi' %}बिल शीर्ष पर मुद्रित जानकारी{% else %}Printed on bill header{% endif %}</span>
+                </div>
+
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label class="form-label" for="{{ form.newspaper_name.id_for_label }}">
+                            <i class="bi bi-card-heading"></i> {{ form.newspaper_name.label }}
+                        </label>
+                        {{ form.newspaper_name }}
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="{{ form.tagline.id_for_label }}">
+                            <i class="bi bi-chat-quote"></i> {{ form.tagline.label }}
+                        </label>
+                        {{ form.tagline }}
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="{{ form.registration_no.id_for_label }}">
+                            <i class="bi bi-journal-text"></i> {{ form.registration_no.label }}
+                        </label>
+                        {{ form.registration_no }}
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="{{ form.phone_number.id_for_label }}">
+                            <i class="bi bi-telephone"></i> {{ form.phone_number.label }}
+                        </label>
+                        {{ form.phone_number }}
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="{{ form.email.id_for_label }}">
+                            <i class="bi bi-envelope"></i> {{ form.email.label }}
+                        </label>
+                        {{ form.email }}
+                    </div>
+
+                    <div class="form-group full-width">
+                        <label class="form-label" for="{{ form.office_address.id_for_label }}">
+                            <i class="bi bi-geo-alt"></i> {{ form.office_address.label }}
+                        </label>
+                        {{ form.office_address }}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Submit Action -->
+            <div style="display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap;">
+                <button type="submit" class="btn btn-primary" style="padding: 0.75rem 1.75rem; font-size: 1rem; font-weight: 700;">
+                    <i class="bi bi-check2-circle"></i>
+                    {% if site_lang == 'hi' %}विवरण सुरक्षित रूप से सहेजें{% else %}Save Bank & UPI Settings{% endif %}
+                </button>
+                <a href="{% url 'billing:dashboard' %}" class="btn btn-secondary" style="padding: 0.75rem 1.25rem; font-size: 1rem;">
+                    {% if site_lang == 'hi' %}रद्द करें{% else %}Cancel{% endif %}
+                </a>
+            </div>
+        </form>
+    </div>
+
+    <!-- Right Column: Live Credential Status & Instant Test QR Scanner -->
+    <div class="dashboard-sidebar-col">
+
+        <!-- 1. Active Verified Credentials Card -->
+        <div class="card" style="margin-bottom: 1.5rem;">
+            <div class="card-header">
+                <div>
+                    <h2 class="card-title" style="font-size: 1rem;">
+                        <i class="bi bi-patch-check-fill" style="color: var(--success);"></i>
+                        {% if site_lang == 'hi' %}सक्रिय भुगतान विवरण{% else %}Currently Active Credentials{% endif %}
+                    </h2>
+                    <p class="card-subtitle">
+                        {% if site_lang == 'hi' %}लाइव बिलों व पीडीएफ पर उपयोग हो रहा है{% else %}Live in production on all bills & PDFs{% endif %}
+                    </p>
+                </div>
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: 0.75rem; font-size: 0.85rem;">
+                <div style="display: flex; justify-content: space-between; border-bottom: 1px solid #f1f5f9; padding-bottom: 0.4rem;">
+                    <span style="color: var(--text-muted);">{% if site_lang == 'hi' %}बैंक:{% else %}Bank:{% endif %}</span>
+                    <strong style="color: var(--secondary);">{{ payment_info.bank_name }}</strong>
+                </div>
+
+                <div style="display: flex; justify-content: space-between; border-bottom: 1px solid #f1f5f9; padding-bottom: 0.4rem;">
+                    <span style="color: var(--text-muted);">{% if site_lang == 'hi' %}खाताधारक:{% else %}Account Holder:{% endif %}</span>
+                    <strong>{{ payment_info.account_holder_name }}</strong>
+                </div>
+
+                <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #f1f5f9; padding-bottom: 0.4rem;">
+                    <span style="color: var(--text-muted);">{% if site_lang == 'hi' %}खाता संख्या:{% else %}Account No:{% endif %}</span>
+                    <div style="display: flex; align-items: center; gap: 0.4rem;">
+                        <span id="active_acc_display" style="font-family: monospace; font-weight: 700; color: var(--secondary);">
+                            {{ payment_info.masked_account_number }}
+                        </span>
+                        <button type="button" id="btn_toggle_acc" class="btn" style="padding: 0.15rem 0.35rem; font-size: 0.7rem; background: #f1f5f9; border: 1px solid var(--border);" title="Toggle View">
+                            <i class="bi bi-eye"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div style="display: flex; justify-content: space-between; border-bottom: 1px solid #f1f5f9; padding-bottom: 0.4rem;">
+                    <span style="color: var(--text-muted);">{% if site_lang == 'hi' %}आईएफएससी (IFSC):{% else %}IFSC Code:{% endif %}</span>
+                    <strong style="font-family: monospace;">{{ payment_info.ifsc_code }}</strong>
+                </div>
+
+                <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 0.2rem;">
+                    <span style="color: var(--text-muted);">{% if site_lang == 'hi' %}यूपीआई आईडी:{% else %}UPI ID:{% endif %}</span>
+                    <div style="display: flex; align-items: center; gap: 0.35rem;">
+                        <strong id="active_upi_text" style="color: var(--primary);">{{ payment_info.upi_id }}</strong>
+                        <button type="button" onclick="navigator.clipboard.writeText('{{ payment_info.upi_id }}'); alert('UPI ID Copied!');" class="btn" style="padding: 0.15rem 0.35rem; font-size: 0.7rem; background: #fee2e2; color: #b91c1c; border: 1px solid #fecaca;" title="Copy UPI ID">
+                            <i class="bi bi-copy"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. Live Test UPI QR Code Scanner -->
+        {% if test_qr_base64 %}
+        <div class="card" style="margin-bottom: 1.5rem; text-align: center;">
+            <div class="card-header" style="justify-content: center; padding-bottom: 0.35rem;">
+                <h3 class="card-title" style="font-size: 0.95rem;">
+                    <i class="bi bi-qr-code-scan" style="color: var(--primary);"></i>
+                    {% if site_lang == 'hi' %}लाइव यूपीआई क्यूआर कोड परीक्षण{% else %}Live UPI QR Code Test{% endif %}
+                </h3>
+            </div>
+            <div style="padding: 0.5rem 0;">
+                <img src="{{ test_qr_base64 }}" alt="Test UPI QR" style="width: 150px; height: 150px; border: 1.5px solid var(--border); border-radius: 8px; padding: 4px; background: #fff;">
+                <div style="font-size: 0.8rem; font-weight: 700; color: var(--secondary); margin-top: 0.5rem;">
+                    {{ payment_info.upi_id }}
+                </div>
+                <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem; line-height: 1.35; padding: 0 0.5rem;">
+                    {% if site_lang == 'hi' %}
+                        अपने मोबाइल में PhonePe, Google Pay या Paytm खोलकर स्कैन करें ताकि पुष्टि हो सके कि बैंक व नाम सही आ रहा है।
+                    {% else %}
+                        Open GPay, PhonePe, or Paytm on your phone and scan to verify the payee name and UPI ID.
+                    {% endif %}
+                </p>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- 3. Security & Data Protection Assurance -->
+        <div class="card" style="background: #f8fafc; border: 1px dashed var(--border);">
+            <div style="display: flex; gap: 0.75rem; align-items: flex-start;">
+                <i class="bi bi-shield-check" style="font-size: 1.5rem; color: #059669; flex-shrink: 0;"></i>
+                <div style="font-size: 0.8rem; line-height: 1.45; color: var(--text-main);">
+                    <strong style="color: #065f46;">
+                        {% if site_lang == 'hi' %}बैंक डेटा सुरक्षा गारंटी (Security at Rest){% else %}Data Protection & Compliance{% endif %}
+                    </strong>
+                    <div style="margin-top: 0.25rem; color: var(--text-muted);">
+                        {% if site_lang == 'hi' %}
+                            बैंक खाता संख्या को डेटाबेस में सहेजते समय Fernet (AES-128-CBC + HMAC-SHA256) सिमेट्रिक एन्क्रिप्शन से सुरक्षित किया जाता है। बैकअप या डेटाबेस की किसी भी सीधी चोरी की स्थिति में यह अपठनीय रहता है।
+                        {% else %}
+                            Bank account numbers are encrypted at rest using Fernet (authenticated AES-128-CBC with HMAC-SHA256). Plaintext accounts are never stored in raw database dumps.
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+</div>
+
+<script>
+    // Show / Hide Masked Account Number
+    document.addEventListener('DOMContentLoaded', function() {
+        const toggleBtn = document.getElementById('btn_toggle_acc');
+        const displayEl = document.getElementById('active_acc_display');
+        const fullAcc = "{{ payment_info.account_number|escapejs }}";
+        const maskedAcc = "{{ payment_info.masked_account_number|escapejs }}";
+        let isShowing = false;
+
+        if (toggleBtn && displayEl) {
+            toggleBtn.addEventListener('click', function() {
+                isShowing = !isShowing;
+                displayEl.textContent = isShowing ? fullAcc : maskedAcc;
+                toggleBtn.innerHTML = isShowing ? '<i class="bi bi-eye-slash"></i>' : '<i class="bi bi-eye"></i>';
+            });
+        }
+    });
+</script>
+{% endblock %}
