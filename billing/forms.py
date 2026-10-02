@@ -1,3 +1,4 @@
+import re
 from django import forms
 from django.utils import timezone
 from billing.models import (
@@ -12,6 +13,8 @@ from billing.models import (
     PAYMENT_STATUS_CHOICES_HI,
     PAYMENT_METHOD_CHOICES_HI,
     BILL_LANG_CHOICES_HI,
+    PaymentSubmission,
+    PaymentInfo,
 )
 
 
@@ -206,3 +209,134 @@ class BillPaymentUpdateForm(forms.ModelForm):
             self.fields['payment_status'].choices = PaymentStatus.choices
             self.fields['payment_method'].choices = PaymentMethod.choices
             self.fields['payment_note'].widget.attrs['placeholder'] = 'Transaction Reference / UTR / Cheque No.'
+
+
+class CustomerPaymentSubmissionForm(forms.ModelForm):
+    class Meta:
+        model = PaymentSubmission
+        fields = ['bill', 'amount', 'utr_number', 'notes']
+        widgets = {
+            'bill': forms.Select(attrs={'class': 'form-select'}),
+            'amount': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01', 'min': '1', 'required': True}),
+            'utr_number': forms.TextInput(attrs={'class': 'form-control', 'required': True}),
+            'notes': forms.TextInput(attrs={'class': 'form-control'}),
+        }
+
+    def __init__(self, *args, client=None, lang='hi', **kwargs):
+        super().__init__(*args, **kwargs)
+        if client:
+            unpaid_bills = client.get_unpaid_bills()
+            self.fields['bill'].queryset = Bill.objects.filter(id__in=[b.id for b in unpaid_bills])
+            self.fields['bill'].empty_label = 'समस्त बकाया (All Outstanding Dues)' if lang == 'hi' else 'All Outstanding Dues'
+            self.fields['bill'].required = False
+
+        if lang == 'hi':
+            self.fields['amount'].widget.attrs['placeholder'] = 'उदा. 2500'
+            self.fields['utr_number'].widget.attrs['placeholder'] = '12 अंकों का यूटीआर (UTR) या UPI संदर्भ क्रमांक'
+            self.fields['notes'].widget.attrs['placeholder'] = 'प्रेषक का नाम / फ़ोनपे / गूगल पे विवरण (वैकल्पिक)'
+        else:
+            self.fields['amount'].widget.attrs['placeholder'] = 'e.g. 2500'
+            self.fields['utr_number'].widget.attrs['placeholder'] = '12-digit UTR or UPI Reference No.'
+            self.fields['notes'].widget.attrs['placeholder'] = 'Sender Name / GPay / PhonePe Note (Optional)'
+
+
+class PaymentInfoForm(forms.ModelForm):
+    class Meta:
+        model = PaymentInfo
+        fields = [
+            'newspaper_name',
+            'tagline',
+            'registration_no',
+            'bank_name',
+            'account_holder_name',
+            'account_number',
+            'ifsc_code',
+            'upi_id',
+            'phone_number',
+            'email',
+            'office_address',
+        ]
+        widgets = {
+            'newspaper_name': forms.TextInput(attrs={'class': 'form-control', 'required': True}),
+            'tagline': forms.TextInput(attrs={'class': 'form-control'}),
+            'registration_no': forms.TextInput(attrs={'class': 'form-control'}),
+            'bank_name': forms.TextInput(attrs={'class': 'form-control', 'required': True}),
+            'account_holder_name': forms.TextInput(attrs={'class': 'form-control', 'required': True}),
+            'account_number': forms.TextInput(attrs={'class': 'form-control', 'required': True, 'autocomplete': 'off'}),
+            'ifsc_code': forms.TextInput(attrs={'class': 'form-control', 'required': True, 'style': 'text-transform: uppercase;'}),
+            'upi_id': forms.TextInput(attrs={'class': 'form-control', 'required': True}),
+            'phone_number': forms.TextInput(attrs={'class': 'form-control'}),
+            'email': forms.EmailInput(attrs={'class': 'form-control'}),
+            'office_address': forms.Textarea(attrs={'class': 'form-control', 'rows': 2}),
+        }
+
+    def __init__(self, *args, site_lang='en', **kwargs):
+        super().__init__(*args, **kwargs)
+        self.site_lang = site_lang
+        if site_lang == 'hi':
+            self.fields['newspaper_name'].label = 'समाचार पत्र का नाम *'
+            self.fields['tagline'].label = 'टैगलाइन'
+            self.fields['registration_no'].label = 'पंजीकरण संख्या (RNI No.)'
+            self.fields['bank_name'].label = 'बैंक का नाम *'
+            self.fields['account_holder_name'].label = 'खाताधारक का नाम *'
+            self.fields['account_number'].label = 'बैंक खाता संख्या * (AES-256 सुरक्षित)'
+            self.fields['ifsc_code'].label = 'आईएफएससी कोड (IFSC Code) *'
+            self.fields['upi_id'].label = 'यूपीआई आईडी (UPI ID) *'
+            self.fields['phone_number'].label = 'संपर्क फ़ोन'
+            self.fields['email'].label = 'ईमेल'
+            self.fields['office_address'].label = 'कार्यालय का पता'
+
+            self.fields['upi_id'].widget.attrs['placeholder'] = 'उदा. vishwaguru@sbi'
+            self.fields['ifsc_code'].widget.attrs['placeholder'] = 'उदा. SBIN0001234'
+            self.fields['account_number'].widget.attrs['placeholder'] = 'बैंक खाता संख्या दर्ज करें'
+        else:
+            self.fields['newspaper_name'].label = 'Newspaper Name *'
+            self.fields['tagline'].label = 'Tagline'
+            self.fields['registration_no'].label = 'RNI Reg. No.'
+            self.fields['bank_name'].label = 'Bank Name *'
+            self.fields['account_holder_name'].label = 'Account Holder Name *'
+            self.fields['account_number'].label = 'Bank Account Number * (AES-256 Encrypted)'
+            self.fields['ifsc_code'].label = 'IFSC Code *'
+            self.fields['upi_id'].label = 'UPI ID *'
+            self.fields['phone_number'].label = 'Contact Phone'
+            self.fields['email'].label = 'Email'
+            self.fields['office_address'].label = 'Office Address'
+
+            self.fields['upi_id'].widget.attrs['placeholder'] = 'e.g. vishwaguru@sbi'
+            self.fields['ifsc_code'].widget.attrs['placeholder'] = 'e.g. SBIN0001234'
+            self.fields['account_number'].widget.attrs['placeholder'] = 'Enter bank account number'
+
+    def clean_upi_id(self):
+        upi = self.cleaned_data.get('upi_id', '').strip()
+        if not upi:
+            raise forms.ValidationError('UPI ID is required.' if self.site_lang != 'hi' else 'यूपीआई आईडी अनिवार्य है।')
+        if '@' not in upi or upi.startswith('@') or upi.endswith('@'):
+            raise forms.ValidationError(
+                'Invalid UPI ID format. Must contain "@" (e.g. name@bank).'
+                if self.site_lang != 'hi'
+                else 'अमान्य यूपीआई आईडी प्रारूप। प्रारूप "name@bank" (जैसे vishwaguru@sbi) होना चाहिए।'
+            )
+        return upi
+
+    def clean_ifsc_code(self):
+        ifsc = self.cleaned_data.get('ifsc_code', '').strip().upper()
+        if not ifsc:
+            raise forms.ValidationError('IFSC code is required.' if self.site_lang != 'hi' else 'आईएफएससी कोड अनिवार्य है।')
+        if not re.match(r'^[A-Z]{4}0[A-Z0-9]{6}$', ifsc):
+            raise forms.ValidationError(
+                'Invalid IFSC format. Must be 11 characters (e.g. SBIN0001234).'
+                if self.site_lang != 'hi'
+                else 'अमान्य आईएफएससी कोड। यह 11 अक्षरों का होना चाहिए (उदा. SBIN0001234)।'
+            )
+        return ifsc
+
+    def clean_account_number(self):
+        acc = self.cleaned_data.get('account_number', '').strip()
+        if not acc:
+            raise forms.ValidationError('Account number is required.' if self.site_lang != 'hi' else 'खाता संख्या अनिवार्य है।')
+        clean_acc = re.sub(r'[\s\-]', '', acc)
+        if len(clean_acc) < 6:
+            raise forms.ValidationError('Account number is too short.' if self.site_lang != 'hi' else 'खाता संख्या बहुत छोटी है।')
+        return clean_acc
+
+
