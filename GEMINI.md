@@ -88,8 +88,8 @@
 ## 4. Current Repository State
 * **Documentation files:** `HLD.md`, `LLD.md`, `PROJECT_CONTEXT.md`, `REQUIREMENTS.md`, `README.md`, `GEMINI.md`.
 * **Git configuration:** `.gitignore` configured for Django, `.env`, SQLite, virtual environments.
-* **Active branch:** `feature/customer-statement-portal` (created from `main`).
-* **Code status: Customer Self-Service Statement Portal & Dedicated Dashboard Complete.**
+* **Active branch:** `main` (features merged and verified).
+* **Code status: Operations Dashboard, Field-Level Encryption & Customer Statement Portal Integrated.**
   - Django project (`config`) and billing app (`billing`) active on port 8080.
   - Models (`Bill`, `PaymentInfo`, `Client`, `PaymentSubmission`) fully migrated.
   - All 20 automated unit tests passed (100% OK).
@@ -123,38 +123,9 @@
     - 1-click WhatsApp statement sharing and direct portal preview links.
     - Navigation link to UPI verification queue in the top navbar.
   - **Staff Bank & UPI Settings & Field-Level Encryption (`/bills/settings/payment-info/`)**:
-    - Staff UI to view, update, and manage official newspaper bank details, IFSC, and UPI ID directly from the portal.
-    - Interactive masked account-number toggle and live QR preview.
-    - **Encryption at Rest:** Sensitive bank account numbers are stored via Fernet encryption while transparently decrypting in Python for UI and PDFs.
-
-  - **Customer Self-Service Statement Portal (`/statement/<uuid:token>/` & `/c/<uuid:token>/`):**
-    - Secure, unguessable UUID token per client (`Client.access_token`) — zero login required for clients.
-    - Mobile-first, bilingual statement view (`[ English | हिन्दी ]`).
-    - 4 Financial Ledger Summary Cards: Total Ads Published, Total Billed, Total Paid, and Outstanding Balance Due (कुल शेष बकाया).
-    - Distinct ledger sections: Unpaid/Pending Advertisements vs. Cleared/Paid in Full History.
-    - Public bill PDF download directly from statement portal without staff credentials (`/statement/<token>/bill/<id>/pdf/`).
-    - 1-click verification of online published ads via e-paper link.
-  - **Zero-Fee Native UPI Payment Integration:**
-    - Deep-linking (`upi://pay?pa=...&pn=...&am=...&tn=...&cu=INR`) opens user's installed UPI app (Google Pay, PhonePe, Paytm, BHIM, Cred) with prefilled amount and payee.
-    - Zero intermediary transaction fees (100% direct bank-to-bank settlement).
-    - Dynamic UPI QR Code for desktop/tablet scanning.
-    - Bank details (Account Number, IFSC, UPI ID) with 1-click copy buttons.
-    - Individual bill UPI payment or total balance settlement.
-  - **Customer UTR Submission & Staff Verification Flow:**
-    - Customers submit their 12-digit UTR or UPI reference ID directly on their statement page.
-    - Creates `PaymentSubmission` records in database.
-    - Shows real-time pending verification alert banners on the customer's portal.
-    - Staff dashboard (`/bills/submissions/`) and Bill Detail screen (`/bills/<id>/`) feature 1-click **[ Verify & Confirm Paid ]** action buttons that instantly credit the bill and update payment notes with the UTR.
-  - **Staff Sharing & Management:**
-    - 1-Click WhatsApp statement share button on `bill_detail.html` pre-formatted with balance due and statement URL.
-    - Direct Customer Portal preview link on `bill_detail.html` and `bill_search.html`.
-    - Navigation link to UPI Verifications in top navbar.
-  - **Staff Bank & UPI Settings & Field-Level Encryption (`/bills/settings/payment-info/`)**:
     - Staff UI to view, update, and manage official newspaper bank details, IFSC, and UPI ID directly from the portal (no raw Django admin needed).
-    - Interactive show/hide toggle for masked bank account number (`••••••••1234`).
-    - Live dynamic QR code scanner test widget to immediately test UPI scanning on staff phones.
-    - **Encryption at Rest:** Sensitive bank account numbers (`PaymentInfo.account_number`) are stored using Fernet authenticated symmetric encryption (`billing/crypto.py`, `EncryptedCharField`). Raw database dumps or SQLite files show ciphertext (`enc:gAAAAAB...`) while transparently decrypting in Python for PDF generation and staff UI.
-
+    - Interactive masked account-number toggle (`••••••••1234`) and live QR preview.
+    - **Encryption at Rest:** Sensitive bank account numbers are stored via Fernet authenticated symmetric encryption (`billing/crypto.py`, `EncryptedCharField`) while transparently decrypting in Python for UI and PDFs.
 
 ---
 
@@ -174,33 +145,11 @@
 
 ---
 
-## 6. Pending Actions / Next Steps
-## 6. Pending Actions / Next Steps
-* Features implemented and verified on branch `feature/customer-statement-portal`.
+## 6. Current Status & Next Steps
+* Merged `feature/customer-statement-portal` into `main`.
 * Automated test suite: 20/20 tests passing (including encryption roundtrip & settings view tests).
 * Dev server running on `http://127.0.0.1:8080/`.
-* When instructed by the user, run `git commit` to commit the codebase (NO push!).
-
----
-
-## 7. Android Termux Co-Hosting Configuration
-* **Host Device:** Xiaomi Redmi Note 8 Pro (MIUI 12.5.10 / Android 11, arm64-v8a)
-* **Static IP:** `192.168.1.50`, SSH Port: `8022`
-* **Port Isolation:**
-  - Site 1 (Filvora): Port `8000` (`~/Filvora`, log `~/filvora.log`)
-  - Site 2 (Vishwaguru Billing): Port `8080` (`~/vishwaguru-billing`, log `~/vishwaguru-billing.log`, pid `~/vishwaguru-billing.pid`)
-* **Process Isolation:** Strict port-specific control commands (`pkill -f "runserver 0.0.0.0:8080"` or `fuser -k 8080/tcp`) to guarantee Filvora on 8000 is never touched.
-* **SQLite Concurrency on Android:** WAL mode (`PRAGMA journal_mode = WAL;`) and connection timeout (20s) auto-configured in `billing/apps.py` and `config/settings.py`.
-* **Termux Operational Helpers (Global $PREFIX/bin):**
-  - `status` / `update`: Filvora (Site 1, Port 8000).
-  - `status2` (`$PREFIX/bin/status2`): Checks if Vishwaguru Billing is alive on port 8080, checks PID, tests HTTP response at `http://192.168.1.50:8080/`, and prints log or error output.
-  - `update2` (`$PREFIX/bin/update2`): Safely stops port 8080 (`pkill -f "runserver 0.0.0.0:8080"` and `fuser -k 8080/tcp`), runs `git pull` in `~/vishwaguru-billing`, runs migrations, and starts the server in background on port 8080 logging to `~/vishwaguru-billing.log`.
-* **Network & Host Isolation:** `ALLOWED_HOSTS = ['*']` configured by default in `config/settings.py` so any PC on home Wi-Fi (`192.168.1.50`, `filvora`) and all devices on Tailscale (`filvora`, `*.ts.net`, 100.x IPs) connect without `DisallowedHost` blocks.
-* **Cloudflare Tunnel (Custom Domain):**
-  - `SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')` and `USE_X_FORWARDED_HOST = True` configured in `config/settings.py` so HTTPS over Cloudflare Tunnels does not trigger 403 CSRF verification failures.
-  - Tunnel runs on Termux using `cloudflared tunnel run --token <TOKEN>` routing `https://billing.yourdomain.com` to `127.0.0.1:8080`.
-
-
+* Ready for user review or further instructions.
 
 ---
 
