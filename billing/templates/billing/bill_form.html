@@ -87,17 +87,17 @@
                 <div class="step-header">
                     <div class="step-title">
                         <span class="step-badge">1</span>
-                        {% if site_lang == 'hi' %}विज्ञापनदाता विवरण (Client Details){% else %}Client Information{% endif %}
+                        {% if site_lang == 'hi' %}विज्ञापनदाता विवरण (Client Details){% else %}Client Details{% endif %}
                     </div>
-                    <span class="step-subtitle">{% if site_lang == 'hi' %}ग्राहक / फर्म का नाम{% else %}Name & contact{% endif %}</span>
+                    <span class="step-subtitle">{% if site_lang == 'hi' %}नाम, संपर्क व पता{% else %}Contact & business info{% endif %}</span>
                 </div>
 
                 <div class="form-grid">
-                    <div class="form-group" style="grid-column: span 2; position: relative;">
+                    <div class="form-group" style="position: relative;">
                         <label class="form-label" for="{{ form.client_name.id_for_label }}">
-                            <i class="bi bi-person-fill"></i> {% if site_lang == 'hi' %}विज्ञापनदाता का नाम *{% else %}Client / Business Name *{% endif %}
-                            <span class="sub" style="font-weight: 500; color: var(--primary);">
-                                <i class="bi bi-magic"></i> {% if site_lang == 'hi' %}(पूर्व ग्राहक स्वतः सुझाव){% else %}(Auto-suggests past clients){% endif %}
+                            <i class="bi bi-person-fill"></i> {% if site_lang == 'hi' %}विज्ञापनदाता / फर्म का नाम *{% else %}Client / Business Name *{% endif %}
+                            <span class="sub" style="color: var(--primary);">
+                                <i class="bi bi-magic"></i> {% if site_lang == 'hi' %}(पूर्व ग्राहक सुझाव){% else %}(Auto-suggests past clients){% endif %}
                             </span>
                         </label>
                         {{ form.client_name }}
@@ -105,12 +105,26 @@
                         <div id="client_suggestions_box" class="client-suggestions-dropdown" style="display: none;"></div>
                     </div>
 
-                    <div class="form-group" style="grid-column: span 2;">
+                    <div class="form-group">
                         <label class="form-label" for="{{ form.client_phone.id_for_label }}">
-                            <i class="bi bi-whatsapp" style="color: #25d366;"></i> {% if site_lang == 'hi' %}मोबाइल नंबर (वैकल्पिक){% else %}Phone Number (WhatsApp, Optional){% endif %}
+                            <i class="bi bi-whatsapp" style="color: #25d366;"></i> {% if site_lang == 'hi' %}मोबाइल नंबर (WhatsApp, वैकल्पिक){% else %}Phone Number (WhatsApp, Optional){% endif %}
                             <span class="sub">{% if site_lang == 'hi' %}(10 अंक){% else %}(10 digits){% endif %}</span>
                         </label>
                         {{ form.client_phone }}
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="{{ form.client_address.id_for_label }}">
+                            <i class="bi bi-geo-alt"></i> {% if site_lang == 'hi' %}दुकान / कार्यालय का पता व शहर (वैकल्पिक){% else %}Address / City (Optional){% endif %}
+                        </label>
+                        {{ form.client_address }}
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="{{ form.client_gstin.id_for_label }}">
+                            <i class="bi bi-card-text"></i> {% if site_lang == 'hi' %}जीएसटी / पैन नंबर (वैकल्पिक){% else %}GSTIN or PAN (Optional){% endif %}
+                        </label>
+                        {{ form.client_gstin }}
                     </div>
                 </div>
 
@@ -129,30 +143,6 @@
                         </button>
                     </div>
                 </div>
-
-                <!-- Progressive Disclosure: Address & GSTIN -->
-                <details id="client_address_details" class="progressive-details" {% if form.client_address.value or form.client_gstin.value %}open{% endif %}>
-                    <summary class="progressive-summary">
-                        <span><i class="bi bi-geo-alt"></i> {% if site_lang == 'hi' %}+ पता व जीएसटी/पैन जोड़ें (वैकल्पिक){% else %}+ Add Address & GSTIN / PAN (Optional){% endif %}</span>
-                        <i class="bi bi-chevron-down"></i>
-                    </summary>
-                    <div class="progressive-content">
-                        <div class="form-grid">
-                            <div class="form-group full-width">
-                                <label class="form-label" for="{{ form.client_address.id_for_label }}">
-                                    {% if site_lang == 'hi' %}दुकान / कार्यालय का पता{% else %}Address / City{% endif %}
-                                </label>
-                                {{ form.client_address }}
-                            </div>
-                            <div class="form-group full-width">
-                                <label class="form-label" for="{{ form.client_gstin.id_for_label }}">
-                                    {% if site_lang == 'hi' %}पैन / जीएसटी नंबर{% else %}Client GSTIN or PAN{% endif %}
-                                </label>
-                                {{ form.client_gstin }}
-                            </div>
-                        </div>
-                    </div>
-                </details>
             </div>
 
             <!-- Step 2: Advertisement & Publication Details -->
@@ -162,7 +152,7 @@
                         <span class="step-badge">2</span>
                         {% if site_lang == 'hi' %}विज्ञापन व प्रकाशन विवरण{% else %}Advertisement & Edition{% endif %}
                     </div>
-                    <span class="step-subtitle">{% if site_lang == 'hi' %}स्थान, आकार व दिनांक{% else %}Placement & date{% endif %}</span>
+                    <span class="step-subtitle">{% if site_lang == 'hi' %}स्थान, आकार, पृष्ठ व दिनांक{% else %}Placement, size, page & date{% endif %}</span>
                 </div>
 
                 <!-- Placement Presets Chips -->
@@ -194,12 +184,12 @@
                 </div>
 
                 <!-- Dropdown selector (synced with chips) -->
-                <div style="margin-bottom: 1rem;">
+                <div style="margin-bottom: 0.85rem;">
                     {{ form.placement_type }}
                 </div>
 
                 <!-- Custom Size Input Container -->
-                <div class="form-group" id="custom_size_container" style="display: none; margin-bottom: 1rem; background: #fffbeb; padding: 0.75rem; border-radius: 6px; border: 1px solid #fde68a;">
+                <div class="form-group" id="custom_size_container" style="display: none; margin-bottom: 0.85rem; background: #fffbeb; padding: 0.75rem; border-radius: 6px; border: 1px solid #fde68a;">
                     <label class="form-label" for="{{ form.custom_size_text.id_for_label }}" style="color: #92400e;">
                         <i class="bi bi-rulers"></i> {% if site_lang == 'hi' %}विशिष्ट माप (उदा. 12x8 सेमी) *{% else %}Custom Dimensions (e.g. 12cm x 8cm) *{% endif %}
                     </label>
@@ -228,37 +218,28 @@
                         </label>
                         {{ form.edition_name }}
                     </div>
-                </div>
 
-                <!-- Progressive Disclosure: Page No, Title, E-paper URL -->
-                <details class="progressive-details" {% if form.page_number.value or form.ad_title.value or form.epaper_link.value %}open{% endif %}>
-                    <summary class="progressive-summary">
-                        <span><i class="bi bi-plus-circle"></i> {% if site_lang == 'hi' %}+ पृष्ठ क्रमांक, शीर्षक व ई-पेपर लिंक जोड़ें{% else %}+ Add Page No, Ad Title & E-paper Link{% endif %}</span>
-                        <i class="bi bi-chevron-down"></i>
-                    </summary>
-                    <div class="progressive-content">
-                        <div class="form-grid">
-                            <div class="form-group">
-                                <label class="form-label" for="{{ form.page_number.id_for_label }}">
-                                    {% if site_lang == 'hi' %}पृष्ठ संख्या (Page No){% else %}Page Number{% endif %}
-                                </label>
-                                {{ form.page_number }}
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label" for="{{ form.ad_title.id_for_label }}">
-                                    {% if site_lang == 'hi' %}विज्ञापन शीर्षक / विषय{% else %}Ad Title / Description{% endif %}
-                                </label>
-                                {{ form.ad_title }}
-                            </div>
-                            <div class="form-group full-width">
-                                <label class="form-label" for="{{ form.epaper_link.id_for_label }}">
-                                    <i class="bi bi-link-45deg"></i> {% if site_lang == 'hi' %}ई-पेपर सत्यापन लिंक (URL){% else %}Epaper Online Link (URL){% endif %}
-                                </label>
-                                {{ form.epaper_link }}
-                            </div>
-                        </div>
+                    <div class="form-group">
+                        <label class="form-label" for="{{ form.page_number.id_for_label }}">
+                            <i class="bi bi-file-earmark-break"></i> {% if site_lang == 'hi' %}पृष्ठ संख्या (Page No){% else %}Page Number{% endif %}
+                        </label>
+                        {{ form.page_number }}
                     </div>
-                </details>
+
+                    <div class="form-group">
+                        <label class="form-label" for="{{ form.ad_title.id_for_label }}">
+                            <i class="bi bi-card-heading"></i> {% if site_lang == 'hi' %}विज्ञापन शीर्षक / विषय (वैकल्पिक){% else %}Ad Title / Description (Optional){% endif %}
+                        </label>
+                        {{ form.ad_title }}
+                    </div>
+
+                    <div class="form-group full-width">
+                        <label class="form-label" for="{{ form.epaper_link.id_for_label }}">
+                            <i class="bi bi-link-45deg"></i> {% if site_lang == 'hi' %}ई-पेपर सत्यापन लिंक (URL, वैकल्पिक){% else %}Epaper Online Link (URL, Optional){% endif %}
+                        </label>
+                        {{ form.epaper_link }}
+                    </div>
+                </div>
             </div>
 
             <!-- Step 3: Billing & Instant Payment -->
@@ -268,10 +249,10 @@
                         <span class="step-badge">3</span>
                         {% if site_lang == 'hi' %}राशि व भुगतान स्थिति{% else %}Pricing & Payment{% endif %}
                     </div>
-                    <span class="step-subtitle">{% if site_lang == 'hi' %}राशि, छूट व माध्यम{% else %}Amounts & settlement{% endif %}</span>
+                    <span class="step-subtitle">{% if site_lang == 'hi' %}दर, छूट, बकाया व माध्यम{% else %}Amounts & settlement{% endif %}</span>
                 </div>
 
-                <div class="form-grid" style="margin-bottom: 1.25rem;">
+                <div class="form-grid" style="margin-bottom: 1rem;">
                     <div class="form-group">
                         <label class="form-label" for="{{ form.base_amount.id_for_label }}" style="font-size: 0.95rem;">
                             <i class="bi bi-currency-rupee"></i> {% if site_lang == 'hi' %}मूल विज्ञापन राशि (₹) *{% else %}Base Rate / Amount (₹) *{% endif %}
@@ -286,12 +267,9 @@
                         {{ form.discount_amount }}
                     </div>
 
-                    <div class="form-group" style="grid-column: span 2;">
+                    <div class="form-group">
                         <label class="form-label" for="{{ form.previous_due.id_for_label }}" style="font-size: 0.95rem; color: #b91c1c;">
-                            <i class="bi bi-clock-history"></i> {% if site_lang == 'hi' %}पुराना बकाया जोड़ें (₹, यदि कोई हो){% else %}Old Pending / Previous Due (₹, Optional){% endif %}
-                            <span class="sub" style="font-weight: 500; color: #b91c1c;">
-                                {% if site_lang == 'hi' %}(कुल देय राशि में जुड़ेगा){% else %}(Adds to total payable amount){% endif %}
-                            </span>
+                            <i class="bi bi-clock-history"></i> {% if site_lang == 'hi' %}पुराना बकाया जोड़ें (₹){% else %}Old Pending (₹, Optional){% endif %}
                         </label>
                         {{ form.previous_due }}
                     </div>
@@ -350,21 +328,13 @@
                     {{ form.payment_method }}
                 </div>
 
-                <!-- Progressive Disclosure: Payment Note / UTR -->
-                <details class="progressive-details" {% if form.payment_note.value %}open{% endif %}>
-                    <summary class="progressive-summary">
-                        <span><i class="bi bi-receipt-cutoff"></i> {% if site_lang == 'hi' %}+ UTR / चेक नं. / लेन-देन संदर्भ जोड़ें{% else %}+ Add Transaction Ref / UTR / Cheque No.{% endif %}</span>
-                        <i class="bi bi-chevron-down"></i>
-                    </summary>
-                    <div class="progressive-content">
-                        <div class="form-group full-width">
-                            <label class="form-label" for="{{ form.payment_note.id_for_label }}">
-                                {% if site_lang == 'hi' %}भुगतान संदर्भ (UTR / Cheque No.){% else %}Payment Reference / Note{% endif %}
-                            </label>
-                            {{ form.payment_note }}
-                        </div>
-                    </div>
-                </details>
+                <!-- Transaction Reference / UTR directly visible -->
+                <div class="form-group" style="margin-top: 1rem;">
+                    <label class="form-label" for="{{ form.payment_note.id_for_label }}">
+                        <i class="bi bi-receipt-cutoff"></i> {% if site_lang == 'hi' %}भुगतान संदर्भ / यूटीआर / चेक नं. (वैकल्पिक){% else %}Payment Reference / UTR / Cheque No. (Optional){% endif %}
+                    </label>
+                    {{ form.payment_note }}
+                </div>
             </div>
 
         </div>

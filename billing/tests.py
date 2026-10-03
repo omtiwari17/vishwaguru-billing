@@ -315,4 +315,202 @@ class VishwaguruBillingTests(TestCase):
         self.assertEqual(pdf_res.status_code, 200)
         self.assertContains(pdf_res, '1500.00')
 
+    def test_customer_portal_and_upi_intent(self):
+        """Test customer portal rendering, outstanding balance calculation, and UPI deep-link generation"""
+        client_obj = ClientModel.objects.create(
+            name='Rajesh Electronics',
+            phone='9893099999',
+            address='MG Road, Indore'
+        )
+        self.assertIsNotNone(client_obj.access_token)
+
+        # Unpaid Bill 1
+        b1 = Bill.objects.create(
+            bill_number='VG-2026-0091',
+            client=client_obj,
+            client_name='Rajesh Electronics',
+            placement_type=PlacementType.FRONT_HALF,
+            base_amount=Decimal('4000.00'),
+            discount_amount=Decimal('0.00'),
+            payment_status=PaymentStatus.UNPAID,
+            amount_paid=Decimal('0.00'),
+            created_by=self.user
+        )
+
+        # Paid Bill 2
+        b2 = Bill.objects.create(
+            bill_number='VG-2026-0092',
+            client=client_obj,
+            client_name='Rajesh Electronics',
+            placement_type=PlacementType.INSIDE_HALF,
+            base_amount=Decimal('2500.00'),
+            discount_amount=Decimal('0.00'),
+            payment_status=PaymentStatus.PAID,
+            amount_paid=Decimal('2500.00'),
+            created_by=self.user
+        )
+
+        self.assertEqual(client_obj.total_billed, Decimal('6500.00'))
+        self.assertEqual(client_obj.total_paid, Decimal('2500.00'))
+        self.assertEqual(client_obj.total_outstanding, Decimal('4000.00'))
+
+        # Access customer portal without staff authentication (unauthenticated client)
+        anon_client = Client()
+        portal_url = reverse('billing:customer_portal', kwargs={'token': str(client_obj.access_token)})
+        response = anon_client.get(portal_url)
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'Rajesh Electronics')
+        self.assertContains(response, '4000.00') # Balance Due
+        self.assertContains(response, 'VG-2026-0091') # Unpaid bill
+        self.assertContains(response, 'VG-2026-0092') # Paid bill
+
+        # Check short redirect route: /c/<token>/
+        short_url = reverse('billing:customer_portal_short', kwargs={'token': str(client_obj.access_token)})
+        short_res = anon_client.get(short_url)
+        self.assertEqual(short_res.status_code, 302)
+        self.assertIn(str(client_obj.access_token), short_res.url)
+
+        # Check customer bill PDF access without staff login
+        pdf_url = reverse('billing:customer_bill_pdf', kwargs={'token': str(client_obj.access_token), 'bill_id': b1.id})
+        pdf_res = anon_client.get(pdf_url)
+        self.assertEqual(pdf_res.status_code, 200)
+
+    def test_customer_payment_submission_and_staff_verification(self):
+        """Test customer submitting UTR reference and staff verifying it to clear bill"""
+        client_obj = ClientModel.objects.create(
+            name='Khandelwal Jewellers',
+            phone='9893088888',
+        )
+        bill = Bill.objects.create(
+            bill_number='VG-2026-0095',
+            client=client_obj,
+            client_name='Khandelwal Jewellers',
+            placement_type=PlacementType.FRONT_FULL,
+            base_amount=Decimal('8000.00'),
+            discount_amount=Decimal('0.00'),
+            payment_status=PaymentStatus.UNPAID,
+            amount_paid=Decimal('0.00'),
+            created_by=self.user
+        )
+
+        # 1. Customer submits UTR on public portal
+        anon_client = Client()
+        submit_url = reverse('billing:customer_payment_submit', kwargs={'token': str(client_obj.access_token)})
+        post_data = {
+            'bill': bill.id,
+            'amount': '8000.00',
+            'utr_number': 'UTR123456789012',
+            'notes': 'Paid via PhonePe by Ramesh',
+        }
+        submit_res = anon_client.post(submit_url, post_data, follow=True)
+        self.assertEqual(submit_res.status_code, 200)
+
+        # Check submission created in database with status 'pending'
+        from billing.models import PaymentSubmission
+        submission = PaymentSubmission.objects.filter(utr_number='UTR123456789012').first()
+        self.assertIsNotNone(submission)
+        self.assertEqual(submission.status, 'pending')
+        self.assertEqual(submission.amount, Decimal('8000.00'))
+
+        # 2. Staff views bill_detail and verifies payment submission
+        verify_url = reverse('billing:verify_payment_submission', args=[submission.id])
+        verify_res = self.client.post(verify_url, {'action': 'verify'}, follow=True)
+        self.assertEqual(verify_res.status_code, 200)
+
+        # Verify bill is now marked PAID with UTR recorded
+        bill.refresh_from_db()
+        submission.refresh_from_db()
+        self.assertEqual(submission.status, 'verified')
+        self.assertEqual(bill.payment_status, PaymentStatus.PAID)
+        self.assertEqual(bill.amount_paid, Decimal('8000.00'))
+        self.assertEqual(bill.balance_amount, Decimal('0.00'))
+        self.assertIn('UTR123456789012', bill.payment_note)
+
+    def test_dashboard_view_authenticated(self):
+        Bill.objects.create(
+            bill_number='VG-2026-0099',
+            client_name='Test Advertiser Ltd',
+            client_phone='9999900000',
+            placement_type=PlacementType.FRONT_FULL,
+            base_amount=Decimal('10000.00'),
+            discount_amount=Decimal('1000.00'),
+            payment_status=PaymentStatus.PARTIAL,
+            amount_paid=Decimal('4000.00'),
+            created_by=self.user
+        )
+
+        url = reverse('billing:dashboard')
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'Test Advertiser Ltd')
+        self.assertContains(response, 'VG-2026-0099')
+        self.assertIn('today_billed', response.context)
+        self.assertIn('total_outstanding', response.context)
+        self.assertIn('recent_bills', response.context)
+
+    def test_dashboard_view_unauthenticated(self):
+        anon_client = Client()
+        url = reverse('billing:dashboard')
+        response = anon_client.get(url)
+        self.assertEqual(response.status_code, 302)
+        self.assertIn('/login/', response.url)
+
+    def test_root_redirects_to_dashboard(self):
+        response = self.client.get('/', follow=False)
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, reverse('billing:dashboard'))
+
+    def test_payment_info_encryption_at_rest(self):
+        from django.db import connection
+        payment_info = PaymentInfo.get_solo()
+        payment_info.account_number = '987654321098'
+        payment_info.save()
+
+        reloaded = PaymentInfo.objects.get(id=payment_info.id)
+        self.assertEqual(reloaded.account_number, '987654321098')
+        self.assertTrue(reloaded.masked_account_number.endswith('1098'))
+
+        with connection.cursor() as cursor:
+            cursor.execute('SELECT account_number FROM billing_paymentinfo WHERE id = %s', [payment_info.id])
+            raw_in_db = cursor.fetchone()[0]
+        self.assertTrue(raw_in_db.startswith('enc:'))
+        self.assertNotIn('987654321098', raw_in_db)
+
+    def test_payment_info_settings_view(self):
+        url = reverse('billing:payment_info_settings')
+
+        get_res = self.client.get(url)
+        self.assertEqual(get_res.status_code, 200)
+        self.assertContains(get_res, 'vishwaguru@sbi')
+
+        post_data = {
+            'newspaper_name': 'विश्वगुरु (Vishwaguru)',
+            'tagline': 'दैनिक समाचार पत्र',
+            'registration_no': 'RNI-MP-12345',
+            'bank_name': 'HDFC Bank',
+            'account_holder_name': 'Vishwaguru Publication',
+            'account_number': '50100234567890',
+            'ifsc_code': 'HDFC0001234',
+            'upi_id': 'vishwaguru@hdfc',
+            'phone_number': '9893012345',
+            'email': 'billing@vishwaguru.com',
+            'office_address': 'Indore, MP',
+        }
+        post_res = self.client.post(url, post_data, follow=True)
+        self.assertEqual(post_res.status_code, 200)
+
+        updated_info = PaymentInfo.get_solo()
+        self.assertEqual(updated_info.bank_name, 'HDFC Bank')
+        self.assertEqual(updated_info.account_number, '50100234567890')
+        self.assertEqual(updated_info.ifsc_code, 'HDFC0001234')
+        self.assertEqual(updated_info.upi_id, 'vishwaguru@hdfc')
+
+    def test_payment_info_settings_unauthenticated(self):
+        anon_client = Client()
+        url = reverse('billing:payment_info_settings')
+        response = anon_client.get(url)
+        self.assertEqual(response.status_code, 302)
+        self.assertIn('/login/', response.url)
+
+
 

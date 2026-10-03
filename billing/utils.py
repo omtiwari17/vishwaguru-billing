@@ -38,7 +38,21 @@ def generate_bill_number():
         return f"{prefix}{next_seq:04d}"
 
 
-def generate_upi_qr_base64(upi_id, payee_name, amount, bill_number):
+def get_upi_intent_url(upi_id, payee_name, amount, transaction_note="Vishwaguru"):
+    """
+    Generate standard NPCI UPI URI scheme for direct app opening.
+    When clicked on a mobile device, prompts user to select installed UPI apps
+    (Google Pay, PhonePe, Paytm, BHIM, Cred) with prefilled payee & amount.
+    """
+    if not upi_id:
+        return ""
+    safe_name = urllib.parse.quote(str(payee_name or "Vishwaguru"))
+    safe_note = urllib.parse.quote(str(transaction_note or "Vishwaguru Payment"))
+    formatted_amount = f"{float(amount):.2f}"
+    return f"upi://pay?pa={upi_id.strip()}&pn={safe_name}&am={formatted_amount}&cu=INR&tn={safe_note}"
+
+
+def generate_upi_qr_base64(upi_id, payee_name, amount, bill_number="Vishwaguru", **kwargs):
     """
     Generate base64 encoded PNG for UPI QR Code.
     Returns: 'data:image/png;base64,...' or None if upi_id is empty.
@@ -49,7 +63,9 @@ def generate_upi_qr_base64(upi_id, payee_name, amount, bill_number):
     try:
         import qrcode
 
-        safe_name = urllib.parse.quote(payee_name or "Vishwaguru")
+        safe_note_val = bill_number or kwargs.get('bill_number_or_note', 'Vishwaguru')
+        safe_name = urllib.parse.quote(str(payee_name or "Vishwaguru"))
+        safe_note = urllib.parse.quote(str(safe_note_val))
         formatted_amount = f"{float(amount):.2f}"
         
         # Standard NPCI UPI URI scheme
@@ -58,7 +74,7 @@ def generate_upi_qr_base64(upi_id, payee_name, amount, bill_number):
             f"&pn={safe_name}"
             f"&am={formatted_amount}"
             f"&cu=INR"
-            f"&tn={bill_number}"
+            f"&tn={safe_note}"
         )
 
         qr = qrcode.QRCode(
@@ -79,6 +95,7 @@ def generate_upi_qr_base64(upi_id, payee_name, amount, bill_number):
     except Exception as e:
         # Fallback gracefully if qrcode fails
         return None
+
 
 
 # Helper tables for Hindi currency words

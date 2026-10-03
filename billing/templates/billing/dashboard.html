@@ -1,0 +1,446 @@
+{% extends 'billing/base.html' %}
+{% load static %}
+
+{% block title %}
+    {% if site_lang == 'hi' %}डैशबोर्ड | विश्वगुरु विज्ञापन बिलिंग{% else %}Dashboard | Vishwaguru Billing{% endif %}
+{% endblock %}
+
+{% block content %}
+<!-- Dashboard Welcome & Quick Action Hero Banner -->
+<div class="dashboard-hero">
+    <div class="dashboard-hero-content">
+        <div class="dashboard-hero-title-group">
+            <div class="dashboard-hero-icon">
+                <i class="bi bi-speedometer2"></i>
+            </div>
+            <div>
+                <h1 class="dashboard-hero-heading">
+                    {% if site_lang == 'hi' %}विश्वगुरु विज्ञापन बिलिंग डैशबोर्ड{% else %}Vishwaguru Ad Billing Dashboard{% endif %}
+                </h1>
+                <p class="dashboard-hero-sub">
+                    <i class="bi bi-calendar3"></i> {{ today|date:"l, d F Y" }} &nbsp;|&nbsp; 
+                    <i class="bi bi-geo-alt"></i> {{ payment_info.newspaper_name }} ({{ payment_info.office_address }})
+                </p>
+            </div>
+        </div>
+
+        <!-- Quick Action Buttons -->
+        <div class="dashboard-hero-actions">
+            <a href="{% url 'billing:bill_create' %}" class="btn btn-primary btn-hero-action">
+                <i class="bi bi-plus-circle-fill"></i>
+                <span>{% if site_lang == 'hi' %}नया बिल बनाएं{% else %}Create New Bill{% endif %}</span>
+            </a>
+            <a href="{% url 'billing:bill_search' %}" class="btn btn-secondary btn-hero-action">
+                <i class="bi bi-search"></i>
+                <span>{% if site_lang == 'hi' %}बिल खोजें{% else %}Search Bills{% endif %}</span>
+            </a>
+            <a href="{% url 'billing:payment_submissions_list' %}" class="btn btn-secondary btn-hero-action">
+                <i class="bi bi-wallet2"></i>
+                <span>{% if site_lang == 'hi' %}यूपीआई सत्यापन{% else %}UPI Verifications{% endif %}</span>
+                {% if pending_submissions_count > 0 %}
+                    <span class="badge badge-unpaid" style="margin-left: 0.35rem; padding: 0.15rem 0.45rem; font-size: 0.7rem;">{{ pending_submissions_count }}</span>
+                {% endif %}
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Pending Customer Payment Submissions Alert Banner -->
+{% if pending_submissions_count > 0 %}
+<div class="dashboard-alert-banner">
+    <div class="dashboard-alert-content">
+        <div class="dashboard-alert-icon">
+            <i class="bi bi-bell-fill"></i>
+        </div>
+        <div>
+            <strong>
+                {% if site_lang == 'hi' %}
+                    {{ pending_submissions_count }} नए ग्राहक यूपीआई भुगतान सत्यापन हेतु प्रतीक्षारत हैं!
+                {% else %}
+                    {{ pending_submissions_count }} Customer UPI payment submissions waiting for staff verification!
+                {% endif %}
+            </strong>
+            <div style="font-size: 0.825rem; color: #78350f; margin-top: 0.15rem;">
+                {% if site_lang == 'hi' %}
+                    ग्राहकों ने अपने 12-अंकीय यूटीआर संदर्भ पोर्टल पर जमा किए हैं।
+                {% else %}
+                    Customers have submitted 12-digit UTR references on their statement portal.
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    <a href="{% url 'billing:payment_submissions_list' %}" class="btn" style="background: #b45309; color: #fff; font-weight: 700; font-size: 0.825rem; white-space: nowrap;">
+        <i class="bi bi-check2-circle"></i> {% if site_lang == 'hi' %}अभी सत्यापित करें{% else %}Review & Verify Now &rarr;{% endif %}
+    </a>
+</div>
+{% endif %}
+
+<!-- Financial KPI Statistics Grid (4 Metric Cards) -->
+<div class="dashboard-stats-grid" style="margin-bottom: 1.5rem;">
+    <!-- 1. Today's Billing -->
+    <div class="stat-chip">
+        <div class="stat-chip-icon primary">
+            <i class="bi bi-receipt-cutoff"></i>
+        </div>
+        <div class="stat-chip-body">
+            <span class="stat-chip-title">{% if site_lang == 'hi' %}आज की बिलिंग{% else %}Today's Billed{% endif %}</span>
+            <span class="stat-chip-value">₹{{ today_billed|floatformat:0 }}</span>
+            <div class="stat-chip-footnote">
+                <span>{{ today_count }} {% if site_lang == 'hi' %}बिल{% else %}bills{% endif %}</span>
+                &bull; <span style="color: var(--success);">₹{{ today_paid|floatformat:0 }} {% if site_lang == 'hi' %}प्राप्त{% else %}paid{% endif %}</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. This Month's Billing -->
+    <div class="stat-chip">
+        <div class="stat-chip-icon blue">
+            <i class="bi bi-calendar-check"></i>
+        </div>
+        <div class="stat-chip-body">
+            <span class="stat-chip-title">{% if site_lang == 'hi' %}इस माह की बिलिंग{% else %}This Month ({{ today|date:"M" }}){% endif %}</span>
+            <span class="stat-chip-value">₹{{ month_billed|floatformat:0 }}</span>
+            <div class="stat-chip-footnote">
+                <span>{{ month_count }} {% if site_lang == 'hi' %}बिल{% else %}bills{% endif %}</span>
+                &bull; <span style="color: var(--success);">₹{{ month_paid|floatformat:0 }} {% if site_lang == 'hi' %}प्राप्त{% else %}paid{% endif %}</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3. Total Collections -->
+    <div class="stat-chip">
+        <div class="stat-chip-icon success">
+            <i class="bi bi-check-circle-fill"></i>
+        </div>
+        <div class="stat-chip-body">
+            <span class="stat-chip-title">{% if site_lang == 'hi' %}कुल प्राप्त राशि{% else %}Total Collections{% endif %}</span>
+            <span class="stat-chip-value" style="color: var(--success);">₹{{ total_collected|floatformat:0 }}</span>
+            <div class="stat-chip-footnote">
+                <span>{{ total_count }} {% if site_lang == 'hi' %}समस्त बिल{% else %}total bills{% endif %}</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- 4. Outstanding Pending Due -->
+    <div class="stat-chip" style="border-left: 4px solid var(--danger);">
+        <div class="stat-chip-icon warning">
+            <i class="bi bi-clock-history"></i>
+        </div>
+        <div class="stat-chip-body">
+            <span class="stat-chip-title" style="color: #991b1b;">{% if site_lang == 'hi' %}कुल शेष बकाया राशि{% else %}Total Balance Due{% endif %}</span>
+            <span class="stat-chip-value" style="color: var(--danger);">₹{{ total_outstanding|floatformat:0 }}</span>
+            <div class="stat-chip-footnote">
+                <span style="color: #991b1b; font-weight: 600;">{{ unpaid_bills_count }} {% if site_lang == 'hi' %}अदत्त/आंशिक बिल{% else %}unpaid / partial bills{% endif %}</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Main 2-Column Dashboard Layout -->
+<div class="dashboard-main-grid">
+
+    <!-- Left / Primary Column: Recent Invoices Table & Distribution -->
+    <div class="dashboard-primary-col">
+
+        <!-- Recent Invoices Card -->
+        <div class="card" style="margin-bottom: 1.5rem;">
+            <div class="card-header">
+                <div>
+                    <h2 class="card-title">
+                        <i class="bi bi-receipt" style="color: var(--primary);"></i>
+                        {% if site_lang == 'hi' %}हाल ही में जारी विज्ञापन बिल{% else %}Recent Advertisement Bills{% endif %}
+                    </h2>
+                    <p class="card-subtitle">
+                        {% if site_lang == 'hi' %}नवीनतम 10 बिलों का विवरण व त्वरित क्रियाएं{% else %}Latest 10 invoices generated with 1-click actions{% endif %}
+                    </p>
+                </div>
+                <div style="display: flex; gap: 0.5rem; align-items: center;">
+                    <a href="{% url 'billing:bill_create' %}" class="btn btn-primary" style="padding: 0.35rem 0.75rem; font-size: 0.8rem;">
+                        <i class="bi bi-plus-circle"></i> {% if site_lang == 'hi' %}नया बिल{% else %}New Bill{% endif %}
+                    </a>
+                    <a href="{% url 'billing:bill_search' %}" class="btn btn-secondary" style="padding: 0.35rem 0.75rem; font-size: 0.8rem;">
+                        <i class="bi bi-search"></i> {% if site_lang == 'hi' %}सभी देखें{% else %}View All{% endif %}
+                    </a>
+                </div>
+            </div>
+
+            {% if recent_bills %}
+            <div class="table-container">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>{% if site_lang == 'hi' %}बिल क्र.{% else %}Invoice No{% endif %}</th>
+                            <th>{% if site_lang == 'hi' %}विज्ञापनदाता{% else %}Client{% endif %}</th>
+                            <th>{% if site_lang == 'hi' %}प्रकाशन व आकार{% else %}Edition & Placement{% endif %}</th>
+                            <th>{% if site_lang == 'hi' %}कुल राशि{% else %}Amount (₹){% endif %}</th>
+                            <th>{% if site_lang == 'hi' %}स्थिति{% else %}Status{% endif %}</th>
+                            <th style="text-align: right;">{% if site_lang == 'hi' %}क्रियाएं{% else %}Actions{% endif %}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for b in recent_bills %}
+                        <tr>
+                            <td>
+                                <a href="{% url 'billing:bill_detail' b.pk %}" style="font-weight: 700; color: var(--primary); text-decoration: none;">
+                                    {{ b.bill_number }}
+                                </a>
+                                <div style="font-size: 0.75rem; color: var(--text-muted);">
+                                    {{ b.created_at|date:"d/m/Y" }}
+                                </div>
+                            </td>
+                            <td>
+                                <div style="font-weight: 700; color: var(--secondary);">{{ b.client_name }}</div>
+                                {% if b.client_phone %}
+                                    <small style="color: var(--text-muted);"><i class="bi bi-telephone"></i> {{ b.client_phone }}</small>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div>
+                                    {% if site_lang == 'hi' %}{{ b.edition_hindi }}{% else %}{{ b.get_edition_name_display }}{% endif %}
+                                </div>
+                                <small style="color: var(--text-muted);">
+                                    {% if site_lang == 'hi' %}{{ b.placement_hindi }}{% else %}{{ b.get_placement_type_display }}{% endif %}
+                                </small>
+                            </td>
+                            <td>
+                                <div style="font-weight: 700; color: var(--secondary);">
+                                    ₹{{ b.total_amount|floatformat:2 }}
+                                </div>
+                                {% if b.balance_amount > 0 %}
+                                    <small style="color: var(--danger); font-weight: 600;">
+                                        {% if site_lang == 'hi' %}बकाया:{% else %}Due:{% endif %} ₹{{ b.balance_amount|floatformat:2 }}
+                                    </small>
+                                {% else %}
+                                    <small style="color: var(--success); font-weight: 600;">
+                                        <i class="bi bi-check"></i> {% if site_lang == 'hi' %}चुकता{% else %}Cleared{% endif %}
+                                    </small>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if b.payment_status == 'Paid' %}
+                                    <span class="badge badge-paid">
+                                        <i class="bi bi-check-circle-fill"></i> {% if site_lang == 'hi' %}पूर्ण भुगतान{% else %}Paid{% endif %}
+                                    </span>
+                                {% elif b.payment_status == 'Partial' %}
+                                    <span class="badge badge-partial">
+                                        <i class="bi bi-clock-history"></i> {% if site_lang == 'hi' %}आंशिक{% else %}Partial{% endif %}
+                                    </span>
+                                {% else %}
+                                    <span class="badge badge-unpaid">
+                                        <i class="bi bi-x-circle-fill"></i> {% if site_lang == 'hi' %}अदत्त{% else %}Unpaid{% endif %}
+                                    </span>
+                                {% endif %}
+                            </td>
+                            <td style="text-align: right; white-space: nowrap;">
+                                <a href="{% url 'billing:bill_detail' b.pk %}" class="btn btn-secondary" style="padding: 0.35rem 0.55rem; font-size: 0.775rem;" title="View Details">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                                <a href="{% url 'billing:bill_pdf' b.pk %}?download=1" class="btn btn-pdf" style="padding: 0.35rem 0.55rem; font-size: 0.775rem;" title="Download PDF">
+                                    <i class="bi bi-download"></i>
+                                </a>
+                                {% if b.client_phone %}
+                                <a href="{{ b.whatsapp_share_url }}" target="_blank" class="btn btn-whatsapp" style="padding: 0.35rem 0.55rem; font-size: 0.775rem;" title="Share WhatsApp">
+                                    <i class="bi bi-whatsapp"></i>
+                                </a>
+                                {% endif %}
+                                {% if b.client %}
+                                <a href="{% url 'billing:customer_portal' b.client.access_token %}" target="_blank" class="btn btn-secondary" style="padding: 0.35rem 0.55rem; font-size: 0.775rem; background: #e0f2fe; color: #0369a1; border-color: #bae6fd;" title="Customer Portal">
+                                    <i class="bi bi-link-45deg"></i>
+                                </a>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <div style="padding: 0.75rem 1.25rem; background: #f8fafc; border-top: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center;">
+                <span style="font-size: 0.8rem; color: var(--text-muted);">
+                    {% if site_lang == 'hi' %}नवीनतम 10 बिल प्रदर्शित। कुल बिल: {{ total_count }}{% else %}Displaying latest 10 bills. Total: {{ total_count }}{% endif %}
+                </span>
+                <a href="{% url 'billing:bill_search' %}" style="font-size: 0.825rem; font-weight: 700; color: var(--primary); text-decoration: none;">
+                    {% if site_lang == 'hi' %}सभी बिल खोजें व देखें &rarr;{% else %}View & Search All Bills &rarr;{% endif %}
+                </a>
+            </div>
+            {% else %}
+            <div style="text-align: center; padding: 3rem 1rem; color: var(--text-muted);">
+                <i class="bi bi-receipt" style="font-size: 2.5rem; opacity: 0.4;"></i>
+                <h3 style="margin-top: 0.5rem; font-size: 1.1rem; color: var(--secondary);">
+                    {% if site_lang == 'hi' %}अभी तक कोई बिल नहीं बनाया गया है{% else %}No Bills Created Yet{% endif %}
+                </h3>
+                <p style="font-size: 0.85rem; margin-bottom: 1rem;">
+                    {% if site_lang == 'hi' %}अपना पहला विज्ञापन बिल बनाने के लिए नीचे क्लिक करें{% else %}Click below to create your first newspaper advertisement bill{% endif %}
+                </p>
+                <a href="{% url 'billing:bill_create' %}" class="btn btn-primary">
+                    <i class="bi bi-plus-circle"></i> {% if site_lang == 'hi' %}पहला बिल बनाएं{% else %}Create First Bill{% endif %}
+                </a>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Edition Performance Breakdown -->
+        {% if edition_stats %}
+        <div class="card">
+            <div class="card-header" style="padding-bottom: 0.5rem;">
+                <div>
+                    <h3 class="card-title" style="font-size: 0.95rem;">
+                        <i class="bi bi-newspaper" style="color: var(--secondary);"></i>
+                        {% if site_lang == 'hi' %}संस्करण अनुसार सक्रियता (Edition Distribution){% else %}Edition Activity Distribution{% endif %}
+                    </h3>
+                </div>
+            </div>
+            <div class="edition-pills-row">
+                {% for ed in edition_stats %}
+                <div class="edition-summary-chip">
+                    <div class="edition-chip-name">{{ ed.edition_name }}</div>
+                    <div class="edition-chip-val">{{ ed.count }} {% if site_lang == 'hi' %}बिल{% else %}bills{% endif %} &bull; ₹{{ ed.total|floatformat:0 }}</div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+    </div>
+
+    <!-- Right / Secondary Column: Payment Breakdown & Top Debtors Follow-up -->
+    <div class="dashboard-sidebar-col">
+
+        <!-- 1. Payment Settlement Breakdown Card -->
+        <div class="card" style="margin-bottom: 1.5rem;">
+            <div class="card-header">
+                <div>
+                    <h2 class="card-title" style="font-size: 1rem;">
+                        <i class="bi bi-pie-chart-fill" style="color: var(--primary);"></i>
+                        {% if site_lang == 'hi' %}भुगतान स्थिति विश्लेषण{% else %}Payment Status Overview{% endif %}
+                    </h2>
+                </div>
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: 0.85rem;">
+                <!-- Fully Paid -->
+                <div class="status-metric-row">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.35rem;">
+                        <span style="font-size: 0.85rem; font-weight: 700; color: #065f46;">
+                            <i class="bi bi-check-circle-fill"></i> {% if site_lang == 'hi' %}पूर्ण भुगतान (Paid){% else %}Fully Paid{% endif %}
+                        </span>
+                        <span style="font-size: 0.85rem; font-weight: 800; color: #065f46;">
+                            {{ status_summary.Paid.count }} {% if site_lang == 'hi' %}बिल{% else %}bills{% endif %} (₹{{ status_summary.Paid.amount|floatformat:0 }})
+                        </span>
+                    </div>
+                    <div class="metric-progress-bg">
+                        <div class="metric-progress-fill success" style="width: {% widthratio status_summary.Paid.count total_count|default:1 100 %}%;"></div>
+                    </div>
+                </div>
+
+                <!-- Partial Due -->
+                <div class="status-metric-row">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.35rem;">
+                        <span style="font-size: 0.85rem; font-weight: 700; color: #92400e;">
+                            <i class="bi bi-clock-history"></i> {% if site_lang == 'hi' %}आंशिक भुगतान (Partial){% else %}Partial Paid{% endif %}
+                        </span>
+                        <span style="font-size: 0.85rem; font-weight: 800; color: #92400e;">
+                            {{ status_summary.Partial.count }} {% if site_lang == 'hi' %}बिल{% else %}bills{% endif %} (₹{{ status_summary.Partial.amount|floatformat:0 }})
+                        </span>
+                    </div>
+                    <div class="metric-progress-bg">
+                        <div class="metric-progress-fill warning" style="width: {% widthratio status_summary.Partial.count total_count|default:1 100 %}%;"></div>
+                    </div>
+                </div>
+
+                <!-- Unpaid -->
+                <div class="status-metric-row">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.35rem;">
+                        <span style="font-size: 0.85rem; font-weight: 700; color: #991b1b;">
+                            <i class="bi bi-x-circle-fill"></i> {% if site_lang == 'hi' %}अदत्त (Unpaid){% else %}Unpaid Bills{% endif %}
+                        </span>
+                        <span style="font-size: 0.85rem; font-weight: 800; color: #991b1b;">
+                            {{ status_summary.Unpaid.count }} {% if site_lang == 'hi' %}बिल{% else %}bills{% endif %} (₹{{ status_summary.Unpaid.amount|floatformat:0 }})
+                        </span>
+                    </div>
+                    <div class="metric-progress-bg">
+                        <div class="metric-progress-fill danger" style="width: {% widthratio status_summary.Unpaid.count total_count|default:1 100 %}%;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. Top Clients with Outstanding Due (Debt Collection Follow-up) -->
+        <div class="card" style="margin-bottom: 1.5rem;">
+            <div class="card-header">
+                <div>
+                    <h2 class="card-title" style="font-size: 1rem;">
+                        <i class="bi bi-exclamation-octagon-fill" style="color: var(--danger);"></i>
+                        {% if site_lang == 'hi' %}शीर्ष बकायादार ग्राहक (Overdue Follow-up){% else %}Top Outstanding Clients{% endif %}
+                    </h2>
+                    <p class="card-subtitle">
+                        {% if site_lang == 'hi' %}व्हाट्सएप पर 1-क्लिक तगादा व खाता विवरण भेजें{% else %}1-click WhatsApp payment reminders with statement portal{% endif %}
+                    </p>
+                </div>
+            </div>
+
+            {% if top_debtors %}
+            <div class="debtors-list">
+                {% for d in top_debtors %}
+                <div class="debtor-item">
+                    <div class="debtor-info">
+                        <div class="debtor-name">{{ d.client.name }}</div>
+                        <div class="debtor-sub">
+                            <span class="debtor-amount">₹{{ d.outstanding|floatformat:2 }}</span>
+                            &bull; <span>{{ d.unpaid_count }} {% if site_lang == 'hi' %}अदत्त बिल{% else %}unpaid bills{% endif %}</span>
+                        </div>
+                    </div>
+                    <div class="debtor-actions">
+                        {% if d.client.phone %}
+                        <a href="{{ d.whatsapp_url }}" target="_blank" class="btn btn-whatsapp" style="padding: 0.35rem 0.65rem; font-size: 0.775rem;" title="Send WhatsApp Reminder">
+                            <i class="bi bi-whatsapp"></i> {% if site_lang == 'hi' %}तगादा{% else %}Remind{% endif %}
+                        </a>
+                        {% endif %}
+                        <a href="{% url 'billing:customer_portal' d.client.access_token %}" target="_blank" class="btn btn-secondary" style="padding: 0.35rem 0.55rem; font-size: 0.775rem;" title="View Statement">
+                            <i class="bi bi-box-arrow-up-right"></i>
+                        </a>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div style="text-align: center; padding: 1.5rem 1rem; color: #15803d; background: #f0fdf4; border-radius: 6px;">
+                <i class="bi bi-check-circle-fill" style="font-size: 1.75rem;"></i>
+                <div style="font-weight: 700; margin-top: 0.35rem;">
+                    {% if site_lang == 'hi' %}शानदार! कोई पुराना बकाया नहीं है{% else %}All Client Accounts Are Clear!{% endif %}
+                </div>
+                <small style="color: #166534;">
+                    {% if site_lang == 'hi' %}सभी ग्राहकों का हिसाब पूर्णतः चुकता है{% else %}Zero outstanding balances detected across all clients{% endif %}
+                </small>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- 3. Official Newspaper Bank & UPI Details Box -->
+        <div class="card" style="background: #f8fafc; border: 1px dashed var(--border);">
+            <div class="card-header" style="padding-bottom: 0.35rem;">
+                <h3 class="card-title" style="font-size: 0.95rem;">
+                    <i class="bi bi-bank" style="color: var(--secondary);"></i>
+                    {% if site_lang == 'hi' %}समाचार पत्र बैंक व यूपीआई विवरण{% else %}Official Payment Accounts{% endif %}
+                </h3>
+            </div>
+            <div style="font-size: 0.825rem; line-height: 1.5; color: var(--text-main);">
+                <div><strong>{% if site_lang == 'hi' %}बैंक:{% else %}Bank:{% endif %}</strong> {{ payment_info.bank_name }}</div>
+                <div>
+                    <strong>{% if site_lang == 'hi' %}खाता क्र.:{% else %}A/C No:{% endif %}</strong> 
+                    <span style="font-family: monospace; font-weight: 700;">{{ payment_info.masked_account_number }}</span>
+                    <i class="bi bi-shield-lock-fill" style="color: #059669; margin-left: 0.25rem;" title="AES-256 Encrypted"></i>
+                </div>
+                <div><strong>{% if site_lang == 'hi' %}आईएफएससी:{% else %}IFSC:{% endif %}</strong> <span style="font-family: monospace;">{{ payment_info.ifsc_code }}</span></div>
+                <div><strong>{% if site_lang == 'hi' %}यूपीआई आईडी:{% else %}UPI ID:{% endif %}</strong> <span style="color: var(--primary); font-weight: 700;">{{ payment_info.upi_id }}</span></div>
+            </div>
+            <div style="margin-top: 0.75rem; text-align: right;">
+                <a href="{% url 'billing:payment_info_settings' %}" style="font-size: 0.8rem; color: var(--primary); text-decoration: none; font-weight: 700;">
+                    <i class="bi bi-pencil-square"></i> {% if site_lang == 'hi' %}बैंक व यूपीआई विवरण बदलें{% else %}Change Bank & UPI Details{% endif %} &rarr;
+                </a>
+            </div>
+        </div>
+
+    </div>
+
+</div>
+{% endblock %}

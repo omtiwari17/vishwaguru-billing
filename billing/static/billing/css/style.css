@@ -929,7 +929,7 @@ body {
     }
     .billing-receipt-pane {
         position: static;
-        order: -1;
+        order: 2;
     }
     .receipt-card {
         box-shadow: var(--shadow-sm);
@@ -944,13 +944,13 @@ body {
     /* --- Navbar Compact Mobile Layout --- */
     .nav-container {
         flex-direction: column;
-        gap: 0.5rem;
+        gap: 0.4rem;
         align-items: stretch;
         padding: 0.5rem 0.75rem;
     }
 
     .brand-link {
-        justify-content: center;
+        justify-content: flex-start;
     }
 
     .brand-link img {
@@ -969,17 +969,19 @@ body {
     .nav-links {
         width: 100%;
         display: flex;
-        justify-content: center;
+        justify-content: space-between;
+        align-items: center;
         flex-wrap: wrap;
-        gap: 0.3rem;
-        padding-top: 0.35rem;
+        gap: 0.35rem;
+        padding-top: 0.4rem;
         border-top: 1px solid #f1f5f9;
     }
 
     .nav-item {
-        font-size: 0.75rem;
-        padding: 0.4rem 0.6rem;
+        font-size: 0.775rem;
+        padding: 0.4rem 0.65rem;
         flex: 0 0 auto;
+        border-radius: 6px;
     }
 
     .nav-user {
@@ -1322,5 +1324,256 @@ i.bi {
 .badge i.bi {
     margin-right: 0.2rem;
     font-size: 0.85em;
+}
+
+/* ================================================================
+   DASHBOARD STYLING
+   ================================================================ */
+.dashboard-hero {
+    background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 1.25rem 1.5rem;
+    margin-bottom: 1.25rem;
+    box-shadow: var(--shadow-sm);
+}
+
+.dashboard-hero-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.dashboard-hero-title-group {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.dashboard-hero-icon {
+    width: 48px;
+    height: 48px;
+    background: var(--primary-light);
+    color: var(--primary);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    flex-shrink: 0;
+}
+
+.dashboard-hero-heading {
+    font-size: 1.35rem;
+    font-weight: 800;
+    color: var(--secondary);
+    line-height: 1.2;
+    margin: 0;
+}
+
+.dashboard-hero-sub {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    margin-top: 0.25rem;
+}
+
+.dashboard-hero-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    flex-wrap: wrap;
+}
+
+.btn-hero-action {
+    padding: 0.55rem 1rem;
+    font-size: 0.85rem;
+    font-weight: 700;
+    border-radius: var(--radius-sm);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+}
+
+/* Dashboard Pending Alert Banner */
+.dashboard-alert-banner {
+    background: #fffbeb;
+    border: 1.5px solid #fde68a;
+    border-left: 4px solid #b45309;
+    border-radius: var(--radius-sm);
+    padding: 0.85rem 1.25rem;
+    margin-bottom: 1.25rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+}
+
+.dashboard-alert-content {
+    display: flex;
+    align-items: center;
+    gap: 0.85rem;
+}
+
+.dashboard-alert-icon {
+    width: 36px;
+    height: 36px;
+    background: #fef3c7;
+    color: #b45309;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    flex-shrink: 0;
+}
+
+.stat-chip-footnote {
+    font-size: 0.725rem;
+    color: var(--text-muted);
+    margin-top: 0.25rem;
+    display: flex;
+    gap: 0.35rem;
+    align-items: center;
+}
+
+/* Main 2-Column Dashboard Grid */
+.dashboard-main-grid {
+    display: grid;
+    grid-template-columns: 1fr 360px;
+    gap: 1.5rem;
+    align-items: start;
+}
+
+.dashboard-primary-col {
+    display: flex;
+    flex-direction: column;
+}
+
+.dashboard-sidebar-col {
+    display: flex;
+    flex-direction: column;
+}
+
+/* Edition pills */
+.edition-pills-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+    padding-top: 0.5rem;
+}
+
+.edition-summary-chip {
+    background: #f8fafc;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 0.45rem 0.75rem;
+    font-size: 0.8rem;
+}
+
+.edition-chip-name {
+    font-weight: 700;
+    color: var(--secondary);
+}
+
+.edition-chip-val {
+    font-size: 0.725rem;
+    color: var(--text-muted);
+    margin-top: 0.15rem;
+}
+
+/* Progress bar for status */
+.metric-progress-bg {
+    width: 100%;
+    height: 6px;
+    background: #f1f5f9;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.metric-progress-fill {
+    height: 100%;
+    border-radius: 4px;
+}
+
+.metric-progress-fill.success { background: var(--success); }
+.metric-progress-fill.warning { background: var(--warning); }
+.metric-progress-fill.danger { background: var(--danger); }
+
+/* Debtors List */
+.debtors-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.65rem;
+}
+
+.debtor-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.65rem 0.75rem;
+    background: #f8fafc;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    transition: background 0.15s ease;
+}
+
+.debtor-item:hover {
+    background: #fef2f2;
+}
+
+.debtor-name {
+    font-weight: 700;
+    font-size: 0.85rem;
+    color: var(--secondary);
+}
+
+.debtor-sub {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    margin-top: 0.15rem;
+}
+
+.debtor-amount {
+    color: var(--danger);
+    font-weight: 800;
+}
+
+.debtor-actions {
+    display: flex;
+    gap: 0.35rem;
+    align-items: center;
+}
+
+@media (max-width: 992px) {
+    .dashboard-main-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 768px) {
+    .dashboard-hero {
+        padding: 1rem 0.85rem;
+    }
+    .dashboard-hero-title-group {
+        gap: 0.75rem;
+    }
+    .dashboard-hero-icon {
+        width: 40px;
+        height: 40px;
+        font-size: 1.25rem;
+    }
+    .dashboard-hero-heading {
+        font-size: 1.1rem;
+    }
+    .dashboard-hero-actions {
+        width: 100%;
+    }
+    .btn-hero-action {
+        flex: 1 1 auto;
+        justify-content: center;
+    }
 }
 

@@ -4,7 +4,7 @@ from django.contrib.auth import views as auth_views
 from django.shortcuts import redirect
 
 def root_redirect(request):
-    return redirect('billing:bill_create')
+    return redirect('billing:dashboard')
 
 urlpatterns = [
     path('', root_redirect, name='root_redirect'),
