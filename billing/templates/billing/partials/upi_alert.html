@@ -1,0 +1,25 @@
+{% if pending_submissions_count > 0 %}
+<div class="mb-5 border border-rule bg-white p-3 rounded flex items-center justify-between gap-3 text-sm" style="border: 1px solid #e7e2d9; background-color: #ffffff; border-radius: 4px; padding: 10px 14px; font-family: 'Mukta', sans-serif;">
+    <div class="flex items-center gap-2">
+        <span class="inline-block w-2 h-2 rounded-full" style="background-color: #b45309; border-radius: 9999px; width: 8px; height: 8px; flex-shrink: 0;"></span>
+        <span class="font-medium text-ink" style="color: #1c1917;">
+            {% if site_lang == 'hi' %}
+                {% if pending_submissions_count == 1 %}
+                    1 ग्राहक का यूपीआई भुगतान सत्यापन हेतु प्रतीक्षारत है।
+                {% else %}
+                    {{ pending_submissions_count }} ग्राहकों के यूपीआई भुगतान सत्यापन हेतु प्रतीक्षारत हैं।
+                {% endif %}
+            {% else %}
+                {% if pending_submissions_count == 1 %}
+                    1 customer UPI payment awaiting verification.
+                {% else %}
+                    {{ pending_submissions_count }} customer UPI payments awaiting verification.
+                {% endif %}
+            {% endif %}
+        </span>
+    </div>
+    <a href="{% url 'billing:payment_submissions_list' %}" class="text-xs font-semibold hover:underline flex-shrink-0" style="color: #9f1d1d; text-decoration: none;">
+        {% if site_lang == 'hi' %}सत्यापन सूची देखें &rarr;{% else %}Review submissions &rarr;{% endif %}
+    </a>
+</div>
+{% endif %}

@@ -1,0 +1,35 @@
+<div class="p-3 text-xs bg-white border border-rule rounded flex items-center justify-between" style="border: 1px solid #e7e2d9; background-color: #ffffff; border-radius: 4px; padding: 10px 14px; font-family: 'Mukta', sans-serif;">
+    <div class="flex items-center gap-2">
+        {% if submission.status == 'verified' %}
+        <span class="inline-block w-2 h-2 rounded-full" style="background-color: #15803d; width: 7px; height: 7px;"></span>
+        <span class="text-paid font-medium" style="color: #15803d;">
+            {% if site_lang == 'hi' %}
+                यूटीआर {{ submission.utr_number }} (₹{{ submission.amount|floatformat:0 }}) सत्यापित।
+            {% else %}
+                UTR {{ submission.utr_number }} (₹{{ submission.amount|floatformat:0 }}) verified.
+            {% endif %}
+        </span>
+        {% else %}
+        <span class="inline-block w-2 h-2 rounded-full" style="background-color: #9f1d1d; width: 7px; height: 7px;"></span>
+        <span class="text-unpaid font-medium" style="color: #9f1d1d;">
+            {% if site_lang == 'hi' %}
+                यूटीआर {{ submission.utr_number }} अस्वीकृत।
+            {% else %}
+                UTR {{ submission.utr_number }} rejected.
+            {% endif %}
+        </span>
+        {% endif %}
+    </div>
+    <span class="text-muted text-[11px]" style="color: #78716c;">
+        {% if site_lang == 'hi' %}खाते में दर्ज{% else %}Recorded{% endif %}
+    </span>
+</div>
+
+<!-- Out-Of-Band Swap for Navbar UPI Count Badge -->
+<span id="nav-upi-badge" hx-swap-oob="true">
+{% if pending_submissions_count > 0 %}
+<span class="inline-flex items-center justify-center px-1.5 py-0.2 text-[11px] font-semibold text-white bg-maroon rounded" style="background-color: #9f1d1d; color: #ffffff; border-radius: 4px; padding: 1px 5px; font-size: 11px; font-family: 'Mukta', sans-serif;">
+    {{ pending_submissions_count }}
+</span>
+{% endif %}
+</span>
