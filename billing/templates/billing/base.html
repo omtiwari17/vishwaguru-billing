@@ -4,86 +4,156 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}{% if site_lang == 'hi' %}विश्वगुरु विज्ञापन बिलिंग{% else %}Vishwaguru Ad Billing{% endif %}{% endblock %}</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <title>{% block title %}{% if site_lang == 'hi' %}दैनिक विश्वगुरु की झलक | बिलिंग{% else %}Vishwaguru Newspaper | Billing{% endif %}{% endblock %}</title>
+    
+    <!-- Google Fonts: Mukta (UI text), Noto Serif Devanagari (Masthead & Titles). Weights: 400, 500, 600 only -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Mukta:wght@400;500;600&family=Noto+Serif+Devanagari:wght@400;500;600&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS v4 Browser Runtime -->
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <style type="text/tailwindcss">
+      @theme {
+        --color-paper: #faf8f4;
+        --color-paper-card: #ffffff;
+        --color-ink: #1c1917;
+        --color-muted: #57534e;
+        --color-rule: #e7e2d9;
+        --color-maroon: #9f1d1d;
+        --color-maroon-hover: #7f1d1d;
+        --color-paid: #15803d;
+        --color-partial: #b45309;
+        --color-unpaid: #9f1d1d;
+
+        --font-sans: 'Mukta', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        --font-serif: 'Noto Serif Devanagari', Georgia, serif;
+      }
+    </style>
+
+    <!-- Newspaper Office Theme Stylesheet -->
     <link rel="stylesheet" href="{% static 'billing/css/style.css' %}">
+
+    <!-- HTMX for live interactions -->
+    <script src="{% static 'billing/js/htmx.min.js' %}"></script>
+
     {% block extra_head %}{% endblock %}
 </head>
-<body>
-    <header class="navbar">
-        <div class="nav-container">
-            <a href="{% url 'billing:dashboard' %}" class="brand-link">
-                <img src="{% static 'billing/img/logo.png' %}" alt="विश्वगुरु" style="height: 40px; max-width: 170px; object-fit: contain;">
-                <div class="brand-text">
-                    <h1>{% if site_lang == 'hi' %}विज्ञापन बिलिंग पोर्टल{% else %}Advertisement Billing{% endif %}</h1>
-                    <p>Vishwaguru Newspaper</p>
-                </div>
-            </a>
-            <nav class="nav-links">
-                <a href="{% url 'billing:dashboard' %}" class="nav-item {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
-                    <i class="bi bi-speedometer2"></i> {% if site_lang == 'hi' %}डैशबोर्ड{% else %}Dashboard{% endif %}
-                </a>
-                <a href="{% url 'billing:bill_create' %}" class="nav-item {% if request.resolver_match.url_name == 'bill_create' %}active{% endif %}">
-                    <i class="bi bi-plus-circle"></i> {% if site_lang == 'hi' %}नया बिल{% else %}New Bill{% endif %}
-                </a>
-                <a href="{% url 'billing:bill_search' %}" class="nav-item {% if request.resolver_match.url_name == 'bill_search' %}active{% endif %}">
-                    <i class="bi bi-search"></i> {% if site_lang == 'hi' %}बिल सूची{% else %}Search Bills{% endif %}
-                </a>
-                <a href="{% url 'billing:payment_submissions_list' %}" class="nav-item {% if request.resolver_match.url_name == 'payment_submissions_list' %}active{% endif %}">
-                    <i class="bi bi-wallet2"></i> {% if site_lang == 'hi' %}भुगतान सत्यापन{% else %}UPI Verifications{% endif %}
-                </a>
-                <a href="{% url 'billing:payment_submissions_list' %}" class="nav-item {% if request.resolver_match.url_name == 'payment_submissions_list' %}active{% endif %}">
-                    <i class="bi bi-wallet2"></i> {% if site_lang == 'hi' %}भुगतान सत्यापन{% else %}UPI Verifications{% endif %}
-                </a>
-                <a href="{% url 'billing:payment_info_settings' %}" class="nav-item {% if request.resolver_match.url_name == 'payment_info_settings' %}active{% endif %}">
-                    <i class="bi bi-bank"></i> {% if site_lang == 'hi' %}बैंक व UPI{% else %}Bank &amp; UPI{% endif %}
+<body class="bg-paper text-ink font-sans antialiased min-h-screen flex flex-col">
+
+    <!-- Desk Header / Masthead -->
+    <header class="office-header">
+        <div class="office-container">
+            <!-- Masthead Top Row: Single compact row on mobile -->
+            <div class="masthead-row flex items-center justify-between">
+                <a href="{% url 'billing:dashboard' %}" class="masthead-brand flex items-center">
+                    <img src="{% static 'billing/img/logo.png' %}" alt="विश्वगुरु" class="h-6 w-auto object-contain" style="height: 24px;">
+                    <div>
+                        <div class="masthead-title">
+                            {% if site_lang == 'hi' %}दैनिक विश्वगुरु की झलक{% else %}Vishwaguru Newspaper{% endif %}
+                        </div>
+                        <div class="masthead-sub hidden md:block">
+                            {% if site_lang == 'hi' %}विज्ञापन बिलिंग &bull; हरदा (म.प्र.){% else %}Advertisement Billing &bull; Harda (M.P.){% endif %}
+                        </div>
+                    </div>
                 </a>
 
-                <a href="{% url 'admin:index' %}" class="nav-item" target="_blank">
-                    <i class="bi bi-gear"></i> {% if site_lang == 'hi' %}सेटिंग्स{% else %}Admin{% endif %}
-                </a>
+                <div class="flex items-center gap-3 text-xs shrink-0">
+                    <!-- Plain Clerk Language Toggle -->
+                    <div class="inline-flex items-center gap-1.5 text-xs text-muted" style="font-family: 'Mukta', sans-serif;">
+                        <a href="{% url 'billing:set_language' 'en' %}" class="hover:text-ink {% if site_lang != 'hi' %}font-semibold text-maroon underline underline-offset-2{% endif %}" style="text-decoration: none; {% if site_lang != 'hi' %}color: #9f1d1d; font-weight: 600; text-decoration: underline;{% else %}color: #57534e;{% endif %}">
+                            EN
+                        </a>
+                        <span style="color: #e7e2d9;">&bull;</span>
+                        <a href="{% url 'billing:set_language' 'hi' %}" class="hover:text-ink {% if site_lang == 'hi' %}font-semibold text-maroon underline underline-offset-2{% endif %}" style="text-decoration: none; {% if site_lang == 'hi' %}color: #9f1d1d; font-weight: 600; text-decoration: underline;{% else %}color: #57534e;{% endif %}">
+                            हिन्दी
+                        </a>
+                    </div>
 
-                <!-- Language Switcher Toggle -->
-                <div style="display: flex; align-items: center; background: #f8fafc; border: 1.5px solid var(--border); border-radius: 20px; padding: 2px 3px; margin-left: 0.5rem; font-size: 0.8rem; font-weight: 700;">
-                    <a href="{% url 'billing:set_language' 'en' %}" style="text-decoration: none; padding: 4px 10px; border-radius: 16px; transition: all 0.15s ease; {% if site_lang != 'hi' %}background: var(--primary); color: #fff; box-shadow: 0 1px 3px rgba(185, 28, 28, 0.3);{% else %}color: var(--text-muted);{% endif %}">
-                        EN
-                    </a>
-                    <a href="{% url 'billing:set_language' 'hi' %}" style="text-decoration: none; padding: 4px 10px; border-radius: 16px; transition: all 0.15s ease; {% if site_lang == 'hi' %}background: var(--primary); color: #fff; box-shadow: 0 1px 3px rgba(185, 28, 28, 0.3);{% else %}color: var(--text-muted);{% endif %}">
-                        हिन्दी
-                    </a>
+                    {% if user.is_authenticated %}
+                    <!-- Desktop user & logout (hidden on mobile, moved to bottom on mobile) -->
+                    <div class="hidden md:flex items-center gap-2 pl-3 border-l border-rule text-muted" style="border-left: 1px solid #e7e2d9; padding-left: 12px;">
+                        <span class="font-medium text-ink">{{ user.username }}</span>
+                        <span>&bull;</span>
+                        <form action="{% url 'logout' %}" method="post" class="inline">
+                            {% csrf_token %}
+                            <button type="submit" class="text-xs text-muted hover:text-maroon underline cursor-pointer bg-transparent border-0 p-0" style="background: none; border: none; padding: 0; color: #57534e; cursor: pointer;">
+                                {% if site_lang == 'hi' %}लॉगआउट{% else %}Logout{% endif %}
+                            </button>
+                        </form>
+                    </div>
+                    {% endif %}
                 </div>
+            </div>
 
-                {% if user.is_authenticated %}
-                <div class="nav-user">
-                    <span><i class="bi bi-person-circle"></i> {{ user.username }}</span>
-                    <form action="{% url 'logout' %}" method="post" style="display:inline;">
-                        {% csrf_token %}
-                        <button type="submit" class="btn-logout">
-                            <i class="bi bi-box-arrow-right"></i> {% if site_lang == 'hi' %}लॉगआउट{% else %}Logout{% endif %}
-                        </button>
-                    </form>
-                </div>
-                {% endif %}
-            </nav>
+            <!-- Navigation Tabs Row with Right-Edge Fade for Mobile Scroll Cue -->
+            <div class="relative w-full overflow-hidden">
+                <nav class="office-nav-row">
+                    <div class="office-nav-tabs">
+                        <a href="{% url 'billing:dashboard' %}" class="office-tab {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
+                            {% if site_lang == 'hi' %}डैशबोर्ड{% else %}Dashboard{% endif %}
+                        </a>
+                        <a href="{% url 'billing:bill_create' %}" class="office-tab {% if request.resolver_match.url_name == 'bill_create' %}active{% endif %}">
+                            {% if site_lang == 'hi' %}नया बिल{% else %}New Bill{% endif %}
+                        </a>
+                        <a href="{% url 'billing:bill_search' %}" class="office-tab {% if request.resolver_match.url_name == 'bill_search' %}active{% endif %}">
+                            {% if site_lang == 'hi' %}बिल सूची{% else %}Bills{% endif %}
+                        </a>
+                        <a href="{% url 'billing:payment_submissions_list' %}" class="office-tab {% if request.resolver_match.url_name == 'payment_submissions_list' %}active{% endif %}">
+                            <span>{% if site_lang == 'hi' %}सत्यापन{% else %}UPI Verifications{% endif %}</span>
+                            <span id="nav-upi-badge-container">
+                                {% include 'billing/partials/upi_badge.html' %}
+                            </span>
+                        </a>
+                        <a href="{% url 'billing:payment_info_settings' %}" class="office-tab {% if request.resolver_match.url_name == 'payment_info_settings' %}active{% endif %}">
+                            {% if site_lang == 'hi' %}बैंक खाता{% else %}Bank &amp; UPI{% endif %}
+                        </a>
+                        <a href="{% url 'admin:index' %}" class="office-tab" target="_blank">
+                            {% if site_lang == 'hi' %}एडमिन{% else %}Admin{% endif %}
+                        </a>
+                    </div>
+                </nav>
+                <!-- Right-edge fade overlay (tells user the row scrolls) -->
+                <div class="pointer-events-none absolute right-0 top-0 bottom-0 w-8 md:hidden" style="background: linear-gradient(to right, rgba(255,255,255,0), #ffffff);"></div>
+            </div>
         </div>
     </header>
 
-    <main class="main-content">
-        {% if messages %}
-        <div class="alert-messages">
-            {% for message in messages %}
-            <div class="alert alert-{{ message.tags|default:'info' }}">
-                <span>{{ message }}</span>
+    <!-- Main Content Container -->
+    <main class="office-main">
+        <div class="office-container">
+            {% if messages %}
+            <div class="mb-4 flex flex-col gap-2">
+                {% for message in messages %}
+                <div class="p-3 text-xs border rounded bg-white" style="border: 1px solid #e7e2d9; border-radius: 4px; font-family: 'Mukta', sans-serif;">
+                    {{ message }}
+                </div>
+                {% endfor %}
             </div>
-            {% endfor %}
-        </div>
-        {% endif %}
+            {% endif %}
 
-        {% block content %}{% endblock %}
+            {% block content %}{% endblock %}
+        </div>
     </main>
 
-    <footer class="footer">
-        <p>&copy; {% now "Y" %} Vishwaguru Newspaper (विश्वगुरु समाचार पत्र). All Rights Reserved.</p>
+    <!-- Plain Clerk Footer -->
+    <footer class="office-footer">
+        <div class="office-container flex flex-wrap items-center justify-between gap-2 text-xs text-muted" style="display: flex; justify-content: space-between; align-items: center; font-family: 'Mukta', sans-serif; color: #57534e;">
+            <div>&copy; {% now "Y" %} {% if site_lang == 'hi' %}दैनिक विश्वगुरु की झलक &bull; हरदा (म.प्र.){% else %}Vishwaguru Newspaper &bull; Harda (M.P.){% endif %}</div>
+            {% if user.is_authenticated %}
+            <!-- Mobile user & logout placed at bottom of page -->
+            <div class="flex md:hidden items-center gap-2 text-xs">
+                <span>{{ user.username }}</span>
+                <span>&bull;</span>
+                <form action="{% url 'logout' %}" method="post" class="inline">
+                    {% csrf_token %}
+                    <button type="submit" class="text-xs text-muted hover:text-maroon underline cursor-pointer bg-transparent border-0 p-0" style="background: none; border: none; padding: 0; color: #57534e; cursor: pointer;">
+                        {% if site_lang == 'hi' %}लॉगआउट{% else %}Logout{% endif %}
+                    </button>
+                </form>
+            </div>
+            {% endif %}
+        </div>
     </footer>
 
     {% block extra_js %}{% endblock %}
