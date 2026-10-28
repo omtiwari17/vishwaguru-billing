@@ -150,6 +150,65 @@
 * Automated test suite: 20/20 tests passing (including encryption roundtrip & settings view tests).
 * Dev server running on `http://127.0.0.1:8080/`.
 * Ready for user review or further instructions.
+* **Newspaper-Office Design System Restyling (Django + HTMX + Tailwind v4)**:
+  - **Core Aesthetic:** Calm, dense clerk desk tool. Paper (`#faf8f4`), ink (`#1c1917`), muted (`#78716c`), rule (`#e7e2d9`), maroon (`#9f1d1d`), paid green (`#15803d`), partial amber (`#b45309`).
+  - **Typography:** `Mukta` for all UI text (Latin + Devanagari match), `Noto Serif Devanagari` only for the masthead and page titles. Weights: 400, 500, 600 only. `tabular-nums` on every single amount.
+  - **Shape:** 4px radius max, 1px borders, zero shadows, zero gradients, zero nested cards.
+  - **Status:** Coloured dot + text (`● Paid`, `● Partial`, `● Unpaid`). No pastel pill badges.
+  - **Shared Template Partials (`billing/templates/billing/partials/`):**
+    - `upi_badge.html`: Navbar UPI verification count badge (supports out-of-band HTMX swap).
+    - `upi_alert.html`: Calm, understated customer UPI payment alert banner.
+    - `stats_strip.html`: 4-metric strip with vertical dividers (Today's Billed, Month, Total Collections, Balance Due).
+    - `bills_table.html`: Dense bills table with tabular-nums, bilingual client & placement details, and clerk actions.
+    - `status_dot.html`: Coloured dot + plain status text.
+    - `submission_row_verified.html`: Row-level verify/reject feedback with OOB navbar badge swap.
+  - **HTMX Enhancements:**
+    - Live search in bills table via HTMX debounce without full page reload.
+    - Row-level verify/reject actions for customer UPI submissions.
+    - Out-of-band updates (`hx-swap-oob="true"`) for the navbar pending verification count badge.
+  - **Phase 1 Complete:** `base.html` and `dashboard.html` fully restyled and verified against test suite (20/20 OK) and visual rendering.
+  - **Phase 2 Polish Complete:**
+    - Dual Layout in `partials/bills_table.html`: dense tabular view on `md+` (`hidden md:block`) and stacked cards on small screens (`block md:hidden`).
+    - Stacked card layout: Line 1 = Invoice no + date + status dot; Line 2 = Client name + phone; Line 3 = Placement & edition; Line 4 = Total amount + Balance due.
+    - Actions on mobile: Visible primary green WhatsApp button ($\ge 44\text{px}$ touch target) + clerk `...` `<details>` menu containing View invoice, Download PDF, and Statement portal links (each $\ge 44\text{px}$).
+    - Stats Strip: $2\times 2$ grid with 1px dividers on mobile, 4-metric horizontal divider strip on desktop, increased cell padding, and 24px vertical separation before the bills panel.
+    - Indian Currency Filter: `indian_currency` filter in `billing/templatetags/billing_tags.py` (`₹1,84,200` without `.00` unless paise exist).
+    - Authentic Pluralization: `bill_noun` & `bill_count_label` filters for English ("1 bill" vs. "2 bills") and Hindi ("1 बिल" vs. "2 बिल", "1 ग्राहक का भुगतान" vs. "N ग्राहकों के भुगतान").
+    - Unified Newspaper Identity: "दैनिक विश्वगुरु की झलक" in Hindi and "Vishwaguru Newspaper" in English across masthead, titles, and footer.
+    - Removed "Server: port 8080" footer and removed the redundant Bank & UPI panel from the dashboard (kept in secondary panels: Payment Status + Overdue Accounts).
+    - Darkened muted text to `#57534e` for WCAG AA compliance; body text $\ge 14\text{px}$.
+    - HTMX live search operates synchronously across both desktop table and mobile stacked list views.
+    - Verified with CDP screenshots across 360px, 390px, 800px, and 1200px viewports in both English and Hindi. Automated test suite: 20/20 passing.
+  - **Phase 3 Mobile Hierarchy Refinement Complete (< md)**:
+    - **Header**: Single compact row containing small official logo + newspaper title on left, EN/हिन्दी toggle on right. Subtitle hidden on mobile (`hidden md:block`); `admin • Logout` moved to footer on mobile (`block md:hidden`). Horizontally scrollable nav tabs with zero clipping.
+    - **Stats Strip**: Strict $2\times 2$ grid on mobile with 16px cell padding, 12px muted label, and 22px bold tabular amount.
+    - **Recent Bills Panel Header**: Full-width search input + full-width primary maroon `+ Create New Bill` button. Large "View all" removed from top on mobile and placed as a small text link at the bottom of the bills list.
+    - **Separate Bill Card Blocks**: 16px padding, 1px border (`#e7e2d9`), 12px gap between blocks, with 16px padding from screen edge everywhere (no touching screen boundary, zero nested card borders).
+    - **Exact 5-Line Card Hierarchy**:
+      - Line 1: `Invoice no · Date` (small muted text) on left, `● Status dot + text` on right.
+      - Line 2: `Client name` (16px, weight 500) on left, `Total amount` (16px, weight 600, `tabular-nums`) on right.
+      - Line 3: `Secondary English client name` (small muted text) on left; `Due ₹X,XXX` in maroon on right only when balance due > 0 (omitted when paid).
+      - Line 4: Placement details in single chosen language, single line, truncated.
+      - Line 5: Actions: Small outline `[ WhatsApp ]` button (only when balance due > 0) + `[ ⋯ ]` menu button ($\ge 44\text{px}$ tap target). No solid green buttons. No phone numbers cluttering the card.
+    - Desktop layout (`md+` / $\ge 768\text{px}$) and business logic remain completely untouched. Automated test suite: 20/20 passing.
+  - **Phase 4 Mobile Polish & Clerk Refinements Complete (< md)**:
+    - **Paid Bill Cards**: Empty action row and divider completely eliminated. Whole card converted into a clickable link to invoice details (`/bills/<id>/`) via stretched link. `[ ⋯ ]` menu placed on Line 1 top-right alongside the `● Paid` status dot. Card height reduced by ~40%, providing immediate visual contrast between settled and outstanding invoices.
+    - **Stats Strip at 360px**: Label in Cell 3 shortened to `"Collected"` (Hindi: `"कुल प्राप्त"`). Enforced fixed label heights (`h-[16px]`) and vertical centering across all 4 metric cells, eliminating row misalignment across narrow screens.
+    - **Search & Create Header**: Removed the outer card wrapper/border on mobile so the search bar and `+ Create New Bill` button sit cleanly directly on the `#faf8f4` paper background. Search placeholder set to `"Search bills"` (Hindi: `"बिल खोजें"`).
+    - **WhatsApp Reminder Button**: Widened to fill available row space (`flex-1`) alongside the 44px `[ ⋯ ]` menu button. Labeled `"WhatsApp reminder"` (Hindi: `"व्हाट्सऐप तगादा"`) with $\ge 44\text{px}$ minimum tap target.
+    - **Navigation Tabs**: Added right-edge gradient fade overlay (`bg-gradient-to-l from-white to-transparent`) indicating horizontal scrollability on mobile screens.
+    - **Bilingual Page Translations**: Custom `format_page` filter accurately renders `"Page X"` $\to$ `"पृष्ठ X"` across both desktop and mobile views. Verified masthead identity `"दैनिक विश्वगुरु की झलक"` and Hindi subtitles.
+    - **Verification**: Verified across 360px, 390px, 800px, and 1200px viewports in both English and Hindi. Automated test suite: 20/20 tests passing (100% OK).
+* **Complete High-Fidelity UI Mockup Suite (Tailwind CSS + HTMX)**:
+  - **Master Interactive Application Suite (`dashboard_mockup.html`)**: Features persistent top Prototype Hub bar, live client-side tab & URL hash router (`#dashboard`, `#new-bill`, `#search-bills`, `#upi-queue`, `#bank-settings`, `#customer-portal`, `#bill-detail`), POS live calculation, Fernet AES-256 interactive masked account toggle, and customer UTR verification simulation.
+  - **7 Dedicated Standalone Mockup Artifacts**:
+    1. `mockup_dashboard.html`: Operations Dashboard with quick actions, KPI cards, UPI alert banner, and recent bills.
+    2. `mockup_new_bill.html`: 2-column POS advertisement invoice creation form with live receipt preview.
+    3. `mockup_search_bills.html`: Bill search and filter interface with date range and status filters.
+    4. `mockup_upi_submissions.html`: Customer UPI verification queue with 1-click ledger credit.
+    5. `mockup_bank_settings.html`: Official newspaper bank and UPI configuration with encryption and live QR code preview.
+    6. `mockup_customer_portal.html`: Public customer self-service statement portal with 0-fee UPI deep-link and UTR submission.
+    7. `mockup_bill_detail.html`: Individual invoice detail view with payment recording and bilingual WhatsApp reminder.
 
 ---
 
