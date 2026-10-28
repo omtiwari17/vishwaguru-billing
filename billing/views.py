@@ -107,8 +107,17 @@ def dashboard(request):
     ).select_related('client', 'bill').order_by('-submitted_at')
     pending_submissions_count = pending_submissions.count()
 
-    # 6. Recent Bills (latest 10)
-    recent_bills = Bill.objects.select_related('client', 'created_by').order_by('-created_at')[:10]
+    # 6. Recent Bills (latest 10 or search query)
+    query = request.GET.get('q', '').strip()
+    if query:
+        recent_bills = Bill.objects.select_related('client', 'created_by').filter(
+            Q(client_name__icontains=query) |
+            Q(client_phone__icontains=query) |
+            Q(bill_number__icontains=query) |
+            Q(ad_title__icontains=query)
+        ).order_by('-created_at')[:20]
+    else:
+        recent_bills = Bill.objects.select_related('client', 'created_by').order_by('-created_at')[:10]
 
     # 7. Top Clients with Outstanding Balance (for quick 1-click WhatsApp reminders)
     clients_with_due = Client.objects.all()
@@ -158,6 +167,8 @@ def dashboard(request):
         'payment_info': payment_info,
         'title': 'डैशबोर्ड | विश्वगुरु विज्ञापन बिलिंग' if site_lang == 'hi' else 'Dashboard | Vishwaguru Billing',
     }
+    if request.headers.get('HX-Request') and 'q' in request.GET:
+        return render(request, 'billing/partials/bills_table.html', context)
     return render(request, 'billing/dashboard.html', context)
 
 
@@ -686,6 +697,16 @@ def verify_payment_submission(request, submission_id):
             else f"Payment submission {submission.utr_number} was rejected."
         )
         messages.warning(request, msg)
+
+    if request.headers.get('HX-Request'):
+        pending_count = PaymentSubmission.objects.filter(status='pending').count()
+        context = {
+            'submission': submission,
+            'site_lang': site_lang,
+            'pending_submissions_count': pending_count,
+            'message': msg,
+        }
+        return render(request, 'billing/partials/submission_row_verified.html', context)
 
     next_url = request.POST.get('next') or request.META.get('HTTP_REFERER') or '/bills/search/'
     return redirect(next_url)
