@@ -231,3 +231,8 @@ ENV/
 env/
 .idea/
 .vscode/
+
+# Temporary files & folders
+tmp/
+temp/
+*.tmp

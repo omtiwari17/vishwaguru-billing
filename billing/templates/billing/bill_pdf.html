@@ -13,7 +13,7 @@
 
         @page {
             size: A4 portrait;
-            margin: 3mm;
+            margin: 6mm;
             @bottom-left {
                 content: "{% if pdf_lang == 'hi' %}विश्वगुरु की झलक — प्रमाणित कम्प्यूटरीकृत देयक{% else %}Vishwaguru Ki Jhalak — Valid Computer Generated Document{% endif %}";
                 font-family: {% if pdf_lang == 'hi' %}'Noto Serif Devanagari', 'Mukta', serif{% else %}'Mukta', -apple-system, sans-serif{% endif %};
@@ -61,30 +61,38 @@
                 width: 100% !important;
                 max-width: 100% !important;
                 height: auto !important;
-                min-height: 289mm !important;
-                border: 2px solid #1c1917 !important;
+                min-height: 0 !important;
+                border: 1px solid #1c1917 !important;
                 margin: 0 !important;
-                padding: 7mm 9mm 6mm 9mm !important;
-                break-inside: avoid !important;
-                page-break-inside: avoid !important;
+                padding: 5mm 6mm !important;
+                break-inside: auto !important;
+                page-break-inside: auto !important;
             }
+            .masthead-logo { height: 46px !important; }
+            .meta-card { min-height: 0 !important; padding: 5px 7px !important; }
+            .ledger-table th { padding: 3px 5px !important; }
+            .ledger-table td { padding: 3px 5px !important; }
+            .totals-split-table { margin-bottom: 4px !important; }
+            .words-container { padding: 5px 6px !important; }
+            .qr-img { width: 74px !important; height: 74px !important; }
+            .sign-title { margin-bottom: 18px !important; }
         }
 
         /* Master Full-Page A4 Container */
         .invoice-container {
-            width: 190mm;
-            max-width: 190mm;
+            width: 198mm;
+            max-width: 198mm;
             height: auto;
-            min-height: 289mm;
+            min-height: 0;
             margin: 0 auto;
             background: #ffffff;
-            border: 2px solid #1c1917;
-            padding: 8mm 9mm 7mm 9mm;
+            border: 1px solid #1c1917;
+            padding: 5mm 6mm;
             box-sizing: border-box;
             display: block;
             position: relative;
-            break-inside: avoid;
-            page-break-inside: avoid;
+            break-inside: auto;
+            page-break-inside: auto;
         }
         .invoice-top-block { display: block; }
 
@@ -285,7 +293,7 @@
 
         /* Bottom Section: Totals, Seal, Terms & Bank Desk */
         .bottom-ledger-block {
-            margin-top: 3mm;
+            margin-top: 2mm;
             padding-top: 0;
             break-inside: avoid;
             page-break-inside: avoid;
@@ -400,8 +408,8 @@
             color: #57534e;
             border: 1px solid #e7e2d9;
             background-color: #faf8f4;
-            padding: 4px 8px;
-            margin-bottom: 6px;
+            padding: 3px 6px;
+            margin-bottom: 4px;
             border-radius: 3px;
             line-height: 1.35;
         }
@@ -411,7 +419,7 @@
             width: 100%;
             border-collapse: collapse;
             border-top: 1.5px solid #1c1917;
-            padding-top: 5px;
+            padding-top: 3px;
         }
         .payment-desk-table td {
             vertical-align: top;

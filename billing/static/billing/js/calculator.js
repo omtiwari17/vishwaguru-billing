@@ -377,6 +377,22 @@ document.addEventListener('DOMContentLoaded', function () {
     if (clientNameInput) clientNameInput.addEventListener('input', syncClientAndAdDetails);
     if (editionDateInput) editionDateInput.addEventListener('input', syncClientAndAdDetails);
 
+    // Duplicate submission prevention & progress feedback
+    const submitBtn = document.getElementById('submitBillBtn');
+    if (submitBtn) {
+        const form = submitBtn.closest('form');
+        if (form) {
+            form.addEventListener('submit', function () {
+                if (!form.checkValidity || form.checkValidity()) {
+                    submitBtn.disabled = true;
+                    submitBtn.style.opacity = '0.75';
+                    submitBtn.style.cursor = 'wait';
+                    submitBtn.innerHTML = '<i class="bi bi-hourglass-split"></i> ' + (document.documentElement.lang === 'hi' ? 'बिल सुरक्षित हो रहा है...' : 'Generating Bill...');
+                }
+            });
+        }
+    }
+
     // Initial setup on page load
     toggleCustomSize();
     if (paymentStatusSelect) updateStatusPillUI(paymentStatusSelect.value);

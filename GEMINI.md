@@ -88,7 +88,7 @@
 
 ## 4. Current Repository State
 * **Documentation files:** `HLD.md`, `LLD.md`, `PROJECT_CONTEXT.md`, `REQUIREMENTS.md`, `README.md`, `GEMINI.md`.
-* **Git configuration:** `.gitignore` configured for Django, `.env`, SQLite, virtual environments.
+* **Git configuration:** `.gitignore` configured for Django, `.env`, SQLite, virtual environments, and temporary folders (`tmp/`, `temp/`, `*.tmp`).
 * **Active branch:** `main` (features merged and verified).
 * **Code status: Operations Dashboard, Field-Level Encryption & Customer Statement Portal Integrated.**
   - Django project (`config`) and billing app (`billing`) active on port 8080.
@@ -342,6 +342,7 @@
   - **Bill Detail Pane (`partials/bill_detail_pane.html`)**: Scaled action buttons to 44px min-height with crisp `#d6cfc4` borders, scaled balance due to 24px bold maroon, and scaled payment inputs to 42px min-height.
   - **Search & Forms (`bill_search.html`, `bill_form.html`, `payment_submissions_list.html`)**: Standardized all form controls, chips, and filter selects to 42px height and 14px/15px typography.
   - **Automated Test Suite Verified**: All 27 automated unit tests passed (100% OK). Dev server running cleanly on port 8080.
+  - **Authoritative Design Manual Updated (`UI_UX_REDESIGN.md`)**: Replaced initial audit with the comprehensive, production-accurate specification and implementation record covering typography tokens, button scale hierarchy, strict vector icons, security auth-gating, responsive breakpoints, and full A4 PDF architecture.
 
 ---
 
