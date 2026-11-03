@@ -1,5 +1,43 @@
 # UI/UX Improvement Plan
 
+## Audit status - 3 November 2026
+
+This audit covers the repository structure, Django routes/templates, shared CSS, existing screenshots, and the print template. Browser inspection was requested but could not be completed: the browser-control kernel is unavailable in this session because its local assets are missing. Findings marked as source-level have not been presented as browser-tested observations.
+
+### Scope inspected
+
+- Staff routes: dashboard, new bill, bills search, bill detail, UPI verification, payment settings, login, and generated bill output.
+- Customer routes: client statement, payment submission, and customer PDF output.
+- Shared files: base shell, masthead partial, `style.css`, `calculator.js`, and the bill PDF template.
+
+### Prioritized findings
+
+| Priority | Source-level issue | Result | Improvement |
+|---|---|---|---|
+| P0 | The shared CSS contains competing size, spacing, and mobile rules; page templates add many inline declarations. | Type, spacing, and control sizes vary from page to page. | Establish one authoritative token/component layer and remove duplicate overrides incrementally. |
+| P0 | WeasyPrint is listed as a dependency but is not installed in this local environment. | The bill route falls back to browser print HTML, so PDF output varies by browser and print settings. | Restore/install the expected PDF runtime, then render representative invoices and verify one-page output. |
+| P1 | The staff shell and customer portal duplicate responsive and typography rules. | Fixes made in one shell can miss the other. | Share type scale, controls, focus states, and container rules while preserving portal-specific payment layout. |
+| P1 | Data-heavy screens combine desktop tables, small inline actions, and partial mobile patterns. | Important bill/payment actions are hard to scan and can be too compact on smaller screens. | Use predictable desktop table actions and compact mobile bill cards with one clear primary action. |
+| P1 | New bill and settings forms use long grouped flows plus dense inline styles. | Validation, field hierarchy, and summary information are visually inconsistent. | Standardize form labels, help text, validation, section headers, and sticky summary behavior. |
+| P2 | Focus, loading, empty, error, and success states are implemented unevenly. | Keyboard and asynchronous interactions have inconsistent feedback. | Add shared accessible interaction states and test keyboard navigation on each staff workflow. |
+
+### Implementation sequence
+
+1. Establish the shared visual system: typography, spacing, containers, buttons, inputs, panels, tables, badges, and focus states. Do this in the shared stylesheet before changing individual pages.
+2. Apply the system to the shell, dashboard, bills/search, and mobile bill cards. Verify visual hierarchy and responsive spacing.
+3. Refine bill creation, bill detail, UPI verification, and bank settings without changing forms, endpoints, or business logic.
+4. Apply the same readable scale and payment-focused hierarchy to the customer portal.
+5. Repair and verify the PDF pipeline with WeasyPrint, then render desktop/browser-print fallback and generated PDFs for paid, unpaid, and partial invoices.
+6. Perform browser checks at 1440px, 768px, and 390px: navigation, buttons, validation, search, invoice actions, keyboard focus, and external links.
+
+### Acceptance criteria
+
+- Staff and portal text use a consistent readable scale: standard content 16px, secondary content no smaller than 14px, and clear heading hierarchy.
+- Every bordered card, row, and table cell has intentional internal padding at desktop and mobile sizes.
+- Dashboard, bill list, form, detail, verification, settings, and customer statement retain all routes and actions.
+- The invoice renders as one A4 page for normal invoices, with tested graceful handling for unusually long client or ad details.
+- Browser QA documents the actual viewport, interactions checked, and any residual issues.
+
 ## Purpose
 
 This document turns the supplied screenshots and the current Django UI into a practical redesign direction for Vishwaguru Ki Jhalak Billing. It is product guidance, not agent workflow guidance, so it belongs here rather than in an `AGENTS.md` file. The screenshots are visual references for the current staff dashboard, bill creation, bill search, UPI verification, bank settings, customer statement portal, and invoice detail screens; their sample customer and financial data must not be reused in demos or documentation.
