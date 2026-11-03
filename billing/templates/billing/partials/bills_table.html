@@ -2,28 +2,28 @@
 
 <!-- 1. Desktop & Tablet View (md+: Dense Clerk Table) -->
 <div class="hidden md:block overflow-x-auto" style="-webkit-overflow-scrolling: touch;">
-    <table class="w-full text-left text-xs border-collapse" style="width: 100%; border-collapse: collapse; font-family: 'Mukta', sans-serif;">
+    <table class="w-full text-left border-collapse" style="width: 100%; border-collapse: collapse; font-family: 'Mukta', sans-serif;">
         <thead>
             <tr class="border-b border-rule bg-paper" style="border-bottom: 1px solid #e7e2d9; background-color: #faf8f4;">
-                <th class="py-2.5 px-3 font-semibold text-muted uppercase tracking-wider text-[11px]" style="padding: 8px 10px; color: #57534e; font-size: 11px;">
+                <th class="py-3 px-3.5 font-semibold text-muted uppercase tracking-wider" style="padding: 12px 14px 12px 20px; color: #57534e; font-size: 13px;">
                     {% if site_lang == 'hi' %}बिल क्र.{% else %}Invoice no{% endif %}
                 </th>
-                <th class="py-2.5 px-3 font-semibold text-muted uppercase tracking-wider text-[11px]" style="padding: 8px 10px; color: #57534e; font-size: 11px;">
+                <th class="py-3 px-3.5 font-semibold text-muted uppercase tracking-wider" style="padding: 12px 14px; color: #57534e; font-size: 13px;">
                     {% if site_lang == 'hi' %}विज्ञापनदाता{% else %}Client{% endif %}
                 </th>
-                <th class="py-2.5 px-3 font-semibold text-muted uppercase tracking-wider text-[11px]" style="padding: 8px 10px; color: #57534e; font-size: 11px;">
+                <th class="py-3 px-3.5 font-semibold text-muted uppercase tracking-wider" style="padding: 12px 14px; color: #57534e; font-size: 13px;">
                     {% if site_lang == 'hi' %}प्रकाशन व आकार{% else %}Placement &amp; page{% endif %}
                 </th>
-                <th class="py-2.5 px-3 font-semibold text-muted uppercase tracking-wider text-[11px] text-right" style="padding: 8px 10px; color: #57534e; font-size: 11px; text-align: right;">
+                <th class="py-3 px-3.5 font-semibold text-muted uppercase tracking-wider text-right" style="padding: 12px 14px; color: #57534e; font-size: 13px; text-align: right;">
                     {% if site_lang == 'hi' %}कुल राशि{% else %}Amount{% endif %}
                 </th>
-                <th class="py-2.5 px-3 font-semibold text-muted uppercase tracking-wider text-[11px] text-right" style="padding: 8px 10px; color: #57534e; font-size: 11px; text-align: right;">
+                <th class="py-3 px-3.5 font-semibold text-muted uppercase tracking-wider text-right" style="padding: 12px 14px; color: #57534e; font-size: 13px; text-align: right;">
                     {% if site_lang == 'hi' %}बकाया{% else %}Balance due{% endif %}
                 </th>
-                <th class="py-2.5 px-3 font-semibold text-muted uppercase tracking-wider text-[11px]" style="padding: 8px 10px; color: #57534e; font-size: 11px;">
+                <th class="py-3 px-3.5 font-semibold text-muted uppercase tracking-wider" style="padding: 12px 14px; color: #57534e; font-size: 13px;">
                     {% if site_lang == 'hi' %}स्थिति{% else %}Status{% endif %}
                 </th>
-                <th class="py-2.5 px-3 font-semibold text-muted uppercase tracking-wider text-[11px] text-right" style="padding: 8px 10px; color: #57534e; font-size: 11px; text-align: right;">
+                <th class="py-3 px-3.5 font-semibold text-muted uppercase tracking-wider text-right" style="padding: 12px 20px 12px 14px; color: #57534e; font-size: 13px; text-align: right;">
                     {% if site_lang == 'hi' %}क्रियाएं{% else %}Actions{% endif %}
                 </th>
             </tr>
@@ -32,68 +32,67 @@
             {% if recent_bills %}
                 {% for b in recent_bills %}
                 <tr class="hover:bg-paper transition-colors" style="border-bottom: 1px solid #e7e2d9;">
-                    <td class="py-2 px-3 whitespace-nowrap" style="padding: 8px 10px;">
-                        <a href="{% url 'billing:bill_detail' b.pk %}" class="font-medium text-ink hover:underline tabular-nums" style="color: #1c1917; text-decoration: none;">
+                    <td class="py-3 px-3.5 whitespace-nowrap" style="padding: 12px 14px 12px 20px;">
+                        <a href="{% url 'billing:bill_detail' b.pk %}" class="font-semibold text-ink hover:underline tabular-nums" style="color: #1c1917; font-size: 15px; text-decoration: none;">
                             {{ b.bill_number }}
                         </a>
-                        <div class="text-[11px] text-muted tabular-nums" style="color: #57534e; font-size: 11px;">
+                        <div class="text-muted tabular-nums" style="color: #57534e; font-size: 13px; margin-top: 2px;">
                             {{ b.created_at|date:"d M Y" }}
                         </div>
                     </td>
-                    <td class="py-2 px-3" style="padding: 8px 10px;">
-                        <div class="font-medium text-ink" style="color: #1c1917;">
+                    <td class="py-3 px-3.5" style="padding: 12px 14px;">
+                        <div class="font-medium text-ink" style="color: #1c1917; font-size: 15px;">
                             {{ b.client_name }}
                         </div>
                         {% if b.client_phone %}
-                        <div class="text-[11px] text-muted tabular-nums" style="color: #57534e; font-size: 11px;">
+                        <div class="text-muted tabular-nums" style="color: #57534e; font-size: 13px; margin-top: 2px;">
                             {{ b.client_phone }}
                         </div>
                         {% endif %}
                     </td>
-                    <td class="py-2 px-3" style="padding: 8px 10px;">
-                        <div class="text-ink" style="color: #1c1917;">
+                    <td class="py-3 px-3.5" style="padding: 12px 14px;">
+                        <div class="text-ink" style="color: #1c1917; font-size: 14px;">
                             {{ b.get_placement_type_display }}
                             {% if b.placement_hindi and b.placement_hindi != b.get_placement_type_display %}
                                 <span class="text-muted" style="color: #57534e;">({{ b.placement_hindi }})</span>
                             {% endif %}
                         </div>
-                        <div class="text-[11px] text-muted" style="color: #57534e; font-size: 11px;">
+                        <div class="text-muted" style="color: #57534e; font-size: 13px; margin-top: 2px;">
                             {% if site_lang == 'hi' %}{{ b.edition_hindi }}{% else %}{{ b.get_edition_name_display }}{% endif %}
                             {% if b.page_number %}&bull; {{ b.page_number|format_page:site_lang }}{% endif %}
                         </div>
                     </td>
-                    <td class="py-2 px-3 text-right whitespace-nowrap font-medium text-ink tabular-nums" style="padding: 8px 10px; text-align: right; color: #1c1917;">
+                    <td class="py-3 px-3.5 text-right whitespace-nowrap font-semibold text-ink tabular-nums" style="padding: 12px 14px; text-align: right; color: #1c1917; font-size: 15px;">
                         {{ b.total_amount|indian_currency }}
                     </td>
-                    <td class="py-2 px-3 text-right whitespace-nowrap tabular-nums" style="padding: 8px 10px; text-align: right;">
+                    <td class="py-3 px-3.5 text-right whitespace-nowrap tabular-nums" style="padding: 12px 14px; text-align: right; font-size: 15px;">
                         {% if b.balance_amount > 0 %}
-                            <span class="font-medium" style="color: #9f1d1d;">{{ b.balance_amount|indian_currency }}</span>
+                            <span class="font-semibold" style="color: #9f1d1d;">{{ b.balance_amount|indian_currency }}</span>
                         {% else %}
-                            <span style="color: #15803d;">&mdash;</span>
+                            <span style="color: #15803d; font-weight: 500;">&mdash;</span>
                         {% endif %}
                     </td>
-                    <td class="py-2 px-3 whitespace-nowrap" style="padding: 8px 10px;">
+                    <td class="py-3 px-3.5 whitespace-nowrap" style="padding: 12px 14px;">
                         {% include 'billing/partials/status_dot.html' with status=b.payment_status %}
                     </td>
-                    <td class="py-2 px-3 text-right whitespace-nowrap text-xs" style="padding: 8px 10px; text-align: right;">
-                        <div class="inline-flex items-center gap-2" style="display: inline-flex; gap: 8px;">
-                            <a href="{% url 'billing:bill_detail' b.pk %}" class="text-muted hover:text-ink hover:underline" style="color: #57534e; text-decoration: none;">
-                                {% if site_lang == 'hi' %}देखें{% else %}View{% endif %}
+                    <td class="py-3 px-3.5 text-right whitespace-nowrap" style="padding: 12px 20px 12px 14px; text-align: right;">
+                        <div class="inline-flex items-center gap-1.5" style="display: inline-flex; gap: 6px;">
+                            <a href="{% url 'billing:bill_detail' b.pk %}" class="btn-desk-sm" title="{% if site_lang == 'hi' %}विवरण देखें{% else %}View invoice{% endif %}">
+                                <i class="bi bi-eye"></i>
+                                <span>{% if site_lang == 'hi' %}देखें{% else %}View{% endif %}</span>
                             </a>
-                            <span style="color: #e7e2d9;">&bull;</span>
-                            <a href="{% url 'billing:bill_pdf' b.pk %}?download=1" class="text-muted hover:text-ink hover:underline" style="color: #57534e; text-decoration: none;">
-                                PDF
+                            <a href="{% url 'billing:bill_pdf' b.pk %}?download=1&lang={{ b.bill_language }}" class="btn-desk-sm btn-pdf" title="{% if site_lang == 'hi' %}पीडीएफ डाउनलोड करें{% else %}Download PDF{% endif %}">
+                                <i class="bi bi-file-earmark-pdf"></i>
+                                <span>PDF</span>
                             </a>
                             {% if b.client_phone %}
-                            <span style="color: #e7e2d9;">&bull;</span>
-                            <a href="{{ b.whatsapp_share_url }}" target="_blank" class="text-muted hover:text-ink hover:underline" style="color: #57534e; text-decoration: none;">
-                                WhatsApp
+                            <a href="{{ b.whatsapp_share_url }}" target="_blank" class="btn-desk-sm btn-whatsapp" title="WhatsApp">
+                                <i class="bi bi-whatsapp"></i>
                             </a>
                             {% endif %}
                             {% if b.client %}
-                            <span style="color: #e7e2d9;">&bull;</span>
-                            <a href="{% url 'billing:customer_portal' b.client.access_token %}" target="_blank" class="text-muted hover:text-ink hover:underline" style="color: #57534e; text-decoration: none;">
-                                {% if site_lang == 'hi' %}खाता{% else %}Portal{% endif %}
+                            <a href="{% url 'billing:customer_portal' b.client.access_token %}" target="_blank" class="btn-desk-sm" title="{% if site_lang == 'hi' %}ग्राहक खाता पोर्टल{% else %}Customer statement portal{% endif %}">
+                                <i class="bi bi-box-arrow-up-right"></i>
                             </a>
                             {% endif %}
                         </div>
@@ -102,7 +101,7 @@
                 {% endfor %}
             {% else %}
                 <tr>
-                    <td colspan="7" class="py-8 text-center text-muted" style="padding: 24px; text-align: center; color: #57534e;">
+                    <td colspan="7" class="py-8 text-center text-muted" style="padding: 32px; text-align: center; color: #57534e; font-size: 15px;">
                         {% if site_lang == 'hi' %}कोई बिल नहीं मिला।{% else %}No matching bills found.{% endif %}
                     </td>
                 </tr>
@@ -136,13 +135,16 @@
                             </summary>
                             <div class="absolute right-0 top-full mt-1 w-48 bg-white border border-rule rounded shadow-lg z-50 divide-y divide-rule py-1" style="background-color: #ffffff; border: 1px solid #e7e2d9; border-radius: 4px; z-index: 50; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);">
                                 <a href="{% url 'billing:bill_detail' b.pk %}" class="min-h-[44px] px-4 py-2.5 flex items-center gap-2 text-sm text-ink hover:bg-paper hover:text-maroon transition-colors" style="text-decoration: none; color: #1c1917; min-height: 44px;">
+                                    <i class="bi bi-eye"></i>
                                     <span>{% if site_lang == 'hi' %}बिल विवरण देखें{% else %}View invoice{% endif %}</span>
                                 </a>
-                                <a href="{% url 'billing:bill_pdf' b.pk %}?download=1" class="min-h-[44px] px-4 py-2.5 flex items-center gap-2 text-sm text-ink hover:bg-paper hover:text-maroon transition-colors" style="text-decoration: none; color: #1c1917; min-height: 44px;">
+                                <a href="{% url 'billing:bill_pdf' b.pk %}?download=1&lang={{ b.bill_language }}" class="min-h-[44px] px-4 py-2.5 flex items-center gap-2 text-sm text-ink hover:bg-paper hover:text-maroon transition-colors" style="text-decoration: none; color: #1c1917; min-height: 44px;">
+                                    <i class="bi bi-file-earmark-pdf"></i>
                                     <span>{% if site_lang == 'hi' %}पीडीएफ डाउनलोड{% else %}Download PDF{% endif %}</span>
                                 </a>
                                 {% if b.client %}
                                 <a href="{% url 'billing:customer_portal' b.client.access_token %}" target="_blank" class="min-h-[44px] px-4 py-2.5 flex items-center gap-2 text-sm text-ink hover:bg-paper hover:text-maroon transition-colors" style="text-decoration: none; color: #1c1917; min-height: 44px;">
+                                    <i class="bi bi-box-arrow-up-right"></i>
                                     <span>{% if site_lang == 'hi' %}ग्राहक खाता पोर्टल{% else %}Client statement{% endif %}</span>
                                 </a>
                                 {% endif %}
@@ -228,25 +230,28 @@
 
                 <!-- Actions Row: Wide Outline WhatsApp Reminder Button + '...' Menu -->
                 <div class="flex items-center gap-2">
-                    <a href="{{ b.whatsapp_share_url }}" target="_blank" class="flex-1 min-h-[44px] px-3.5 py-2 inline-flex items-center justify-center gap-2 text-xs font-medium rounded border border-rule text-ink hover:bg-paper" style="border: 1px solid #e7e2d9; border-radius: 4px; min-height: 44px; text-decoration: none; color: #1c1917; background-color: #ffffff;">
-                        <svg class="w-3.5 h-3.5 text-stone-700 shrink-0" viewBox="0 0 24 24" fill="currentColor" style="width: 14px; height: 14px;"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/></svg>
+                    <a href="{{ b.whatsapp_share_url }}" target="_blank" class="flex-1 min-h-[44px] px-3.5 py-2 inline-flex items-center justify-center gap-2 text-xs font-medium rounded border border-rule text-ink hover:bg-paper" style="border: 1px solid #d6cfc4; border-radius: 4px; min-height: 44px; text-decoration: none; color: #1c1917; background-color: #ffffff;">
+                        <i class="bi bi-whatsapp" style="color: #15803d; font-size: 15px;"></i>
                         <span>{% if site_lang == 'hi' %}व्हाट्सऐप तगादा{% else %}WhatsApp reminder{% endif %}</span>
                     </a>
 
                     <!-- Always show '...' menu (View, PDF, Portal) with 44px tap target -->
                     <details class="relative shrink-0">
-                        <summary class="min-h-[44px] min-w-[44px] w-11 h-11 flex items-center justify-center border border-rule bg-white hover:bg-paper rounded cursor-pointer list-none select-none text-ink font-bold text-base" style="border: 1px solid #e7e2d9; border-radius: 4px; min-height: 44px; min-width: 44px; cursor: pointer; list-style: none;">
+                        <summary class="min-h-[44px] min-w-[44px] w-11 h-11 flex items-center justify-center border border-rule bg-white hover:bg-paper rounded cursor-pointer list-none select-none text-ink font-bold text-base" style="border: 1px solid #d6cfc4; border-radius: 4px; min-height: 44px; min-width: 44px; cursor: pointer; list-style: none;">
                             &hellip;
                         </summary>
-                        <div class="absolute right-0 bottom-full mb-1 w-48 bg-white border border-rule rounded shadow-lg z-50 divide-y divide-rule py-1" style="background-color: #ffffff; border: 1px solid #e7e2d9; border-radius: 4px; z-index: 50; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);">
+                        <div class="absolute right-0 bottom-full mb-1 w-48 bg-white border border-rule rounded shadow-lg z-50 divide-y divide-rule py-1" style="background-color: #ffffff; border: 1px solid #d6cfc4; border-radius: 4px; z-index: 50; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);">
                             <a href="{% url 'billing:bill_detail' b.pk %}" class="min-h-[44px] px-4 py-2.5 flex items-center gap-2 text-sm text-ink hover:bg-paper hover:text-maroon transition-colors" style="text-decoration: none; color: #1c1917; min-height: 44px;">
+                                <i class="bi bi-eye"></i>
                                 <span>{% if site_lang == 'hi' %}बिल विवरण देखें{% else %}View invoice{% endif %}</span>
                             </a>
-                            <a href="{% url 'billing:bill_pdf' b.pk %}?download=1" class="min-h-[44px] px-4 py-2.5 flex items-center gap-2 text-sm text-ink hover:bg-paper hover:text-maroon transition-colors" style="text-decoration: none; color: #1c1917; min-height: 44px;">
+                            <a href="{% url 'billing:bill_pdf' b.pk %}?download=1&lang={{ b.bill_language }}" class="min-h-[44px] px-4 py-2.5 flex items-center gap-2 text-sm text-ink hover:bg-paper hover:text-maroon transition-colors" style="text-decoration: none; color: #1c1917; min-height: 44px;">
+                                <i class="bi bi-file-earmark-pdf"></i>
                                 <span>{% if site_lang == 'hi' %}पीडीएफ डाउनलोड{% else %}Download PDF{% endif %}</span>
                             </a>
                             {% if b.client %}
                             <a href="{% url 'billing:customer_portal' b.client.access_token %}" target="_blank" class="min-h-[44px] px-4 py-2.5 flex items-center gap-2 text-sm text-ink hover:bg-paper hover:text-maroon transition-colors" style="text-decoration: none; color: #1c1917; min-height: 44px;">
+                                <i class="bi bi-box-arrow-up-right"></i>
                                 <span>{% if site_lang == 'hi' %}ग्राहक खाता पोर्टल{% else %}Client statement{% endif %}</span>
                             </a>
                             {% endif %}

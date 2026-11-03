@@ -1,23 +1,31 @@
-{% load static %}
+{% load static billing_tags %}
 <!DOCTYPE html>
 <html lang="{% if pdf_lang == 'hi' %}hi{% else %}en{% endif %}">
 <head>
     <meta charset="UTF-8">
     <title>
-        {% if pdf_lang == 'hi' %}बिल - {{ bill.bill_number }} | विश्वगुरु{% else %}Invoice - {{ bill.bill_number }} | Vishwaguru{% endif %}
+        {% if pdf_lang == 'hi' %}देयक - {{ bill.bill_number }} | विश्वगुरु की झलक{% else %}Invoice - {{ bill.bill_number }} | Vishwaguru Ki Jhalak{% endif %}
     </title>
+    <!-- Bootstrap Icons for Browser Fallback Preview -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+Devanagari:wght@400;500;600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Mukta:wght@400;500;600;700&family=Noto+Serif+Devanagari:wght@600;700&family=JetBrains+Mono:wght@500;600&display=swap');
 
         @page {
             size: A4 portrait;
-            margin: 8mm 10mm 8mm 10mm;
+            margin: 3mm;
+            @bottom-left {
+                content: "{% if pdf_lang == 'hi' %}विश्वगुरु की झलक — प्रमाणित कम्प्यूटरीकृत देयक{% else %}Vishwaguru Ki Jhalak — Valid Computer Generated Document{% endif %}";
+                font-family: {% if pdf_lang == 'hi' %}'Noto Serif Devanagari', 'Mukta', serif{% else %}'Mukta', -apple-system, sans-serif{% endif %};
+                font-size: 7pt;
+                color: #78716c;
+            }
             @bottom-right {
-                content: "Page 1 / 1";
-                font-family: 'Noto Sans Devanagari', 'Inter', sans-serif;
-                font-size: 8pt;
-                color: #64748b;
+                content: "{% if pdf_lang == 'hi' %}पृष्ठ " counter(page) " / " counter(pages){% else %}Page " counter(page) " of " counter(pages){% endif %}";
+                font-family: 'Mukta', sans-serif;
+                font-size: 7.5pt;
+                color: #78716c;
+                font-variant-numeric: tabular-nums;
             }
         }
 
@@ -27,587 +35,1088 @@
             padding: 0;
         }
 
-        body {
-            font-family: 'Noto Sans Devanagari', 'Inter', sans-serif;
-            color: #0f172a;
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            font-family: 'Mukta', 'Noto Sans Devanagari', -apple-system, sans-serif;
+            color: #1c1917;
             background: #ffffff;
-            font-size: 9pt;
+            font-size: 8.5pt;
             line-height: 1.35;
-            width: 210mm;
-            margin: 0 auto;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
         }
 
         @media print {
             html, body {
-                width: 210mm;
-                height: 297mm;
-                margin: 0;
-                padding: 0;
+                height: 100% !important;
+                width: 100% !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                background: #ffffff !important;
             }
             .no-print { display: none !important; }
+            .invoice-container {
+                width: 100% !important;
+                max-width: 100% !important;
+                height: auto !important;
+                min-height: 289mm !important;
+                border: 2px solid #1c1917 !important;
+                margin: 0 !important;
+                padding: 7mm 9mm 6mm 9mm !important;
+                break-inside: avoid !important;
+                page-break-inside: avoid !important;
+            }
         }
 
-        .invoice-wrapper {
-            border: 2.5px solid #b91c1c;
-            border-radius: 4px;
-            padding: 10mm 12mm 8mm 12mm;
+        /* Master Full-Page A4 Container */
+        .invoice-container {
             width: 190mm;
-            min-height: 279mm;
-            height: 279mm;
-            box-sizing: border-box;
-            position: relative;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            background: #ffffff;
+            max-width: 190mm;
+            height: auto;
+            min-height: 289mm;
             margin: 0 auto;
+            background: #ffffff;
+            border: 2px solid #1c1917;
+            padding: 8mm 9mm 7mm 9mm;
+            box-sizing: border-box;
+            display: block;
+            position: relative;
+            break-inside: avoid;
+            page-break-inside: avoid;
         }
+        .invoice-top-block { display: block; }
 
-        .invoice-top-section {
-            width: 100%;
+        /* Typography Utilities */
+        .font-masthead {
+            font-family: 'Noto Serif Devanagari', serif;
         }
-
-        .header-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 12px;
-            border-bottom: 2px solid #b91c1c;
-            padding-bottom: 8px;
+        .mono {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 8pt;
         }
-
-        .header-table td {
-            vertical-align: middle;
+        .tabular-nums {
+            font-variant-numeric: tabular-nums;
+            font-feature-settings: "tnum";
         }
-
-        .masthead-logo {
-            max-height: 52px;
-            max-width: 250px;
-            object-fit: contain;
-            margin-bottom: 3px;
-        }
-
-        .masthead-sub {
-            font-size: 8.5pt;
-            color: #475569;
-            margin-top: 2px;
-            line-height: 1.35;
-        }
-
-        .invoice-badge-box {
-            text-align: right;
-        }
-
-        .invoice-badge {
-            background-color: #b91c1c;
-            color: #ffffff;
-            font-size: 11pt;
-            font-weight: 700;
-            padding: 4px 14px;
-            border-radius: 4px;
-            display: inline-block;
-            margin-bottom: 6px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .bill-meta-text {
-            font-size: 9pt;
-            color: #1e293b;
-            line-height: 1.4;
-        }
-
-        .info-grid {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 14px;
-        }
-
-        .info-grid td {
-            width: 50%;
-            vertical-align: top;
-            padding: 6px;
-        }
-
-        .info-card {
-            background-color: #f8fafc;
-            border: 1px solid #e2e8f0;
-            border-radius: 4px;
-            padding: 8px 10px;
-            min-height: 105px;
-        }
-
-        .info-card-title {
-            font-size: 8.5pt;
-            font-weight: 700;
-            color: #b91c1c;
-            text-transform: uppercase;
-            border-bottom: 1px solid #e2e8f0;
-            padding-bottom: 3px;
-            margin-bottom: 5px;
-        }
-
-        .info-row {
-            margin-bottom: 3px;
-            font-size: 8.5pt;
-        }
-
-        .info-label {
-            color: #64748b;
-            font-weight: 500;
-        }
-
-        .info-value {
-            color: #0f172a;
-            font-weight: 600;
-        }
-
-        .items-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 0;
-        }
-
-        .items-table th {
-            background-color: #b91c1c;
-            color: #ffffff;
-            font-weight: 700;
-            font-size: 8.5pt;
-            padding: 6px 8px;
-            text-align: left;
-            border: 1px solid #b91c1c;
-        }
-
-        .items-table td {
-            padding: 6px 8px;
-            border-left: 1px solid #cbd5e1;
-            border-right: 1px solid #cbd5e1;
-            border-bottom: 1px solid #f1f5f9;
-            font-size: 8.5pt;
-            vertical-align: top;
-        }
-
-        .items-table tr.blank-row td {
-            height: 28px;
-            border-bottom: 1px solid #f1f5f9;
-        }
-
         .text-right { text-align: right; }
         .text-center { text-align: center; }
         .font-bold { font-weight: 700; }
+        .font-medium { font-weight: 500; }
+        .text-muted { color: #57534e; }
+        .text-maroon { color: #9f1d1d; }
 
-        .totals-table {
+        /* Masthead Table */
+        .masthead-table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 0;
+            margin-bottom: 3px;
+        }
+        .masthead-table td {
+            vertical-align: top;
+            padding: 0;
+        }
+        .masthead-logo {
+            height: 52px;
+            width: auto;
+            max-width: 250px;
+            object-fit: contain;
+            display: inline-block;
+            margin-bottom: 2px;
+        }
+        .masthead-sub {
+            font-size: 7.5pt;
+            color: #57534e;
+            line-height: 1.25;
+        }
+
+        /* Invoice Badge & Meta */
+        .invoice-badge-box {
+            text-align: right;
+        }
+        .invoice-badge {
+            display: inline-block;
+            background: #1c1917;
+            color: #ffffff;
+            font-family: 'Mukta', sans-serif;
+            font-weight: 700;
+            font-size: 9.5pt;
+            padding: 3px 12px;
+            letter-spacing: 0.8px;
+            margin-bottom: 3px;
+            border-radius: 2px;
+            text-transform: uppercase;
+        }
+        .bill-meta-table {
+            margin-left: auto;
+            border-collapse: collapse;
+            font-size: 8pt;
+        }
+        .bill-meta-table td {
+            padding: 1.5px 3px;
+        }
+        .bill-meta-label {
+            color: #57534e;
+            text-align: right;
+            padding-right: 6px !important;
+            font-weight: 500;
+        }
+        .bill-meta-value {
+            text-align: right;
+            font-weight: 600;
+            color: #1c1917;
+        }
+
+        /* Broadsheet Rules */
+        .newspaper-double-rule {
+            border-top: 2px solid #1c1917;
+            border-bottom: 1px solid #1c1917;
+            height: 3px;
+            margin: 4px 0 6px 0;
+        }
+
+        /* Metadata Two-Column Grid */
+        .meta-grid-table {
+            width: 100%;
+            border-collapse: collapse;
             margin-bottom: 6px;
-            border: 1px solid #cbd5e1;
         }
-
-        .totals-table td {
-            padding: 4px 8px;
-            font-size: 8.5pt;
+        .meta-grid-table td {
+            width: 50%;
+            vertical-align: top;
+            padding: 0;
         }
-
-        .words-box {
-            background-color: #fef2f2;
-            border-left: 3px solid #b91c1c;
-            padding: 6px 10px;
-            margin-bottom: 0;
-            font-size: 8.5pt;
-            height: 100%;
+        .meta-card {
+            border: 1px solid #e7e2d9;
+            background-color: #faf8f4;
+            padding: 6px 9px;
+            border-radius: 3px;
+            min-height: 84px;
             box-sizing: border-box;
         }
-
-        .terms-note {
+        .meta-card-title {
             font-size: 7.5pt;
-            color: #475569;
-            border: 1px dashed #cbd5e1;
-            background: #f8fafc;
+            font-weight: 700;
+            color: #9f1d1d;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+            margin-bottom: 3px;
+            padding-bottom: 2px;
+            border-bottom: 1px solid #e7e2d9;
+        }
+        .meta-client-name {
+            font-size: 9.5pt;
+            font-weight: 700;
+            color: #1c1917;
+            margin-bottom: 2px;
+            line-height: 1.2;
+        }
+        .meta-row {
+            font-size: 8pt;
+            color: #1c1917;
+            margin-bottom: 1.5px;
+            line-height: 1.25;
+        }
+        .meta-label {
+            color: #57534e;
+            font-weight: 500;
+            display: inline-block;
+            min-width: 54px;
+        }
+        .meta-subtle {
+            color: #78716c;
+            font-size: 7.5pt;
+        }
+        .proof-link {
+            color: #9f1d1d;
+            text-decoration: underline;
+            font-weight: 600;
+            font-size: 7.5pt;
+        }
+
+        /* Expandable Ruled Particulars Ledger Table */
+        .ledger-table {
+            width: 100%;
+            border-collapse: collapse;
+            border: 1px solid #1c1917;
+            height: auto;
+            min-height: 0;
+            margin-bottom: 0;
+            break-inside: avoid;
+            page-break-inside: avoid;
+        }
+        .ledger-table th {
+            background-color: #1c1917;
+            color: #ffffff;
+            font-weight: 700;
+            font-size: 8pt;
+            padding: 4.5px 6px;
+            border-right: 1px solid #44403c;
+            text-align: left;
+            letter-spacing: 0.3px;
+        }
+        .ledger-table th:last-child {
+            border-right: none;
+        }
+        .ledger-table td {
+            padding: 4px 6px;
+            vertical-align: top;
+            border-right: 1px solid #e7e2d9;
+            font-size: 8pt;
+        }
+        .ledger-table td:last-child {
+            border-right: none;
+        }
+        .ledger-table tbody tr.item-row {
+            border-bottom: 1px solid #e7e2d9;
+        }
+        .ad-item-title {
+            font-size: 8.5pt;
+            font-weight: 700;
+            color: #1c1917;
+            margin-bottom: 1px;
+        }
+        .ad-item-sub {
+            font-size: 7.5pt;
+            color: #57534e;
+            line-height: 1.25;
+        }
+
+        /* Bottom Section: Totals, Seal, Terms & Bank Desk */
+        .bottom-ledger-block {
+            margin-top: 3mm;
+            padding-top: 0;
+            break-inside: avoid;
+            page-break-inside: avoid;
+        }
+
+        /* Totals & Stamp Split Table */
+        .totals-split-table {
+            width: 100%;
+            border-collapse: collapse;
+            border: 1px solid #1c1917;
+            border-top: none;
+            margin-bottom: 6px;
+        }
+        .totals-split-table td {
+            vertical-align: top;
+            padding: 0;
+        }
+        .words-container {
+            padding: 6px 8px;
+            box-sizing: border-box;
+        }
+        .words-callout {
+            border-left: 2.5px solid #9f1d1d;
+            padding-left: 6px;
+            margin-bottom: 5px;
+        }
+        .words-callout-title {
+            font-size: 7pt;
+            font-weight: 700;
+            color: #9f1d1d;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+            margin-bottom: 1px;
+        }
+        .words-text {
+            font-size: 8.5pt;
+            font-weight: 700;
+            color: #1c1917;
+            line-height: 1.25;
+        }
+
+        /* Inked Rubber-Stamp Seals */
+        .stamp-seal {
+            display: inline-block;
+            border: 2px dashed;
+            padding: 3px 9px;
+            font-weight: 700;
+            font-size: 7.5pt;
+            letter-spacing: 0.5px;
+            border-radius: 3px;
+            text-transform: uppercase;
+            transform: rotate(-1.2deg);
+            margin: 3px 0 2px 0;
+        }
+        .stamp-paid {
+            border-color: #15803d;
+            color: #15803d;
+            background-color: #f0fdf4;
+        }
+        .stamp-partial {
+            border-color: #b45309;
+            color: #b45309;
+            background-color: #fffbeb;
+        }
+        .stamp-unpaid {
+            border-color: #9f1d1d;
+            color: #9f1d1d;
+            background-color: #fef2f2;
+        }
+
+        /* Financial Calculation Table */
+        .fin-calc-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .fin-calc-table tr {
+            border-bottom: 1px solid #e7e2d9;
+        }
+        .fin-calc-table tr:last-child {
+            border-bottom: none;
+        }
+        .fin-calc-table td {
+            padding: 2.5px 8px;
+            font-size: 8.5pt;
+            vertical-align: middle;
+        }
+        .fin-calc-label {
+            color: #1c1917;
+        }
+        .fin-calc-value {
+            text-align: right;
+            font-variant-numeric: tabular-nums;
+            font-feature-settings: "tnum";
+            color: #1c1917;
+        }
+        .fin-row-net {
+            border-top: 1.5px solid #9f1d1d;
+            border-bottom: 1.5px solid #9f1d1d;
+            background-color: #faf8f4;
+            color: #9f1d1d !important;
+            font-weight: 700;
+            font-size: 9.5pt !important;
+        }
+        .fin-row-net td {
+            padding: 4px 8px !important;
+            color: #9f1d1d !important;
+        }
+
+        /* Terms & Legal Notice */
+        .terms-box {
+            font-size: 7pt;
+            color: #57534e;
+            border: 1px solid #e7e2d9;
+            background-color: #faf8f4;
             padding: 4px 8px;
             margin-bottom: 6px;
             border-radius: 3px;
             line-height: 1.35;
         }
 
-        .invoice-bottom-section {
-            width: 100%;
-            margin-top: auto;
-            border-top: none;
-            padding-top: 0;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .footer-table {
+        /* Payment Desk 3-Column Grid */
+        .payment-desk-table {
             width: 100%;
             border-collapse: collapse;
-            border-top: 1.5px solid #b91c1c;
-            padding-top: 6px;
+            border-top: 1.5px solid #1c1917;
+            padding-top: 5px;
         }
-
-        .footer-table td {
+        .payment-desk-table td {
             vertical-align: top;
             padding: 4px;
         }
-
         .bank-details-box {
-            font-size: 8pt;
+            font-size: 7.5pt;
             line-height: 1.35;
+            color: #1c1917;
         }
-
-        .qr-box { text-align: center; }
-
+        .bank-title {
+            color: #9f1d1d;
+            font-size: 8pt;
+            font-weight: 700;
+            margin-bottom: 2px;
+            text-transform: uppercase;
+        }
+        .qr-cell {
+            text-align: center;
+            border-left: 1px solid #e7e2d9;
+            border-right: 1px solid #e7e2d9;
+            padding: 3px 6px;
+        }
         .qr-img {
-            width: 95px;
-            height: 95px;
-            border: 1px solid #cbd5e1;
+            width: 86px;
+            height: 86px;
+            border: 1px solid #e7e2d9;
             padding: 2px;
             background: #ffffff;
+            margin-bottom: 2px;
         }
-
-        .signature-box {
+        .qr-caption {
+            font-size: 7pt;
+            color: #57534e;
+            font-weight: 600;
+            line-height: 1.2;
+            display: inline-block;
+        }
+        .signatory-cell {
             text-align: right;
-            font-size: 8pt;
-            padding-top: 35px;
+            font-size: 7.5pt;
+            padding-top: 4px;
+        }
+        .sign-title {
+            font-weight: 700;
+            color: #1c1917;
+            line-height: 1.25;
+            margin-bottom: 34px;
+        }
+        .sign-rule {
+            border-top: 1px dashed #78716c;
+            width: 130px;
+            margin-left: auto;
+            margin-bottom: 2px;
+        }
+        .sign-label {
+            color: #57534e;
+            font-size: 7.5pt;
         }
 
-        @media print {
-            body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-            .no-print { display: none; }
+        /* On-Screen Print Preview Bar */
+        .no-print-toolbar {
+            background: #1c1917;
+            color: #faf8f4;
+            padding: 8px 16px;
+            text-align: center;
+            margin-bottom: 12px;
+            border-radius: 4px;
+            font-family: 'Mukta', sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
         }
+        .btn-print-action {
+            background: #9f1d1d;
+            color: #ffffff;
+            border: none;
+            padding: 5px 16px;
+            border-radius: 3px;
+            font-weight: 600;
+            font-size: 9pt;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .btn-print-action:hover {
+            background: #801818;
+        }
+        .back-link {
+            color: #38bdf8;
+            font-size: 8.5pt;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .back-link:hover {
+            text-decoration: underline;
+        }
+        /* Mode Switcher Pills in Toolbar */
+        .mode-pill {
+            font-size: 8pt;
+            color: #d6d3d1;
+            text-decoration: none;
+            padding: 3px 9px;
+            border-radius: 3px;
+            border: 1px solid #44403c;
+            background: #292524;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .mode-pill:hover {
+            color: #ffffff;
+            border-color: #78716c;
+        }
+        .mode-pill.active {
+            background: #9f1d1d;
+            border-color: #9f1d1d;
+            color: #ffffff;
+            font-weight: 600;
+        }
+
+        /* Digital Invoicing Authentication Box */
+        .digital-auth-card {
+            border: 1px solid #e7e2d9;
+            background-color: #faf8f4;
+            border-radius: 4px;
+            padding: 6px 8px;
+            text-align: center;
+            box-sizing: border-box;
+        }
+        .digital-entity {
+            font-size: 7.5pt;
+            font-weight: 700;
+            color: #1c1917;
+            margin-bottom: 3px;
+            line-height: 1.2;
+        }
+        .digital-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            background: #ffffff;
+            border: 1px solid #15803d;
+            color: #15803d;
+            padding: 2px 7px;
+            border-radius: 3px;
+            font-weight: 700;
+            font-size: 7pt;
+            letter-spacing: 0.3px;
+            margin-bottom: 3px;
+        }
+        .digital-check {
+            font-size: 8.5pt;
+            font-weight: bold;
+        }
+        .digital-statutory {
+            font-size: 6.8pt;
+            color: #57534e;
+            line-height: 1.25;
+            margin-bottom: 3px;
+        }
+        .digital-meta {
+            font-size: 6.8pt;
+            color: #78716c;
+            border-top: 1px dashed #e7e2d9;
+            padding-top: 2px;
+        }
+
     </style>
 </head>
 <body>
 
     <!-- On-screen Print action bar for direct browser view -->
-    <div class="no-print" style="background: #1e293b; color: white; padding: 10px; text-align: center; margin-bottom: 12px; border-radius: 4px;">
-        <span>
-            {% if pdf_lang == 'en' %}Print Preview (English){% elif pdf_lang == 'hi' %}प्रिंट दृश्य (हिंदी){% else %}Print Preview (Bilingual){% endif %}
-            &nbsp;|&nbsp;
-        </span>
-        <button onclick="window.print()" style="background: #b91c1c; color: white; border: none; padding: 6px 16px; border-radius: 4px; font-weight: bold; cursor: pointer;">
-            <i class="bi bi-printer"></i> {% if pdf_lang == 'hi' %}प्रिंट करें (Print){% else %}Print / Save as PDF{% endif %}
-        </button>
-        <a href="{% url 'billing:bill_detail' bill.pk %}" style="color: #38bdf8; margin-left: 14px; text-decoration: none;">
-            <i class="bi bi-arrow-left"></i> {% if pdf_lang == 'hi' %}वापस जाएं (Back){% else %}Back to Bill Details{% endif %}
-        </a>
+    <div class="no-print no-print-toolbar" style="max-width: 190mm; margin: 0 auto 10px auto;">
+        <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+            <!-- Language Switcher: 100% Full English vs 100% Full Hindi -->
+            <div style="display: flex; align-items: center; gap: 5px;">
+                <span style="font-size: 8pt; color: #a8a29e;">{% if pdf_lang == 'hi' %}भाषा:{% else %}Language:{% endif %}</span>
+                <a href="?lang=en&sign={{ require_sign|yesno:'1,0' }}" class="mode-pill {% if pdf_lang == 'en' %}active{% endif %}">
+                    English
+                </a>
+                <a href="?lang=hi&sign={{ require_sign|yesno:'1,0' }}" class="mode-pill {% if pdf_lang == 'hi' %}active{% endif %}">
+                    हिंदी
+                </a>
+            </div>
+
+            <span style="color: #44403c;">|</span>
+
+            <!-- Format Switcher: Computer Generated vs Physical Seal & Sign -->
+            <div style="display: flex; align-items: center; gap: 5px;">
+                <span style="font-size: 8pt; color: #a8a29e;">{% if pdf_lang == 'hi' %}प्रारूप:{% else %}Format:{% endif %}</span>
+                <a href="?lang={{ pdf_lang }}&sign=0" class="mode-pill {% if not require_sign and request.GET.sign != '1' %}active{% endif %}">
+                    <i class="bi bi-display"></i> {% if pdf_lang == 'hi' %}कम्प्यूटरीकृत देयक{% else %}Computer Generated{% endif %}
+                </a>
+                <a href="?lang={{ pdf_lang }}&sign=1" class="mode-pill {% if require_sign or request.GET.sign == '1' %}active{% endif %}">
+                    <i class="bi bi-pen"></i> {% if pdf_lang == 'hi' %}सील व हस्ताक्षर{% else %}Seal & Sign{% endif %}
+                </a>
+            </div>
+        </div>
+
+        <div style="display: flex; align-items: center; gap: 10px;">
+            <button onclick="window.print()" class="btn-print-action">
+                <i class="bi bi-printer"></i>
+                {% if pdf_lang == 'hi' %}प्रिंट / सुरक्षित करें{% else %}Print / Save PDF{% endif %}
+            </button>
+            {% if bill.pk %}
+            <a href="{% url 'billing:bill_detail' bill.pk %}" class="back-link">
+                <i class="bi bi-arrow-left"></i>
+                {% if pdf_lang == 'hi' %}वापस जाएं{% else %}Back to Bill{% endif %}
+            </a>
+            {% endif %}
+        </div>
     </div>
 
-    <div class="invoice-wrapper">
-        <div class="invoice-top-section">
-        <!-- Header -->
-        <table class="header-table">
-            <tr>
-                <td style="width: 58%;">
-                    <!-- Vishwaguru Authentic Logo -->
-                    <img src="{% static 'billing/img/logo.png' %}" class="masthead-logo" alt="विश्वगुरु"><br>
-                    <div class="masthead-sub">
-                        <strong>
-                            {% if pdf_lang == 'en' %}
-                                Daily Hindi Newspaper
-                            {% elif pdf_lang == 'hi' %}
-                                दैनिक समाचार पत्र
-                            {% else %}
-                                दैनिक समाचार पत्र (Daily Hindi Newspaper)
+    <!-- Master Full-Page A4 Container -->
+    <div class="invoice-container">
+
+        <!-- Top Block: Masthead + Metadata -->
+        <div class="invoice-top-block">
+            <!-- 1. Masthead & Header -->
+            <table class="masthead-table">
+                <tr>
+                    <td style="width: 58%;">
+                        <!-- Authentic Newspaper Masthead Logo -->
+                        <img src="{% static 'billing/img/logo.png' %}" class="masthead-logo" alt="{% if pdf_lang == 'hi' %}विश्वगुरु की झलक{% else %}Vishwaguru Ki Jhalak{% endif %}"><br>
+                        <div class="masthead-sub">
+                            <strong style="color: #1c1917;">
+                                {% if pdf_lang == 'hi' %}
+                                    दैनिक राष्ट्रीय समाचार पत्र | इंदौर से प्रकाशित
+                                {% else %}
+                                    Daily National Newspaper | Published from Indore
+                                {% endif %}
+                            </strong>
+                            {% if payment_info.registration_no %}
+                                &nbsp;|&nbsp; {% if pdf_lang == 'hi' %}पंजीयन क्र. (RNI):{% else %}RNI Reg. No.:{% endif %} <span class="mono">{{ payment_info.registration_no }}</span>
                             {% endif %}
-                        </strong><br>
-                        {{ payment_info.office_address }} | Phone: {{ payment_info.phone_number }}<br>
-                        {% if payment_info.registration_no %}Reg: {{ payment_info.registration_no }}{% endif %}
-                    </div>
-                </td>
-                <td class="invoice-badge-box" style="width: 42%;">
-                    <div class="invoice-badge">
-                        {% if pdf_lang == 'en' %}
-                            ADVERTISEMENT INVOICE
-                        {% elif pdf_lang == 'hi' %}
-                            विज्ञापन देयक
-                        {% else %}
-                            विज्ञापन देयक / INVOICE
-                        {% endif %}
-                    </div>
-                    <div class="bill-meta-text">
-                        <strong>{% if pdf_lang == 'en' %}Invoice No:{% elif pdf_lang == 'hi' %}बिल क्रमांक:{% else %}बिल क्र. / Invoice No:{% endif %}</strong> {{ bill.bill_number }}<br>
-                        <strong>{% if pdf_lang == 'en' %}Invoice Date:{% elif pdf_lang == 'hi' %}दिनांक:{% else %}दिनांक / Date:{% endif %}</strong> {{ bill.created_at|date:"d/m/Y" }}<br>
-                        <strong>{% if pdf_lang == 'en' %}Edition Date:{% elif pdf_lang == 'hi' %}प्रकाशन दिनांक:{% else %}प्रकाशन / Edition Date:{% endif %}</strong> {{ bill.edition_date|date:"d/m/Y" }}
-                    </div>
-                </td>
-            </tr>
-        </table>
-
-        <!-- Client & Publication Details -->
-        <table class="info-grid">
-            <tr>
-                <td style="padding-left: 0;">
-                    <div class="info-card">
-                        <div class="info-card-title">
-                            {% if pdf_lang == 'en' %}Billed To (Client Details){% elif pdf_lang == 'hi' %}विज्ञापनदाता विवरण{% else %}विज्ञापनदाता विवरण (Billed To){% endif %}
+                            <br>
+                            {{ payment_info.office_address }} &nbsp;|&nbsp; 
+                            {% if pdf_lang == 'hi' %}फ़ोन:{% else %}Phone:{% endif %} {{ payment_info.phone_number }}
                         </div>
-                        <div class="info-row">
-                            <span class="info-label">{% if pdf_lang == 'en' %}Name:{% elif pdf_lang == 'hi' %}नाम:{% else %}नाम (Name):{% endif %}</span>
-                            <span class="info-value">{{ bill.client_name }}</span>
-                        </div>
-                        {% if bill.client_phone %}
-                        <div class="info-row">
-                            <span class="info-label">{% if pdf_lang == 'en' %}Phone:{% elif pdf_lang == 'hi' %}फ़ोन:{% else %}फ़ोन (Phone):{% endif %}</span>
-                            <span class="info-value">{{ bill.client_phone }}</span>
-                        </div>
-                        {% endif %}
-                        {% if bill.client_address %}
-                        <div class="info-row">
-                            <span class="info-label">{% if pdf_lang == 'en' %}Address:{% elif pdf_lang == 'hi' %}पता:{% else %}पता (Address):{% endif %}</span>
-                            <span class="info-value">{{ bill.client_address }}</span>
-                        </div>
-                        {% endif %}
-                        {% if bill.client_gstin %}
-                        <div class="info-row">
-                            <span class="info-label">{% if pdf_lang == 'en' %}GSTIN / PAN:{% elif pdf_lang == 'hi' %}जीएसटी / पैन:{% else %}जीएसटी / पैन:{% endif %}</span>
-                            <span class="info-value">{{ bill.client_gstin }}</span>
-                        </div>
-                        {% endif %}
-                    </div>
-                </td>
-                <td style="padding-right: 0;">
-                    <div class="info-card">
-                        <div class="info-card-title">
-                            {% if pdf_lang == 'en' %}Publication & Ad Details{% elif pdf_lang == 'hi' %}प्रकाशन व विज्ञापन विवरण{% else %}प्रकाशन विवरण (Publication Details){% endif %}
-                        </div>
-                        <div class="info-row">
-                            <span class="info-label">{% if pdf_lang == 'en' %}Edition:{% elif pdf_lang == 'hi' %}संस्करण:{% else %}संस्करण (Edition):{% endif %}</span>
-                            <span class="info-value">
-                                {% if pdf_lang == 'en' %}{{ bill.get_edition_name_display }}{% elif pdf_lang == 'hi' %}{{ bill.edition_hindi }}{% else %}{{ bill.edition_bilingual }}{% endif %}
-                            </span>
-                        </div>
-                        <div class="info-row">
-                            <span class="info-label">{% if pdf_lang == 'en' %}Placement:{% elif pdf_lang == 'hi' %}स्थान व आकार:{% else %}स्थान व आकार:{% endif %}</span>
-                            <span class="info-value">
-                                {% if pdf_lang == 'en' %}{{ bill.get_placement_type_display }}{% elif pdf_lang == 'hi' %}{{ bill.placement_hindi }}{% else %}{{ bill.placement_bilingual }}{% endif %}
-                            </span>
-                        </div>
-                        {% if bill.custom_size_text %}
-                        <div class="info-row">
-                            <span class="info-label">{% if pdf_lang == 'en' %}Dimensions:{% elif pdf_lang == 'hi' %}विशिष्ट माप:{% else %}विशिष्ट माप:{% endif %}</span>
-                            <span class="info-value">{{ bill.custom_size_text }}</span>
-                        </div>
-                        {% endif %}
-                        {% if bill.page_number %}
-                        <div class="info-row">
-                            <span class="info-label">{% if pdf_lang == 'en' %}Page No:{% elif pdf_lang == 'hi' %}पृष्ठ संख्या:{% else %}पृष्ठ संख्या:{% endif %}</span>
-                            <span class="info-value">{{ bill.page_number }}</span>
-                        </div>
-                        {% endif %}
-                        {% if bill.epaper_link %}
-                        <div class="info-row">
-                            <span class="info-label">{% if pdf_lang == 'en' %}Epaper Proof:{% elif pdf_lang == 'hi' %}ई-पेपर लिंक:{% else %}ई-पेपर लिंक:{% endif %}</span>
-                            <span class="info-value">
-                                <a href="{{ bill.epaper_link }}" style="color: #b91c1c; text-decoration: underline;">
-                                    {% if pdf_lang == 'en' %}Verify Publication Online &rarr;{% else %}सत्यापन लिंक देखें &rarr;{% endif %}
-                                </a>
-                            </span>
-                        </div>
-                        {% endif %}
-                    </div>
-                </td>
-            </tr>
-        </table>
-
-        <!-- Itemized Charges Table -->
-        <table class="items-table">
-            <thead>
-                <tr>
-                    <th style="width: 6%;" class="text-center">{% if pdf_lang == 'en' %}S.No.{% elif pdf_lang == 'hi' %}क्र.{% else %}क्र.{% endif %}</th>
-                    <th style="width: 48%;">
-                        {% if pdf_lang == 'en' %}Description{% elif pdf_lang == 'hi' %}विज्ञापन विवरण{% else %}विज्ञापन विवरण (Description){% endif %}
-                    </th>
-                    <th style="width: 26%;">
-                        {% if pdf_lang == 'en' %}Placement / Size{% elif pdf_lang == 'hi' %}स्थान व आकार{% else %}स्थान / आकार (Placement){% endif %}
-                    </th>
-                    <th style="width: 20%;" class="text-right">
-                        {% if pdf_lang == 'en' %}Amount (₹){% elif pdf_lang == 'hi' %}राशि (₹){% else %}राशि (Amount ₹){% endif %}
-                    </th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td class="text-center">1</td>
-                    <td>
-                        <strong>
-                            {% if bill.ad_title %}
-                                {{ bill.ad_title }}
-                            {% elif pdf_lang == 'en' %}
-                                Advertisement Publication in Newspaper
+                    </td>
+                    <td class="invoice-badge-box" style="width: 42%;">
+                        <div class="invoice-badge">
+                            {% if pdf_lang == 'hi' %}
+                                विज्ञापन देयक
                             {% else %}
-                                समाचार पत्र में विज्ञापन प्रकाशन
-                            {% endif %}
-                        </strong>
-                        <div style="font-size: 7.5pt; color: #64748b; margin-top: 2px;">
-                            {% if pdf_lang == 'en' %}Date: {{ bill.edition_date|date:"d/m/Y" }} | {{ bill.get_edition_name_display }} Edition{% elif pdf_lang == 'hi' %}दिनांक: {{ bill.edition_date|date:"d/m/Y" }} | {{ bill.edition_hindi }} संस्करण{% else %}दिनांक / Date: {{ bill.edition_date|date:"d/m/Y" }} | {{ bill.edition_bilingual }}{% endif %}
-                        </div>
-                    </td>
-                    <td>
-                        {% if pdf_lang == 'en' %}{{ bill.get_placement_type_display }}{% elif pdf_lang == 'hi' %}{{ bill.placement_hindi }}{% else %}{{ bill.placement_bilingual }}{% endif %}
-                        {% if bill.custom_size_text %}<br><small>({{ bill.custom_size_text }})</small>{% endif %}
-                    </td>
-                    <td class="text-right">
-                        ₹{{ bill.base_amount|floatformat:2 }}
-                    </td>
-                </tr>
-                {% if bill.discount_amount > 0 %}
-                <tr>
-                    <td class="text-center">2</td>
-                    <td colspan="2" style="color: #b91c1c;">
-                        {% if pdf_lang == 'en' %}Special Discount{% elif pdf_lang == 'hi' %}विशेष छूट{% else %}विशेष छूट (Special Discount){% endif %}
-                    </td>
-                    <td class="text-right" style="color: #b91c1c;">
-                        - ₹{{ bill.discount_amount|floatformat:2 }}
-                    </td>
-                </tr>
-                {% endif %}
-                {% if bill.previous_due > 0 %}
-                <tr>
-                    <td class="text-center">{% if bill.discount_amount > 0 %}3{% else %}2{% endif %}</td>
-                    <td colspan="2" style="color: #b91c1c;">
-                        <strong>
-                            {% if pdf_lang == 'en' %}Previous Outstanding Balance / Old Due{% elif pdf_lang == 'hi' %}पुराना बकाया राशि{% else %}पुराना बकाया (Previous Pending Due){% endif %}
-                        </strong>
-                    </td>
-                    <td class="text-right font-bold" style="color: #b91c1c;">
-                        + ₹{{ bill.previous_due|floatformat:2 }}
-                    </td>
-                </tr>
-                {% endif %}
-                <!-- Clean Ruled Blank Rows to visually expand table through page -->
-                <tr class="blank-row"><td class="text-center">&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr>
-                <tr class="blank-row"><td class="text-center">&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr>
-                <tr class="blank-row"><td class="text-center">&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr>
-                <tr class="blank-row"><td class="text-center">&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr>
-                <tr class="blank-row"><td class="text-center">&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr>
-                {% if not bill.discount_amount and not bill.previous_due %}
-                <tr class="blank-row"><td class="text-center">&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr>
-                {% endif %}
-            </tbody>
-        </table>
-        </div><!-- end invoice-top-section -->
-
-        <!-- Bottom Pinned Section: Totals, Terms, Bank Details, QR & Signature -->
-        <div class="invoice-bottom-section">
-            <!-- Totals & In Words (Placed on lower side) -->
-            <table class="totals-table">
-                <tr>
-                    <td style="width: 58%; vertical-align: top; padding: 0;">
-                        <div class="words-box">
-                            <strong>
-                                {% if pdf_lang == 'en' %}Amount in Words:{% elif pdf_lang == 'hi' %}राशि शब्दों में:{% else %}राशि शब्दों में (Amount in Words):{% endif %}
-                            </strong><br>
-                            {% if pdf_lang == 'en' %}
-                                <strong>{{ amount_words.english }}</strong>
-                            {% elif pdf_lang == 'hi' %}
-                                <strong>{{ amount_words.hindi }}</strong>
-                            {% else %}
-                                {{ amount_words.hindi }}<br>
-                                <em>({{ amount_words.english }})</em>
+                                ADVERTISEMENT INVOICE
                             {% endif %}
                         </div>
-                    </td>
-                    <td style="width: 42%; vertical-align: top; padding: 4px 6px;">
-                        <table style="width: 100%; border-collapse: collapse;">
+                        <table class="bill-meta-table">
                             <tr>
-                                <td style="padding: 2px 0; font-size: 8.5pt;">
-                                    {% if pdf_lang == 'en' %}Gross Ad Amount:{% elif pdf_lang == 'hi' %}विज्ञापन राशि:{% else %}विज्ञापन राशि (Gross):{% endif %}
+                                <td class="bill-meta-label">
+                                    {% if pdf_lang == 'hi' %}बिल क्रमांक:{% else %}Invoice No:{% endif %}
                                 </td>
-                                <td style="padding: 2px 0; text-align: right; font-size: 8.5pt;">₹{{ bill.base_amount|floatformat:2 }}</td>
-                            </tr>
-                            {% if bill.discount_amount > 0 %}
-                            <tr style="color: #b91c1c;">
-                                <td style="padding: 2px 0; font-size: 8.5pt;">
-                                    {% if pdf_lang == 'en' %}Discount:{% elif pdf_lang == 'hi' %}छूट:{% else %}छूट (Discount):{% endif %}
+                                <td class="bill-meta-value mono" style="font-size: 9pt; color: #9f1d1d;">
+                                    {{ bill.bill_number }}
                                 </td>
-                                <td style="padding: 2px 0; text-align: right; font-size: 8.5pt;">- ₹{{ bill.discount_amount|floatformat:2 }}</td>
-                            </tr>
-                            {% endif %}
-                            {% if bill.previous_due > 0 %}
-                            <tr style="color: #b91c1c;">
-                                <td style="padding: 2px 0; font-size: 8.5pt;">
-                                    {% if pdf_lang == 'en' %}Previous Due:{% elif pdf_lang == 'hi' %}पुराना बकाया:{% else %}पुराना बकाया (Prev Due):{% endif %}
-                                </td>
-                                <td style="padding: 2px 0; text-align: right; font-size: 8.5pt; font-weight: 600;">+ ₹{{ bill.previous_due|floatformat:2 }}</td>
-                            </tr>
-                            {% endif %}
-                            <tr style="border-top: 1.5px solid #b91c1c; font-size: 10.5pt; font-weight: 700; color: #b91c1c;">
-                                <td style="padding: 4px 0;">
-                                    {% if pdf_lang == 'en' %}Net Payable Total:{% elif pdf_lang == 'hi' %}कुल देय राशि:{% else %}कुल देय राशि:{% endif %}
-                                </td>
-                                <td style="padding: 4px 0; text-align: right;">₹{{ bill.total_amount|floatformat:2 }}</td>
                             </tr>
                             <tr>
-                                <td style="padding: 2px 0; font-size: 8pt; color: #15803d;">
-                                    {% if pdf_lang == 'en' %}Amount Received:{% elif pdf_lang == 'hi' %}प्राप्त राशि:{% else %}प्राप्त राशि (Paid):{% endif %}
+                                <td class="bill-meta-label">
+                                    {% if pdf_lang == 'hi' %}बिल दिनांक:{% else %}Invoice Date:{% endif %}
                                 </td>
-                                <td style="padding: 2px 0; text-align: right; font-size: 8pt; color: #15803d;">₹{{ bill.amount_paid|floatformat:2 }}</td>
+                                <td class="bill-meta-value tabular-nums">
+                                    {{ bill.created_at|date:"d/m/Y" }}
+                                </td>
                             </tr>
-                            <tr style="font-weight: 700; font-size: 8.5pt; color: #b91c1c;">
-                                <td style="padding: 2px 0;">
-                                    {% if pdf_lang == 'en' %}Balance Outstanding:{% elif pdf_lang == 'hi' %}शेष बकाया:{% else %}शेष बकाया (Balance):{% endif %}
+                            <tr>
+                                <td class="bill-meta-label">
+                                    {% if pdf_lang == 'hi' %}प्रकाशन दिनांक:{% else %}Publication Date:{% endif %}
                                 </td>
-                                <td style="padding: 2px 0; text-align: right;">₹{{ bill.balance_amount|floatformat:2 }}</td>
+                                <td class="bill-meta-value tabular-nums">
+                                    {{ bill.edition_date|date:"d/m/Y" }}
+                                </td>
                             </tr>
                         </table>
                     </td>
                 </tr>
             </table>
-            <div class="terms-note">
-                <strong>{% if pdf_lang == 'en' %}Terms & Conditions:{% else %}नियम व शर्तें:{% endif %}</strong>
-                {% if pdf_lang == 'en' %}
-                    1. Cheques subject to realization. 2. Payments to be made in favour of 'Vishwaguru'. 3. Online publication verification link provided above. 4. Disputes subject to Indore jurisdiction only.
-                {% else %}
-                    1. सभी चेक समाशोधन (realization) के अधीन हैं। 2. भुगतान 'विश्वगुरु' के नाम पर ही करें। 3. ई-पेपर सत्यापन लिंक ऊपर दिया गया है। 4. सभी विवाद केवल इंदौर क्षेत्राधिकार के अधीन हैं।
-                {% endif %}
-            </div>
 
-            <!-- Footer / Bank Details & QR & Signature -->
-            <table class="footer-table">
+            <!-- Broadsheet Newspaper Double Rule -->
+            <div class="newspaper-double-rule"></div>
+
+            <!-- 2. Advertiser & Publication Metadata Grid -->
+            <table class="meta-grid-table">
                 <tr>
-                    <!-- Bank Info -->
-                    <td style="width: 44%;">
-                        <div class="bank-details-box">
-                            <strong style="color: #b91c1c; font-size: 8pt;">
-                                {% if pdf_lang == 'en' %}Payment Bank Details (NEFT / RTGS):{% elif pdf_lang == 'hi' %}भुगतान बैंक विवरण (RTGS/NEFT):{% else %}भुगतान विवरण (Bank Details):{% endif %}
-                            </strong><br>
-                            <strong>{% if pdf_lang == 'en' %}Bank Name:{% else %}बैंक का नाम:{% endif %}</strong> {{ payment_info.bank_name }}<br>
-                            <strong>{% if pdf_lang == 'en' %}Account No:{% else %}खाता संख्या:{% endif %}</strong> {{ payment_info.account_number }}<br>
-                            <strong>{% if pdf_lang == 'en' %}IFSC Code:{% else %}आईएफएससी कोड:{% endif %}</strong> {{ payment_info.ifsc_code }}<br>
-                            <strong>{% if pdf_lang == 'en' %}Account Holder:{% else %}खाताधारक:{% endif %}</strong> {{ payment_info.account_holder_name }}<br>
-                            <strong>{% if pdf_lang == 'en' %}UPI ID:{% else %}यूपीआई आईडी:{% endif %}</strong> {{ payment_info.upi_id }}
+                    <!-- Left: Billed To (Advertiser) -->
+                    <td style="padding-right: 4px;">
+                        <div class="meta-card">
+                            <div class="meta-card-title">
+                                {% if pdf_lang == 'hi' %}विज्ञापनदाता विवरण (बिल धारक){% else %}Advertiser Details (Billed To){% endif %}
+                            </div>
+                            <div class="meta-client-name">
+                                {{ bill.client_name|client_display_name:pdf_lang }}
+                            </div>
+                            {% if bill.client_phone %}
+                            <div class="meta-row">
+                                <span class="meta-label">{% if pdf_lang == 'hi' %}फ़ोन:{% else %}Phone:{% endif %}</span>
+                                <span class="font-medium tabular-nums">{{ bill.client_phone }}</span>
+                            </div>
+                            {% else %}
+                            <div class="meta-row">
+                                <span class="meta-label">{% if pdf_lang == 'hi' %}संपर्क:{% else %}Contact:{% endif %}</span>
+                                <span class="meta-subtle">{% if pdf_lang == 'hi' %}प्रत्यक्ष विज्ञापनदाता{% else %}Direct Retail Advertiser{% endif %}</span>
+                            </div>
+                            {% endif %}
+
+                            {% if bill.client_address %}
+                            <div class="meta-row">
+                                <span class="meta-label">{% if pdf_lang == 'hi' %}पता:{% else %}Address:{% endif %}</span>
+                                <span>{{ bill.client_address|client_display_name:pdf_lang }}</span>
+                            </div>
+                            {% else %}
+                            <div class="meta-row">
+                                <span class="meta-label">{% if pdf_lang == 'hi' %}पता:{% else %}Address:{% endif %}</span>
+                                <span class="meta-subtle">{% if pdf_lang == 'hi' %}कार्यालय रिकॉर्ड अनुसार{% else %}On Office Records{% endif %}</span>
+                            </div>
+                            {% endif %}
+
+                            {% if bill.client_gstin %}
+                            <div class="meta-row">
+                                <span class="meta-label">{% if pdf_lang == 'hi' %}जीएसटी / पैन:{% else %}GSTIN / PAN:{% endif %}</span>
+                                <span class="mono font-bold" style="color: #1c1917;">{{ bill.client_gstin }}</span>
+                            </div>
+                            {% else %}
+                            <div class="meta-row">
+                                <span class="meta-label">{% if pdf_lang == 'hi' %}जीएसटी स्थिति:{% else %}GST Status:{% endif %}</span>
+                                <span class="meta-subtle">{% if pdf_lang == 'hi' %}अपंजीकृत ग्राहक (उपभोक्ता){% else %}Unregistered / Consumer (B2C){% endif %}</span>
+                            </div>
+                            {% endif %}
                         </div>
                     </td>
 
-                    <!-- UPI QR Code -->
-                    <td style="width: 28%;" class="qr-box">
-                        {% if qr_code_base64 %}
-                        <img src="{{ qr_code_base64 }}" class="qr-img" alt="UPI QR Code"><br>
-                        <span style="font-size: 7.5pt; color: #475569; font-weight: 600;">
-                            {% if pdf_lang == 'en' %}
-                                Scan & Pay via UPI<br>(GPay / PhonePe / Paytm)
-                            {% elif pdf_lang == 'hi' %}
-                                स्कैन कर भुगतान करें<br>(GPay / PhonePe / Paytm)
-                            {% else %}
-                                स्कैन कर भुगतान करें<br>Scan & Pay via UPI
+                    <!-- Right: Publication Details -->
+                    <td style="padding-left: 4px;">
+                        <div class="meta-card">
+                            <div class="meta-card-title">
+                                {% if pdf_lang == 'hi' %}प्रकाशन व संस्करण विवरण{% else %}Publication & Insertion Details{% endif %}
+                            </div>
+                            <div class="meta-row">
+                                <span class="meta-label">{% if pdf_lang == 'hi' %}संस्करण:{% else %}Edition:{% endif %}</span>
+                                <span class="font-bold">
+                                    {% if pdf_lang == 'hi' %}
+                                        {{ bill.edition_hindi }}
+                                    {% else %}
+                                        {{ bill.get_edition_name_display }}
+                                    {% endif %}
+                                </span>
+                            </div>
+                            <div class="meta-row">
+                                <span class="meta-label">{% if pdf_lang == 'hi' %}स्थान व आकार:{% else %}Placement:{% endif %}</span>
+                                <span class="font-bold">
+                                    {% if pdf_lang == 'hi' %}
+                                        {{ bill.placement_hindi }}
+                                    {% else %}
+                                        {{ bill.get_placement_type_display }}
+                                    {% endif %}
+                                </span>
+                            </div>
+                            {% if bill.custom_size_text %}
+                            <div class="meta-row">
+                                <span class="meta-label">{% if pdf_lang == 'hi' %}विशिष्ट माप:{% else %}Dimensions:{% endif %}</span>
+                                <span class="mono font-bold" style="color: #9f1d1d;">{{ bill.custom_size_text }}</span>
+                            </div>
                             {% endif %}
-                        </span>
-                        {% endif %}
-                    </td>
-
-                    <!-- Signatory -->
-                    <td style="width: 28%;" class="signature-box">
-                        <strong>
-                            {% if pdf_lang == 'en' %}For Vishwaguru Newspaper{% else %}कृते विश्वगुरु समाचार पत्र{% endif %}
-                        </strong><br><br>
-                        <span>{% if pdf_lang == 'en' %}Authorized Signatory{% else %}अधिकृत हस्ताक्षरकर्ता{% endif %}</span>
+                            {% if bill.page_number %}
+                            <div class="meta-row">
+                                <span class="meta-label">{% if pdf_lang == 'hi' %}पृष्ठ संख्या:{% else %}Page Number:{% endif %}</span>
+                                <span class="font-medium">{{ bill.page_number|format_page:pdf_lang }}</span>
+                            </div>
+                            {% endif %}
+                            <div class="meta-row">
+                                <span class="meta-label">{% if pdf_lang == 'hi' %}ई-पेपर प्रमाण:{% else %}E-Paper Proof:{% endif %}</span>
+                                <span>
+                                    {% if bill.epaper_link %}
+                                        <a href="{{ bill.epaper_link }}" class="proof-link">
+                                            {% if pdf_lang == 'hi' %}ऑनलाइन प्रकाशन सत्यापन लिंक &rarr;{% else %}Verify Online Publication &rarr;{% endif %}
+                                        </a>
+                                    {% else %}
+                                        <span class="meta-subtle">
+                                            {% if pdf_lang == 'hi' %}मुद्रित संस्करण अनुसार सत्यापित{% else %}Verified in Print Edition{% endif %}
+                                        </span>
+                                    {% endif %}
+                                </span>
+                            </div>
+                        </div>
                     </td>
                 </tr>
             </table>
-        </div><!-- end invoice-bottom-section -->
+        </div><!-- end invoice-top-block -->
 
-    </div><!-- end invoice-wrapper -->
+        <!-- 3. Expandable Particulars Ledger Table -->
+        <table class="ledger-table">
+            <thead>
+                <tr>
+                    <th style="width: 6%;" class="text-center">{% if pdf_lang == 'hi' %}क्र.{% else %}S.No.{% endif %}</th>
+                    <th style="width: 48%;">
+                        {% if pdf_lang == 'hi' %}विज्ञापन विवरण एवं प्रकाशन ब्यौरा{% else %}Description & Particulars{% endif %}
+                    </th>
+                    <th style="width: 24%;">
+                        {% if pdf_lang == 'hi' %}स्थान व आकार{% else %}Placement / Size{% endif %}
+                    </th>
+                    <th style="width: 10%;" class="text-right">
+                        {% if pdf_lang == 'hi' %}दर (₹){% else %}Rate (₹){% endif %}
+                    </th>
+                    <th style="width: 12%;" class="text-right">
+                        {% if pdf_lang == 'hi' %}राशि (₹){% else %}Amount (₹){% endif %}
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Primary Line Item -->
+                <tr class="item-row">
+                    <td class="text-center font-medium">1</td>
+                    <td>
+                        <div class="ad-item-title">
+                            {% if bill.ad_title %}
+                                {{ bill.ad_title }}
+                            {% elif pdf_lang == 'hi' %}
+                                समाचार पत्र में विज्ञापन प्रकाशन
+                            {% else %}
+                                Advertisement Publication in Newspaper
+                            {% endif %}
+                        </div>
+                        <div class="ad-item-sub">
+                            {% if pdf_lang == 'hi' %}
+                                प्रकाशन दिनांक: {{ bill.edition_date|date:"d/m/Y" }} &nbsp;|&nbsp; {{ bill.edition_hindi }} संस्करण{% if bill.page_number %} &nbsp;|&nbsp; {{ bill.page_number|format_page:'hi' }}{% endif %}
+                            {% else %}
+                                Publication Date: {{ bill.edition_date|date:"d/m/Y" }} &nbsp;|&nbsp; {{ bill.get_edition_name_display }} Edition{% if bill.page_number %} &nbsp;|&nbsp; {{ bill.page_number|format_page:'en' }}{% endif %}
+                            {% endif %}
+                        </div>
+                    </td>
+                    <td>
+                        <span class="font-medium">
+                            {% if pdf_lang == 'hi' %}{{ bill.placement_hindi }}{% else %}{{ bill.get_placement_type_display }}{% endif %}
+                        </span>
+                        {% if bill.custom_size_text %}
+                            <br><span class="mono text-muted" style="font-size: 7.5pt;">({{ bill.custom_size_text }})</span>
+                        {% endif %}
+                    </td>
+                    <td class="text-right tabular-nums">
+                        {{ bill.base_amount|floatformat:2 }}
+                    </td>
+                    <td class="text-right tabular-nums font-bold">
+                        {{ bill.base_amount|floatformat:2 }}
+                    </td>
+                </tr>
+
+                <!-- Conditional Discount Row -->
+                {% if bill.discount_amount > 0 %}
+                <tr class="item-row" style="color: #9f1d1d;">
+                    <td class="text-center font-medium">2</td>
+                    <td colspan="3">
+                        <strong style="color: #9f1d1d;">
+                            {% if pdf_lang == 'hi' %}विशेष रियायती छूट{% else %}Special Concession / Package Discount{% endif %}
+                        </strong>
+                    </td>
+                    <td class="text-right tabular-nums font-bold" style="color: #9f1d1d;">
+                        - {{ bill.discount_amount|floatformat:2 }}
+                    </td>
+                </tr>
+                {% endif %}
+
+                <!-- Conditional Previous Due Row -->
+                {% if bill.previous_due > 0 %}
+                <tr class="item-row" style="color: #9f1d1d;">
+                    <td class="text-center font-medium">{% if bill.discount_amount > 0 %}3{% else %}2{% endif %}</td>
+                    <td colspan="3">
+                        <strong style="color: #9f1d1d;">
+                            {% if pdf_lang == 'hi' %}पूर्व शेष बकाया राशि (खाता बही){% else %}Previous Outstanding Balance / Old Pending Due{% endif %}
+                        </strong>
+                    </td>
+                    <td class="text-right tabular-nums font-bold" style="color: #9f1d1d;">
+                        + {{ bill.previous_due|floatformat:2 }}
+                    </td>
+                </tr>
+                {% endif %}
+
+            </tbody>
+        </table>
+
+        <!-- 4. Bottom Block: Totals, Rubber Stamp, Bank Details, QR & Signatory -->
+        <div class="bottom-ledger-block">
+
+            <!-- Totals & Amount in Words Split Table -->
+            <table class="totals-split-table">
+                <tr>
+                    <!-- Left: Amount in Words & Inked Rubber Stamp -->
+                    <td style="width: 56%; vertical-align: top; padding: 0;">
+                        <div class="words-container">
+                            <div class="words-callout">
+                                <div class="words-callout-title">
+                                    {% if pdf_lang == 'hi' %}राशि शब्दों में:{% else %}Amount in Words:{% endif %}
+                                </div>
+                                <div class="words-text">
+                                    {% if pdf_lang == 'hi' %}
+                                        {{ amount_words.hindi }}
+                                    {% else %}
+                                        {{ amount_words.english }}
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            <!-- Inked Rubber-Stamp Accounting Seal -->
+                            {% if bill.payment_status == 'Paid' or bill.balance_amount <= 0 %}
+                            <div class="stamp-seal stamp-paid">
+                                <span style="font-size: 9.5pt;">&#10003;</span>
+                                {% if pdf_lang == 'hi' %}पूर्ण भुगतान प्राप्त — खाता चुकता{% else %}PAID IN FULL — PAYMENT SETTLED{% endif %}
+                            </div>
+                            {% elif bill.payment_status == 'Partial' or bill.amount_paid > 0 %}
+                            <div class="stamp-seal stamp-partial">
+                                <span style="font-size: 9pt;">&#9888;</span>
+                                {% if pdf_lang == 'hi' %}आंशिक भुगतान — शेष बकाया: ₹{{ bill.balance_amount|floatformat:2 }}{% else %}PARTIALLY PAID — BAL DUE: ₹{{ bill.balance_amount|floatformat:2 }}{% endif %}
+                            </div>
+                            {% else %}
+                            <div class="stamp-seal stamp-unpaid">
+                                <span style="font-size: 9pt;">&#10005;</span>
+                                {% if pdf_lang == 'hi' %}भुगतान देय — कुल देय: ₹{{ bill.total_amount|floatformat:2 }}{% else %}PAYMENT DUE — PAYABLE: ₹{{ bill.total_amount|floatformat:2 }}{% endif %}
+                            </div>
+                            {% endif %}
+
+                            <!-- Verification Watermark Note -->
+                            <div style="margin-top: 5px; font-size: 7pt; color: #78716c;">
+                                {% if pdf_lang == 'hi' %}
+                                    प्रमाणित कम्प्यूटरीकृत समाचार पत्र विज्ञापन देयक पत्र • विश्वगुरु की झलक
+                                {% else %}
+                                    Certified official computer generated ad invoice • Vishwaguru Ki Jhalak
+                                {% endif %}
+                            </div>
+                        </div>
+                    </td>
+
+                    <!-- Right: Dense Financial Calculation Breakdown -->
+                    <td style="width: 44%; vertical-align: top; padding: 0; border-left: 1px solid #e7e2d9;">
+                        <table class="fin-calc-table">
+                            <tr>
+                                <td class="fin-calc-label">
+                                    {% if pdf_lang == 'hi' %}मूल विज्ञापन शुल्क:{% else %}Gross Ad Charges:{% endif %}
+                                </td>
+                                <td class="fin-calc-value font-medium">₹{{ bill.base_amount|floatformat:2 }}</td>
+                            </tr>
+                            {% if bill.discount_amount > 0 %}
+                            <tr style="color: #9f1d1d;">
+                                <td class="fin-calc-label" style="color: #9f1d1d;">
+                                    {% if pdf_lang == 'hi' %}विशेष छूट:{% else %}Discount Concession:{% endif %}
+                                </td>
+                                <td class="fin-calc-value" style="color: #9f1d1d;">- ₹{{ bill.discount_amount|floatformat:2 }}</td>
+                            </tr>
+                            {% endif %}
+                            {% if bill.previous_due > 0 %}
+                            <tr style="color: #9f1d1d;">
+                                <td class="fin-calc-label" style="color: #9f1d1d;">
+                                    {% if pdf_lang == 'hi' %}पूर्व बकाया:{% else %}Previous Due:{% endif %}
+                                </td>
+                                <td class="fin-calc-value font-bold" style="color: #9f1d1d;">+ ₹{{ bill.previous_due|floatformat:2 }}</td>
+                            </tr>
+                            {% endif %}
+                            <!-- Net Payable Highlight -->
+                            <tr class="fin-row-net">
+                                <td style="padding: 4px 8px;">
+                                    {% if pdf_lang == 'hi' %}कुल देय राशि:{% else %}Net Payable Total:{% endif %}
+                                </td>
+                                <td class="fin-calc-value font-bold" style="padding: 4px 8px; font-size: 10pt;">
+                                    ₹{{ bill.total_amount|floatformat:2 }}
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="fin-calc-label" style="color: #15803d; font-size: 8pt;">
+                                    {% if pdf_lang == 'hi' %}प्राप्त राशि:{% else %}Amount Received:{% endif %}
+                                </td>
+                                <td class="fin-calc-value font-medium" style="color: #15803d; font-size: 8pt;">
+                                    ₹{{ bill.amount_paid|floatformat:2 }}
+                                </td>
+                            </tr>
+                            <tr style="font-weight: 700;">
+                                <td class="fin-calc-label" style="color: {% if bill.balance_amount <= 0 %}#15803d{% else %}#9f1d1d{% endif %};">
+                                    {% if pdf_lang == 'hi' %}शेष बकाया राशि:{% else %}Balance Outstanding:{% endif %}
+                                </td>
+                                <td class="fin-calc-value font-bold" style="color: {% if bill.balance_amount <= 0 %}#15803d{% else %}#9f1d1d{% endif %}; font-size: 9pt;">
+                                    {% if bill.balance_amount <= 0 %}
+                                        ₹0.00
+                                    {% else %}
+                                        ₹{{ bill.balance_amount|floatformat:2 }}
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+            </table>
+
+            <!-- Terms & Conditions Box -->
+            <div class="terms-box">
+                <strong>{% if pdf_lang == 'hi' %}नियम एवं शर्तें:{% else %}Terms & Conditions:{% endif %}</strong>
+                {% if pdf_lang == 'hi' %}
+                    १. सभी चेक बैंक समाशोधन (realization) के अधीन हैं। २. समस्त भुगतान 'विश्वगुरु की झलक' के पक्ष में ही देय होंगे। ३. विज्ञापन का ऑनलाइन प्रकाशन सत्यापन ई-पेपर लिंक पर उपलब्ध है। ४. सभी विवाद केवल इंदौर (म.प्र.) न्यायालय के क्षेत्राधिकार के अधीन हैं। ५. यह एक प्रमाणित कम्प्यूटरीकृत देयक है तथा इसमें भौतिक हस्ताक्षर की आवश्यकता नहीं है (सूचना प्रौद्योगिकी अधिनियम, २०००)।
+                {% else %}
+                    1. All cheques are subject to realization. 2. Payments must be made in favour of 'Vishwaguru Ki Jhalak'. 3. Online publication verification link is provided above. 4. Disputes subject to Indore (M.P.) jurisdiction only. 5. This is an authenticated computer generated invoice and does not require a physical signature (Information Technology Act, 2000).
+                {% endif %}
+            </div>
+
+            <!-- Payment Desk: Bank Details + Dynamic UPI QR Code + Signatory -->
+            <table class="payment-desk-table">
+                <tr>
+                    <!-- Bank Information (NEFT / RTGS) -->
+                    <td style="width: 38%;">
+                        <div class="bank-details-box">
+                            <div class="bank-title">
+                                {% if pdf_lang == 'hi' %}बैंक खाता विवरण (NEFT / RTGS):{% else %}Bank Transfer Details (NEFT / RTGS):{% endif %}
+                            </div>
+                            <strong>{% if pdf_lang == 'hi' %}बैंक:{% else %}Bank:{% endif %}</strong> {{ payment_info.bank_name }}<br>
+                            <strong>{% if pdf_lang == 'hi' %}खाता क्रमांक:{% else %}Account No:{% endif %}</strong> <span class="mono font-bold" style="letter-spacing: 0.5px;">{{ payment_info.account_number }}</span><br>
+                            <strong>{% if pdf_lang == 'hi' %}आईएफएससी:{% else %}IFSC Code:{% endif %}</strong> <span class="mono font-bold">{{ payment_info.ifsc_code }}</span><br>
+                            <strong>{% if pdf_lang == 'hi' %}खाताधारक:{% else %}Account Holder:{% endif %}</strong> {{ payment_info.account_holder_name|default:payment_info.newspaper_name }}<br>
+                            <strong>{% if pdf_lang == 'hi' %}यूपीआई आईडी:{% else %}UPI ID:{% endif %}</strong> <span class="mono font-bold" style="color: #9f1d1d;">{{ payment_info.upi_id }}</span>
+                        </div>
+                    </td>
+
+                    <!-- Dynamic UPI QR Code -->
+                    <td style="width: 32%;" class="qr-cell">
+                        {% if qr_code_base64 %}
+                            {% if bill.balance_amount <= 0 %}
+                                <div style="color: #15803d; font-weight: 700; font-size: 8pt; margin-bottom: 2px;">
+                                    ✓ {% if pdf_lang == 'hi' %}खाता पूर्ण चुकता{% else %}Account Settled{% endif %}
+                                </div>
+                                <img src="{{ qr_code_base64 }}" class="qr-img" style="opacity: 0.45; filter: grayscale(1); width: 68px; height: 68px;" alt="UPI QR Code"><br>
+                                <span class="qr-caption" style="color: #15803d;">
+                                    {% if pdf_lang == 'hi' %}कोई बकाया देय नहीं है{% else %}No balance due{% endif %}
+                                </span>
+                            {% else %}
+                                <img src="{{ qr_code_base64 }}" class="qr-img" alt="UPI QR Code"><br>
+                                <span class="qr-caption">
+                                    {% if pdf_lang == 'hi' %}
+                                        स्कैन कर भुगतान करें<br><small style="color: #57534e;">(गूगल पे / फोनपे / पेटीएम / भीम)</small>
+                                    {% else %}
+                                        Scan & Pay via UPI<br><small style="color: #57534e;">(GPay / PhonePe / Paytm / BHIM)</small>
+                                    {% endif %}
+                                </span>
+                            {% endif %}
+                        {% endif %}
+                    </td>
+
+                    <!-- Signatory Cell: Version A (Computer Generated Default) or Version B (Physical Seal & Sign) -->
+                    <td style="width: 30%;" class="signatory-cell">
+                        {% if require_sign or request.GET.sign == '1' %}
+                            <!-- Version B: Physical Seal & Signature Line -->
+                            <div class="sign-title">
+                                {% if pdf_lang == 'hi' %}
+                                    कृते विश्वगुरु की झलक
+                                {% else %}
+                                    For Vishwaguru Ki Jhalak
+                                {% endif %}
+                            </div>
+                            <div class="sign-rule"></div>
+                            <div class="sign-label">
+                                {% if pdf_lang == 'hi' %}
+                                    अधिकृत हस्ताक्षरकर्ता
+                                {% else %}
+                                    Authorized Signatory
+                                {% endif %}
+                            </div>
+                        {% else %}
+                            <!-- Version A: Digital Invoicing Authentication (Computer Generated — No Sign Required) -->
+                            <div class="digital-auth-card">
+                                <div class="digital-entity">
+                                    {% if pdf_lang == 'hi' %}
+                                        कृते विश्वगुरु की झलक
+                                    {% else %}
+                                        For Vishwaguru Ki Jhalak
+                                    {% endif %}
+                                </div>
+                                <div class="digital-badge">
+                                    <span class="digital-check">&#10003;</span>
+                                    <span class="digital-badge-text">
+                                        {% if pdf_lang == 'hi' %}
+                                            कम्प्यूटरीकृत प्रमाणित
+                                        {% else %}
+                                            DIGITALLY VERIFIED
+                                        {% endif %}
+                                    </span>
+                                </div>
+                                <div class="digital-statutory">
+                                    {% if pdf_lang == 'hi' %}
+                                        कम्प्यूटरीकृत विज्ञापन देयक।<br>भौतिक हस्ताक्षर की आवश्यकता नहीं है।
+                                    {% else %}
+                                        Computer generated invoice.<br>Valid without physical signature.
+                                    {% endif %}
+                                </div>
+                                <div class="digital-meta mono">
+                                    {% if pdf_lang == 'hi' %}प्रमाणीकरण संदर्भ: {{ bill.bill_number }}{% else %}Auth ID: {{ bill.bill_number }}{% endif %}
+                                </div>
+                            </div>
+                        {% endif %}
+                    </td>
+                </tr>
+            </table>
+
+        </div><!-- end bottom-ledger-block -->
+
+    </div><!-- end invoice-container -->
 
 </body>
 </html>

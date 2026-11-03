@@ -1,8 +1,8 @@
 {% extends 'billing/base.html' %}
-{% load static %}
+{% load static billing_tags %}
 
 {% block title %}
-    {% if site_lang == 'hi' %}बिल खोजें व सूची | विश्वगुरु बिलिंग{% else %}Search Bills & Invoices | Vishwaguru Billing{% endif %}
+    {% if site_lang == 'hi' %}बिल खोजें व सूची | विश्वगुरु की झलक{% else %}Search Bills &amp; Invoices | Vishwaguru Ki Jhalak{% endif %}
 {% endblock %}
 
 {% block content %}
@@ -14,7 +14,7 @@
         </div>
         <div class="stat-chip-body">
             <span class="stat-chip-title">{% if site_lang == 'hi' %}कुल बिल{% else %}Total Bills{% endif %}</span>
-            <span class="stat-chip-value">{{ total_count }}</span>
+            <span class="stat-chip-value tabular-nums">{{ total_count }}</span>
         </div>
     </div>
 
@@ -24,7 +24,7 @@
         </div>
         <div class="stat-chip-body">
             <span class="stat-chip-title">{% if site_lang == 'hi' %}कुल बिलिंग{% else %}Total Billed{% endif %}</span>
-            <span class="stat-chip-value">₹{{ total_billed|floatformat:0 }}</span>
+            <span class="stat-chip-value tabular-nums">{{ total_billed|indian_currency }}</span>
         </div>
     </div>
 
@@ -34,7 +34,7 @@
         </div>
         <div class="stat-chip-body">
             <span class="stat-chip-title">{% if site_lang == 'hi' %}प्राप्त राशि{% else %}Total Received{% endif %}</span>
-            <span class="stat-chip-value">₹{{ total_collected|floatformat:0 }}</span>
+            <span class="stat-chip-value tabular-nums" style="color: #15803d;">{{ total_collected|indian_currency }}</span>
         </div>
     </div>
 
@@ -44,38 +44,39 @@
         </div>
         <div class="stat-chip-body">
             <span class="stat-chip-title">{% if site_lang == 'hi' %}बकाया राशि{% else %}Outstanding Due{% endif %}</span>
-            <span class="stat-chip-value">₹{{ total_outstanding|floatformat:0 }}</span>
+            <span class="stat-chip-value tabular-nums" style="color: #9f1d1d;">{{ total_outstanding|indian_currency }}</span>
         </div>
     </div>
 </div>
 
-<div class="card">
-    <div class="card-header">
+<div class="desk-panel" style="background-color: #ffffff; border: 1px solid #d6cfc4; border-radius: 4px; overflow: hidden; margin-bottom: 2rem;">
+    <div class="desk-panel-header" style="padding: 18px 24px; border-bottom: 1px solid #e7e2d9; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem;">
         <div>
-            <h2 class="card-title">
-                <i class="bi bi-search"></i> {% if site_lang == 'hi' %}बिल खोजें व फ़िल्टर करें{% else %}Search & Filter Invoices{% endif %}
+            <h2 class="desk-panel-title" style="font-family: 'Noto Serif Devanagari', serif; font-size: 1.15rem; font-weight: 600; color: #1c1917; margin: 0; display: flex; align-items: center; gap: 0.5rem;">
+                <i class="bi bi-search" style="color: #9f1d1d;"></i>
+                <span>{% if site_lang == 'hi' %}बिल खोजें व फ़िल्टर करें{% else %}Search &amp; Filter Invoices{% endif %}</span>
             </h2>
-            <p class="card-subtitle">
+            <p class="card-subtitle" style="margin: 0.25rem 0 0 0; font-size: 14px; color: #57534e;">
                 {% if site_lang == 'hi' %}ग्राहक के नाम, फ़ोन, बिल क्रमांक या प्रकाशन दिनांक से खोजें{% else %}Search by client name, phone number, bill number, or edition date{% endif %}
             </p>
         </div>
-        <a href="{% url 'billing:bill_create' %}" class="btn btn-primary">
-            <i class="bi bi-plus-circle"></i> {% if site_lang == 'hi' %}नया बिल बनाएं{% else %}New Bill{% endif %}
+        <a href="{% url 'billing:bill_create' %}" class="btn-desk-primary min-h-[42px] px-4">
+            <i class="bi bi-plus-lg"></i>
+            <span>{% if site_lang == 'hi' %}नया बिल बनाएं{% else %}New Bill{% endif %}</span>
         </a>
     </div>
 
     <!-- Filter Toolbar -->
-    <form method="get" class="filter-toolbar">
-        <div class="filter-row">
+    <form method="get" class="filter-toolbar" style="background-color: #faf8f4; padding: 16px 24px; border-bottom: 1px solid #e7e2d9;">
+        <div class="filter-row" style="display: flex; flex-wrap: wrap; gap: 0.75rem; align-items: center;">
             <!-- Search Text -->
-            <div class="search-input-wrapper">
-                <i class="bi bi-search"></i>
-                <input type="text" name="q" value="{{ query }}" class="form-control" placeholder="{% if site_lang == 'hi' %}नाम, फ़ोन नंबर, या बिल क्र. खोजें...{% else %}Search client name, phone or bill no...{% endif %}">
+            <div class="search-input-wrapper" style="flex: 1; min-width: 240px; position: relative;">
+                <input type="search" name="q" value="{{ query }}" class="desk-input" aria-label="{% if site_lang == 'hi' %}नाम, फ़ोन या बिल क्रमांक से खोजें{% else %}Search by client, phone or invoice number{% endif %}" placeholder="{% if site_lang == 'hi' %}नाम, फ़ोन नंबर, या बिल क्र. खोजें...{% else %}Search client name, phone or bill no...{% endif %}" style="padding-left: 12px; border: 1px solid #d6cfc4;">
             </div>
 
             <!-- Status Dropdown -->
-            <div style="min-width: 170px;">
-                <select name="status" class="form-select">
+            <div style="min-width: 180px;">
+                <select name="status" class="desk-input" aria-label="{% if site_lang == 'hi' %}भुगतान स्थिति से फ़िल्टर करें{% else %}Filter by payment status{% endif %}" style="border: 1px solid #d6cfc4;">
                     <option value="">-- {% if site_lang == 'hi' %}सभी स्थितियां (All){% else %}All Statuses{% endif %} --</option>
                     {% for val, label in status_choices %}
                     <option value="{{ val }}" {% if status == val %}selected{% endif %}>{{ label }}</option>
@@ -84,20 +85,22 @@
             </div>
 
             <!-- Date Range -->
-            <div style="display: flex; gap: 0.35rem; align-items: center;">
-                <input type="date" name="start_date" value="{{ start_date }}" class="form-control" style="min-width: 135px;" title="From Date">
-                <span style="color: var(--text-muted); font-size: 0.8rem;">{% if site_lang == 'hi' %}से{% else %}to{% endif %}</span>
-                <input type="date" name="end_date" value="{{ end_date }}" class="form-control" style="min-width: 135px;" title="To Date">
+            <div style="display: flex; gap: 0.5rem; align-items: center;">
+                <input type="date" name="start_date" value="{{ start_date }}" class="desk-input" aria-label="{% if site_lang == 'hi' %}आरंभ दिनांक{% else %}Start date{% endif %}" style="min-width: 145px; border: 1px solid #d6cfc4;" title="From Date">
+                <span style="color: #57534e; font-size: 14px;">{% if site_lang == 'hi' %}से{% else %}to{% endif %}</span>
+                <input type="date" name="end_date" value="{{ end_date }}" class="desk-input" aria-label="{% if site_lang == 'hi' %}अंतिम दिनांक{% else %}End date{% endif %}" style="min-width: 145px; border: 1px solid #d6cfc4;" title="To Date">
             </div>
 
             <!-- Action buttons -->
-            <div style="display: flex; gap: 0.4rem;">
-                <button type="submit" class="btn btn-primary">
-                    <i class="bi bi-funnel"></i> {% if site_lang == 'hi' %}फ़िल्टर{% else %}Filter{% endif %}
+            <div style="display: flex; gap: 0.5rem;">
+                <button type="submit" class="btn-desk-primary" style="min-height: 42px; padding: 8px 18px;">
+                    <i class="bi bi-funnel"></i>
+                    <span>{% if site_lang == 'hi' %}फ़िल्टर{% else %}Filter{% endif %}</span>
                 </button>
                 {% if query or status or start_date or end_date %}
-                <a href="{% url 'billing:bill_search' %}" class="btn btn-secondary" title="Clear Filters">
-                    <i class="bi bi-x-circle"></i> {% if site_lang == 'hi' %}रीसेट{% else %}Reset{% endif %}
+                <a href="{% url 'billing:bill_search' %}" class="btn-desk-secondary" style="min-height: 42px; padding: 8px 14px;" title="Clear Filters">
+                    <i class="bi bi-x-circle"></i>
+                    <span>{% if site_lang == 'hi' %}रीसेट{% else %}Reset{% endif %}</span>
                 </a>
                 {% endif %}
             </div>
@@ -106,87 +109,104 @@
 
     <!-- Results Table -->
     <div class="table-container">
-        <table class="data-table">
+        <table class="data-table" style="font-size: 15px;">
             <thead>
                 <tr>
-                    <th>{% if site_lang == 'hi' %}बिल क्रमांक{% else %}Invoice No{% endif %}</th>
-                    <th>{% if site_lang == 'hi' %}विज्ञापनदाता{% else %}Client{% endif %}</th>
-                    <th>{% if site_lang == 'hi' %}प्रकाशन दिनांक{% else %}Edition Date{% endif %}</th>
-                    <th class="hide-mobile">{% if site_lang == 'hi' %}स्थान व आकार{% else %}Placement{% endif %}</th>
-                    <th>{% if site_lang == 'hi' %}कुल राशि{% else %}Total (₹){% endif %}</th>
-                    <th class="hide-mobile">{% if site_lang == 'hi' %}प्राप्त राशि{% else %}Paid (₹){% endif %}</th>
-                    <th>{% if site_lang == 'hi' %}स्थिति{% else %}Status{% endif %}</th>
-                    <th class="hide-mobile">{% if site_lang == 'hi' %}ई-पेपर{% else %}Epaper{% endif %}</th>
-                    <th style="text-align: right;">{% if site_lang == 'hi' %}क्रियाएं{% else %}Actions{% endif %}</th>
+                    <th style="padding: 12px 14px; font-size: 13px;">{% if site_lang == 'hi' %}बिल क्रमांक{% else %}Invoice No{% endif %}</th>
+                    <th style="padding: 12px 14px; font-size: 13px;">{% if site_lang == 'hi' %}विज्ञापनदाता{% else %}Client{% endif %}</th>
+                    <th style="padding: 12px 14px; font-size: 13px;">{% if site_lang == 'hi' %}प्रकाशन दिनांक{% else %}Edition Date{% endif %}</th>
+                    <th class="hide-mobile" style="padding: 12px 14px; font-size: 13px;">{% if site_lang == 'hi' %}स्थान व आकार{% else %}Placement{% endif %}</th>
+                    <th style="text-align: right; padding: 12px 14px; font-size: 13px;">{% if site_lang == 'hi' %}कुल राशि{% else %}Total (₹){% endif %}</th>
+                    <th class="hide-mobile" style="text-align: right; padding: 12px 14px; font-size: 13px;">{% if site_lang == 'hi' %}प्राप्त राशि{% else %}Paid (₹){% endif %}</th>
+                    <th style="padding: 12px 14px; font-size: 13px;">{% if site_lang == 'hi' %}स्थिति{% else %}Status{% endif %}</th>
+                    <th class="hide-mobile" style="padding: 12px 14px; font-size: 13px;">{% if site_lang == 'hi' %}ई-पेपर{% else %}Epaper{% endif %}</th>
+                    <th style="text-align: right; padding: 12px 16px; font-size: 13px;">{% if site_lang == 'hi' %}क्रियाएं{% else %}Actions{% endif %}</th>
                 </tr>
             </thead>
             <tbody>
                 {% for b in bills %}
                 <tr>
-                    <td>
-                        <a href="{% url 'billing:bill_detail' b.pk %}" style="font-weight: 700; color: var(--primary); text-decoration: none;">
+                    <td style="padding: 12px 14px;">
+                        <a href="{% url 'billing:bill_detail' b.pk %}" class="tabular-nums" style="font-weight: 600; color: #1c1917; font-size: 15px; text-decoration: none;">
                             {{ b.bill_number }}
                         </a>
                     </td>
-                    <td>
-                        <strong>{{ b.client_name }}</strong>
+                    <td style="padding: 12px 14px;">
+                        <div style="font-weight: 500; color: #1c1917; font-size: 15px;">{{ b.client_name|client_primary_name }}</div>
+                        {% if b.client_name|client_secondary_name %}
+                        <div style="font-size: 13px; color: #57534e; margin-top: 1px;">{{ b.client_name|client_secondary_name }}</div>
+                        {% endif %}
                         {% if b.client %}
-                        <br><a href="{{ b.client.get_portal_url }}" target="_blank" style="color: var(--primary); font-size: 0.75rem; font-weight: 700; text-decoration: none;"><i class="bi bi-person-badge"></i> {% if site_lang == 'hi' %}खाता देखें ↗{% else %}Statement ↗{% endif %}</a>
+                        <a href="{{ b.client.get_portal_url }}" target="_blank" style="color: #9f1d1d; font-size: 12px; font-weight: 600; text-decoration: none; display: inline-flex; align-items: center; gap: 3px; margin-top: 2px;">
+                            <span>{% if site_lang == 'hi' %}खाता पोर्टल{% else %}Statement{% endif %}</span>
+                            <i class="bi bi-box-arrow-up-right text-[10px]"></i>
+                        </a>
                         {% endif %}
                         {% if b.client_phone %}
-                        <br><small style="color: var(--text-muted);"><a href="tel:{{ b.client_phone }}" style="color: inherit;"><i class="bi bi-telephone"></i> {{ b.client_phone }}</a></small>
+                        <div style="font-size: 13px; color: #57534e; margin-top: 2px;" class="tabular-nums">
+                            <a href="tel:{{ b.client_phone }}" style="color: inherit; text-decoration: none;">{{ b.client_phone }}</a>
+                        </div>
                         {% endif %}
                     </td>
-                    <td>
-                        {{ b.edition_date|date:"d/m/Y" }}<br>
-                        <small style="color: var(--text-muted);">{% if site_lang == 'hi' %}{{ b.edition_hindi }}{% else %}{{ b.get_edition_name_display }}{% endif %}</small>
+                    <td style="padding: 12px 14px;">
+                        <span class="tabular-nums" style="font-size: 15px;">{{ b.edition_date|date:"d/m/Y" }}</span><br>
+                        <small style="color: #57534e; font-size: 13px;">{% if site_lang == 'hi' %}{{ b.edition_hindi }}{% else %}{{ b.get_edition_name_display }}{% endif %}</small>
                     </td>
-                    <td class="hide-mobile">
-                        {% if site_lang == 'hi' %}{{ b.placement_hindi }}{% else %}{{ b.get_placement_type_display }}{% endif %}
-                        {% if b.custom_size_text %}<br><small style="color: var(--text-muted);">({{ b.custom_size_text }})</small>{% endif %}
+                    <td class="hide-mobile" style="padding: 12px 14px;">
+                        <div style="color: #1c1917; font-size: 14px;">
+                            {% if site_lang == 'hi' %}{{ b.placement_hindi }}{% else %}{{ b.get_placement_type_display }}{% endif %}
+                        </div>
+                        {% if b.page_number %}
+                        <small style="color: #57534e; font-size: 13px;">{{ b.page_number|format_page:site_lang }}</small>
+                        {% endif %}
                     </td>
-                    <td style="font-weight: 700; color: var(--secondary);">
-                        ₹{{ b.total_amount|floatformat:2 }}
+                    <td style="text-align: right; padding: 12px 14px;" class="tabular-nums font-semibold text-ink">
+                        {{ b.total_amount|indian_currency }}
                     </td>
-                    <td class="hide-mobile" style="color: var(--success); font-weight: 600;">
-                        ₹{{ b.amount_paid|floatformat:2 }}
-                    </td>
-                    <td>
-                        {% if b.payment_status == 'Paid' %}
-                            <span class="badge badge-paid"><i class="bi bi-check-circle-fill"></i> {% if site_lang == 'hi' %}पूर्ण भुगतान{% else %}Paid{% endif %}</span>
-                        {% elif b.payment_status == 'Partial' %}
-                            <span class="badge badge-partial"><i class="bi bi-clock-history"></i> {% if site_lang == 'hi' %}आंशिक{% else %}Partial{% endif %}</span>
+                    <td class="hide-mobile" style="text-align: right; padding: 12px 14px;" class="tabular-nums font-medium">
+                        {% if b.amount_paid > 0 %}
+                            <span style="color: #15803d;">{{ b.amount_paid|indian_currency }}</span>
                         {% else %}
-                            <span class="badge badge-unpaid"><i class="bi bi-x-circle-fill"></i> {% if site_lang == 'hi' %}अदत्त{% else %}Unpaid{% endif %}</span>
+                            <span style="color: #57534e;">&mdash;</span>
                         {% endif %}
                     </td>
-                    <td class="hide-mobile">
+                    <td style="padding: 12px 14px;">
+                        {% include 'billing/partials/status_dot.html' with status=b.payment_status %}
+                    </td>
+                    <td class="hide-mobile" style="padding: 12px 14px;">
                         {% if b.epaper_link %}
-                            <a href="{{ b.epaper_link }}" target="_blank" style="color: var(--primary); font-size: 0.825rem;" title="Open Online Verification">
-                                <i class="bi bi-box-arrow-up-right"></i> Link
+                            <a href="{{ b.epaper_link }}" target="_blank" style="color: #9f1d1d; font-size: 13px; text-decoration: none; display: inline-flex; align-items: center; gap: 3px;">
+                                <span>{% if site_lang == 'hi' %}देखें{% else %}View{% endif %}</span>
+                                <i class="bi bi-box-arrow-up-right text-[10px]"></i>
                             </a>
                         {% else %}
-                            <span style="color: var(--text-muted); font-size: 0.8rem;">---</span>
+                            <span style="color: #57534e; font-size: 13px;">&mdash;</span>
                         {% endif %}
                     </td>
-                    <td style="text-align: right; white-space: nowrap;">
-                        <a href="{% url 'billing:bill_detail' b.pk %}" class="btn btn-secondary" style="padding: 0.35rem 0.6rem; font-size: 0.8rem;" title="View Bill Details">
-                            <i class="bi bi-eye"></i>
-                        </a>
-                        <a href="{% url 'billing:bill_pdf' b.pk %}?download=1" class="btn btn-pdf" style="padding: 0.35rem 0.6rem; font-size: 0.8rem;" title="Download PDF">
-                            <i class="bi bi-download"></i>
-                        </a>
-                        <a href="{{ b.whatsapp_share_url }}" target="_blank" class="btn btn-whatsapp" style="padding: 0.35rem 0.6rem; font-size: 0.8rem;" title="Share WhatsApp">
-                            <i class="bi bi-whatsapp"></i>
-                        </a>
+                    <td style="text-align: right; white-space: nowrap; padding: 12px 16px;">
+                        <div class="inline-flex items-center gap-1.5" style="display: inline-flex; gap: 6px;">
+                            <a href="{% url 'billing:bill_detail' b.pk %}" class="btn-desk-sm" title="{% if site_lang == 'hi' %}देखें{% else %}View{% endif %}">
+                                <i class="bi bi-eye"></i>
+                                <span>{% if site_lang == 'hi' %}देखें{% else %}View{% endif %}</span>
+                            </a>
+                            <a href="{% url 'billing:bill_pdf' b.pk %}?download=1" class="btn-desk-sm btn-pdf" title="Download PDF">
+                                <i class="bi bi-file-earmark-pdf"></i>
+                                <span>PDF</span>
+                            </a>
+                            {% if b.client_phone %}
+                            <a href="{{ b.whatsapp_share_url }}" target="_blank" class="btn-desk-sm btn-whatsapp" title="WhatsApp">
+                                <i class="bi bi-whatsapp"></i>
+                            </a>
+                            {% endif %}
+                        </div>
                     </td>
                 </tr>
                 {% empty %}
                 <tr>
-                    <td colspan="9" style="text-align: center; padding: 2.5rem 1rem; color: var(--text-muted);">
-                        <i class="bi bi-inbox" style="font-size: 2rem; display: block; margin-bottom: 0.5rem; color: #cbd5e1;"></i>
-                        <strong>{% if site_lang == 'hi' %}कोई बिल नहीं मिला।{% else %}No invoices found matching criteria.{% endif %}</strong>
-                        <p style="font-size: 0.85rem; margin-top: 0.25rem;">
+                    <td colspan="9" style="text-align: center; padding: 3rem 1rem; color: #57534e;">
+                        <i class="bi bi-inbox" style="font-size: 2.25rem; display: block; margin-bottom: 0.5rem; color: #cbd5e1;"></i>
+                        <strong style="font-size: 16px;">{% if site_lang == 'hi' %}कोई बिल नहीं मिला।{% else %}No invoices found matching criteria.{% endif %}</strong>
+                        <p style="font-size: 14px; margin-top: 0.25rem;">
                             {% if site_lang == 'hi' %}कृपया खोज मापदंड बदलें या नया बिल बनाएं।{% else %}Try changing search keywords or create a new bill.{% endif %}
                         </p>
                     </td>
@@ -198,18 +218,18 @@
 
     <!-- Pagination Controls -->
     {% if page_obj.has_other_pages %}
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1.25rem; font-size: 0.85rem; flex-wrap: wrap; gap: 0.75rem;">
-        <span style="color: var(--text-muted);">
+    <div style="display: flex; justify-content: space-between; align-items: center; padding: 16px 24px; border-top: 1px solid #e7e2d9; font-size: 14px; flex-wrap: wrap; gap: 0.75rem; background-color: #faf8f4;">
+        <span style="color: #57534e;" class="tabular-nums">
             {% if site_lang == 'hi' %}पृष्ठ {{ page_obj.number }} / {{ page_obj.paginator.num_pages }} (कुल {{ total_count }} बिल){% else %}Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }} ({{ total_count }} total bills){% endif %}
         </span>
-        <div style="display: flex; gap: 0.35rem;">
+        <div style="display: flex; gap: 0.5rem;">
             {% if page_obj.has_previous %}
-                <a href="?page={{ page_obj.previous_page_number }}{% if query %}&q={{ query }}{% endif %}{% if status %}&status={{ status }}{% endif %}{% if start_date %}&start_date={{ start_date }}{% endif %}{% if end_date %}&end_date={{ end_date }}{% endif %}" class="btn btn-secondary" style="padding: 0.35rem 0.75rem; font-size: 0.8rem;">
+                <a href="?page={{ page_obj.previous_page_number }}{% if query %}&q={{ query }}{% endif %}{% if status %}&status={{ status }}{% endif %}{% if start_date %}&start_date={{ start_date }}{% endif %}{% if end_date %}&end_date={{ end_date }}{% endif %}" class="btn-desk-secondary" style="padding: 6px 14px; font-size: 14px; min-height: 36px;">
                     <i class="bi bi-chevron-left"></i> {% if site_lang == 'hi' %}पिछला{% else %}Previous{% endif %}
                 </a>
             {% endif %}
             {% if page_obj.has_next %}
-                <a href="?page={{ page_obj.next_page_number }}{% if query %}&q={{ query }}{% endif %}{% if status %}&status={{ status }}{% endif %}{% if start_date %}&start_date={{ start_date }}{% endif %}{% if end_date %}&end_date={{ end_date }}{% endif %}" class="btn btn-secondary" style="padding: 0.35rem 0.75rem; font-size: 0.8rem;">
+                <a href="?page={{ page_obj.next_page_number }}{% if query %}&q={{ query }}{% endif %}{% if status %}&status={{ status }}{% endif %}{% if start_date %}&start_date={{ start_date }}{% endif %}{% if end_date %}&end_date={{ end_date }}{% endif %}" class="btn-desk-secondary" style="padding: 6px 14px; font-size: 14px; min-height: 36px;">
                     {% if site_lang == 'hi' %}अगला{% else %}Next{% endif %} <i class="bi bi-chevron-right"></i>
                 </a>
             {% endif %}

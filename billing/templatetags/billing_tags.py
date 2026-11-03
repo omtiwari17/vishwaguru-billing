@@ -118,6 +118,21 @@ def client_secondary_name(name):
     return ""
 
 
+@register.filter(name='client_display_name')
+def client_display_name(name, lang='en'):
+    """
+    Extracts appropriate client name based on language:
+    EN: returns secondary English name if found, else original name.
+    HI: returns primary Hindi/Devanagari name if found, else original name.
+    """
+    if not name:
+        return ""
+    if lang == 'hi':
+        return client_primary_name(name)
+    sec = client_secondary_name(name)
+    return sec if sec else client_primary_name(name)
+
+
 @register.filter(name='format_page')
 def format_page(value, lang='en'):
     """
@@ -128,12 +143,11 @@ def format_page(value, lang='en'):
     if not value:
         return ""
     val_str = str(value).strip()
+    import re
+    num_m = re.search(r'\d+', val_str)
+    page_num = num_m.group(0) if num_m else val_str
     if lang == 'hi':
-        import re
-        val_hi = re.sub(r'^(page|pg\.?)\s*', 'पृष्ठ ', val_str, flags=re.IGNORECASE)
-        if val_hi.isdigit():
-            val_hi = f"पृष्ठ {val_hi}"
-        return val_hi
-    return val_str
+        return f"पृष्ठ {page_num}"
+    return f"Page {page_num}"
 
 

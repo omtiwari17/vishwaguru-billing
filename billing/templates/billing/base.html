@@ -4,12 +4,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}{% if site_lang == 'hi' %}दैनिक विश्वगुरु की झलक | बिलिंग{% else %}Vishwaguru Newspaper | Billing{% endif %}{% endblock %}</title>
+    <title>{% block title %}{% if site_lang == 'hi' %}विश्वगुरु की झलक | बिलिंग{% else %}Vishwaguru Ki Jhalak | Billing{% endif %}{% endblock %}</title>
     
     <!-- Google Fonts: Mukta (UI text), Noto Serif Devanagari (Masthead & Titles). Weights: 400, 500, 600 only -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Mukta:wght@400;500;600&family=Noto+Serif+Devanagari:wght@400;500;600&display=swap" rel="stylesheet">
+    
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     
     <!-- Tailwind CSS v4 Browser Runtime -->
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
@@ -32,92 +35,56 @@
     </style>
 
     <!-- Newspaper Office Theme Stylesheet -->
-    <link rel="stylesheet" href="{% static 'billing/css/style.css' %}">
+    <link rel="stylesheet" href="{% static 'billing/css/style.css' %}?v=20261103-4">
+    <link rel="stylesheet" href="{% static 'billing/css/app-refresh.css' %}?v=20261103-5">
+    <style>
+        /* Critical readability/layout rules live with the template so stale static files cannot hide them. */
+        .app-shell { font-size: 18px !important; line-height: 1.55 !important; }
+        .app-shell .office-container { width: min(calc(100% - 48px), 1420px) !important; max-width: none !important; padding-inline: 0 !important; }
+        .app-shell .office-tab { font-size: 17px !important; }
+        .app-shell .desk-table td, .app-shell .data-table td { font-size: 17px !important; }
+        .app-shell .desk-table th, .app-shell .data-table th { font-size: 15px !important; }
+        .app-shell .form-label, .app-shell label, .app-shell .desk-input, .app-shell .form-control, .app-shell .form-select { font-size: 17px !important; }
+        .app-shell .step-subtitle, .app-shell .stat-chip-title { font-size: 16px !important; }
+        .app-shell .stat-chip-value { font-size: 22px !important; }
+        .app-shell .desk-panel-title, .app-shell .step-title { font-size: 20px !important; }
+        .app-shell .btn-desk-primary, .app-shell .btn-desk-secondary, .app-shell .btn-desk-sm,
+        .app-shell .btn-generate, .app-shell .chip-btn, .app-shell .pill-choice { font-size: 16px !important; }
+        .app-shell .page-heading p, .app-shell .page-heading-date, .app-shell .office-footer { font-size: 16px !important; }
+        .app-shell .badge, .app-shell .status-dot-wrap, .app-shell .queue-count { font-size: 15px !important; }
+        .app-shell .dashboard-kpi-strip { display: grid !important; grid-template-columns: repeat(4, minmax(0, 1fr)) !important; }
+        .app-shell .dashboard-kpi { display: flex !important; flex-direction: column; justify-content: center !important; gap: 5px; min-width: 0; padding: 14px 20px !important; }
+        .app-shell table th, .app-shell table td { padding: 12px 14px !important; }
+        .app-shell #bill-detail-pane .border.bg-white.rounded { padding: 18px !important; }
+        .app-shell .desk-panel-body { padding: 18px !important; }
+        .app-shell .alert { padding: 14px 16px !important; }
+        .app-shell small, .app-shell .text-xs:not(.bi), .app-shell .text-sm:not(.bi),
+        .app-shell [class*="text-[10px]"], .app-shell [class*="text-[11px]"], .app-shell [class*="text-[12px]"],
+        .app-shell [style*="font-size: 10px"], .app-shell [style*="font-size: 11px"],
+        .app-shell [style*="font-size: 12px"], .app-shell [style*="font-size: 13px"],
+        .app-shell [style*="font-size: 14px"], .app-shell [style*="font-size: 15px"] { font-size: 16px !important; line-height: 1.45; }
+        @media (max-width: 767px) {
+            .app-shell { font-size: 17px !important; }
+            .app-shell .office-container { width: calc(100% - 28px) !important; }
+        }
+        @media (max-width: 640px) {
+            .app-shell .dashboard-kpi-strip { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
+            .app-shell .dashboard-kpi { padding: 16px 22px !important; }
+            .app-shell table th, .app-shell table td { padding: 10px 12px !important; }
+            .app-shell #bill-detail-pane .border.bg-white.rounded { padding: 15px !important; }
+            .app-shell .desk-panel-body { padding: 15px !important; }
+        }
+    </style>
 
     <!-- HTMX for live interactions -->
     <script src="{% static 'billing/js/htmx.min.js' %}"></script>
 
     {% block extra_head %}{% endblock %}
 </head>
-<body class="bg-paper text-ink font-sans antialiased min-h-screen flex flex-col">
+<body class="app-shell bg-paper text-ink font-sans antialiased min-h-screen flex flex-col">
 
-    <!-- Desk Header / Masthead -->
-    <header class="office-header">
-        <div class="office-container">
-            <!-- Masthead Top Row: Single compact row on mobile -->
-            <div class="masthead-row flex items-center justify-between">
-                <a href="{% url 'billing:dashboard' %}" class="masthead-brand flex items-center">
-                    <img src="{% static 'billing/img/logo.png' %}" alt="विश्वगुरु" class="h-6 w-auto object-contain" style="height: 24px;">
-                    <div>
-                        <div class="masthead-title">
-                            {% if site_lang == 'hi' %}दैनिक विश्वगुरु की झलक{% else %}Vishwaguru Newspaper{% endif %}
-                        </div>
-                        <div class="masthead-sub hidden md:block">
-                            {% if site_lang == 'hi' %}विज्ञापन बिलिंग &bull; हरदा (म.प्र.){% else %}Advertisement Billing &bull; Harda (M.P.){% endif %}
-                        </div>
-                    </div>
-                </a>
-
-                <div class="flex items-center gap-3 text-xs shrink-0">
-                    <!-- Plain Clerk Language Toggle -->
-                    <div class="inline-flex items-center gap-1.5 text-xs text-muted" style="font-family: 'Mukta', sans-serif;">
-                        <a href="{% url 'billing:set_language' 'en' %}" class="hover:text-ink {% if site_lang != 'hi' %}font-semibold text-maroon underline underline-offset-2{% endif %}" style="text-decoration: none; {% if site_lang != 'hi' %}color: #9f1d1d; font-weight: 600; text-decoration: underline;{% else %}color: #57534e;{% endif %}">
-                            EN
-                        </a>
-                        <span style="color: #e7e2d9;">&bull;</span>
-                        <a href="{% url 'billing:set_language' 'hi' %}" class="hover:text-ink {% if site_lang == 'hi' %}font-semibold text-maroon underline underline-offset-2{% endif %}" style="text-decoration: none; {% if site_lang == 'hi' %}color: #9f1d1d; font-weight: 600; text-decoration: underline;{% else %}color: #57534e;{% endif %}">
-                            हिन्दी
-                        </a>
-                    </div>
-
-                    {% if user.is_authenticated %}
-                    <!-- Desktop user & logout (hidden on mobile, moved to bottom on mobile) -->
-                    <div class="hidden md:flex items-center gap-2 pl-3 border-l border-rule text-muted" style="border-left: 1px solid #e7e2d9; padding-left: 12px;">
-                        <span class="font-medium text-ink">{{ user.username }}</span>
-                        <span>&bull;</span>
-                        <form action="{% url 'logout' %}" method="post" class="inline">
-                            {% csrf_token %}
-                            <button type="submit" class="text-xs text-muted hover:text-maroon underline cursor-pointer bg-transparent border-0 p-0" style="background: none; border: none; padding: 0; color: #57534e; cursor: pointer;">
-                                {% if site_lang == 'hi' %}लॉगआउट{% else %}Logout{% endif %}
-                            </button>
-                        </form>
-                    </div>
-                    {% endif %}
-                </div>
-            </div>
-
-            <!-- Navigation Tabs Row with Right-Edge Fade for Mobile Scroll Cue -->
-            <div class="relative w-full overflow-hidden">
-                <nav class="office-nav-row">
-                    <div class="office-nav-tabs">
-                        <a href="{% url 'billing:dashboard' %}" class="office-tab {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
-                            {% if site_lang == 'hi' %}डैशबोर्ड{% else %}Dashboard{% endif %}
-                        </a>
-                        <a href="{% url 'billing:bill_create' %}" class="office-tab {% if request.resolver_match.url_name == 'bill_create' %}active{% endif %}">
-                            {% if site_lang == 'hi' %}नया बिल{% else %}New Bill{% endif %}
-                        </a>
-                        <a href="{% url 'billing:bill_search' %}" class="office-tab {% if request.resolver_match.url_name == 'bill_search' %}active{% endif %}">
-                            {% if site_lang == 'hi' %}बिल सूची{% else %}Bills{% endif %}
-                        </a>
-                        <a href="{% url 'billing:payment_submissions_list' %}" class="office-tab {% if request.resolver_match.url_name == 'payment_submissions_list' %}active{% endif %}">
-                            <span>{% if site_lang == 'hi' %}सत्यापन{% else %}UPI Verifications{% endif %}</span>
-                            <span id="nav-upi-badge-container">
-                                {% include 'billing/partials/upi_badge.html' %}
-                            </span>
-                        </a>
-                        <a href="{% url 'billing:payment_info_settings' %}" class="office-tab {% if request.resolver_match.url_name == 'payment_info_settings' %}active{% endif %}">
-                            {% if site_lang == 'hi' %}बैंक खाता{% else %}Bank &amp; UPI{% endif %}
-                        </a>
-                        <a href="{% url 'admin:index' %}" class="office-tab" target="_blank">
-                            {% if site_lang == 'hi' %}एडमिन{% else %}Admin{% endif %}
-                        </a>
-                    </div>
-                </nav>
-                <!-- Right-edge fade overlay (tells user the row scrolls) -->
-                <div class="pointer-events-none absolute right-0 top-0 bottom-0 w-8 md:hidden" style="background: linear-gradient(to right, rgba(255,255,255,0), #ffffff);"></div>
-            </div>
-        </div>
-    </header>
+    <!-- Desk Header / Masthead (Shared Partial) -->
+    {% include 'billing/partials/_masthead.html' with variant='staff' %}
 
     <!-- Main Content Container -->
     <main class="office-main">
@@ -139,7 +106,7 @@
     <!-- Plain Clerk Footer -->
     <footer class="office-footer">
         <div class="office-container flex flex-wrap items-center justify-between gap-2 text-xs text-muted" style="display: flex; justify-content: space-between; align-items: center; font-family: 'Mukta', sans-serif; color: #57534e;">
-            <div>&copy; {% now "Y" %} {% if site_lang == 'hi' %}दैनिक विश्वगुरु की झलक &bull; हरदा (म.प्र.){% else %}Vishwaguru Newspaper &bull; Harda (M.P.){% endif %}</div>
+            <div>&copy; {% now "Y" %} {% if site_lang == 'hi' %}विश्वगुरु की झलक{% else %}Vishwaguru Ki Jhalak{% endif %}</div>
             {% if user.is_authenticated %}
             <!-- Mobile user & logout placed at bottom of page -->
             <div class="flex md:hidden items-center gap-2 text-xs">

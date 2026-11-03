@@ -1,3 +1,5 @@
+import logging
+logger = logging.getLogger(__name__)
 from decimal import Decimal
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse, Http404, JsonResponse
@@ -7,6 +9,7 @@ from django.template.loader import render_to_string
 from django.db.models import Q, Sum, Count
 from django.core.paginator import Paginator
 from django.utils import timezone
+from billing.templatetags.billing_tags import indian_currency
 
 from billing.models import (
     Bill,
@@ -18,6 +21,7 @@ from billing.models import (
     PaymentMethod,
 )
 from billing.forms import (
+    RecordPaymentForm,
     BillForm,
     BillPaymentUpdateForm,
     CustomerPaymentSubmissionForm,
@@ -33,6 +37,14 @@ from billing.utils import (
     get_upi_intent_url,
     amount_in_words_bilingual,
 )
+
+
+def _disable_response_cache(response):
+    """Prevent browsers and proxies from reusing stale generated invoice PDFs."""
+    response['Cache-Control'] = 'no-store, no-cache, must-revalidate, max-age=0'
+    response['Pragma'] = 'no-cache'
+    response['Expires'] = '0'
+    return response
 
 
 @login_required
@@ -241,6 +253,37 @@ def bill_create(request):
     return render(request, 'billing/bill_form.html', context)
 
 
+def get_bill_payment_history(bill):
+    """
+    Return a unified chronological list of payments recorded for this bill.
+    Each item is a dict: date, method, reference, amount, note.
+    """
+    submissions = bill.payment_submissions.filter(status='verified').order_by('submitted_at')
+    items = []
+    recorded_sum = Decimal('0.00')
+    for sub in submissions:
+        items.append({
+            'date': sub.verified_at or sub.submitted_at,
+            'method': sub.payment_method,
+            'reference': sub.utr_number,
+            'amount': sub.amount,
+            'note': sub.notes,
+        })
+        recorded_sum += sub.amount
+
+    # If bill had an initial payment at creation time that isn't in submissions
+    if bill.amount_paid > recorded_sum:
+        initial_payment = bill.amount_paid - recorded_sum
+        items.insert(0, {
+            'date': bill.created_at,
+            'method': bill.payment_method or 'Initial Payment',
+            'reference': bill.payment_note or '-',
+            'amount': initial_payment,
+            'note': 'Initial payment on bill creation' if bill.bill_language == 'en' else 'बिल निर्माण के समय दर्ज भुगतान',
+        })
+    return items
+
+
 @login_required
 def bill_detail(request, pk):
     """
@@ -250,7 +293,7 @@ def bill_detail(request, pk):
     bill = get_object_or_404(Bill, pk=pk)
     payment_info = PaymentInfo.get_solo()
     amount_words = amount_in_words_bilingual(bill.total_amount)
-    
+
     qr_code_base64 = generate_upi_qr_base64(
         upi_id=payment_info.upi_id,
         payee_name=payment_info.account_holder_name or payment_info.newspaper_name,
@@ -262,8 +305,15 @@ def bill_detail(request, pk):
     pending_submissions = []
     client_obj = bill.client
     if not client_obj and bill.client_name:
-        client_obj = Client.objects.filter(name__iexact=bill.client_name.strip()).first()
-        if client_obj and not bill.client:
+        client_obj, _ = Client.objects.get_or_create(
+            name=bill.client_name.strip(),
+            defaults={
+                'phone': bill.client_phone or '',
+                'address': bill.client_address or '',
+                'gstin': bill.client_gstin or '',
+            }
+        )
+        if not bill.client:
             bill.client = client_obj
             bill.save(update_fields=['client'])
 
@@ -271,16 +321,22 @@ def bill_detail(request, pk):
         pending_submissions = client_obj.payment_submissions.filter(status='pending')
 
     site_lang = request.session.get('site_lang', 'en')
+    payment_history = get_bill_payment_history(bill)
+    record_form = RecordPaymentForm(bill=bill, site_lang=site_lang) if bill.balance_amount > Decimal('0.00') else None
+
     context = {
         'bill': bill,
         'client': client_obj,
         'payment_info': payment_info,
         'amount_words': amount_words,
         'qr_code_base64': qr_code_base64,
+        'record_form': record_form,
         'payment_form': BillPaymentUpdateForm(instance=bill, site_lang=site_lang),
+        'payment_history': payment_history,
         'pending_submissions': pending_submissions,
         'portal_url': client_obj.get_portal_url(request) if client_obj else "",
         'whatsapp_portal_share_url': client_obj.get_whatsapp_portal_share_url(request) if client_obj else "",
+        'title': f"{bill.bill_number} | विश्वगुरु बिलिंग" if site_lang == 'hi' else f"{bill.bill_number} | Vishwaguru Billing",
     }
     return render(request, 'billing/bill_detail.html', context)
 
@@ -306,7 +362,16 @@ def bill_pdf_view(request, pk):
     )
 
     # Determine PDF language: from URL param if present, or bill's own setting, default 'en'
-    pdf_lang = request.GET.get('lang', getattr(bill, 'bill_language', 'en') or 'en')
+    req_lang = request.GET.get('lang', '').strip().lower()
+    if req_lang in ('hi', 'hindi'):
+        pdf_lang = 'hi'
+    elif req_lang in ('en', 'english'):
+        pdf_lang = 'en'
+    else:
+        pdf_lang = 'hi' if getattr(bill, 'bill_language', 'en') == 'hi' else 'en'
+
+    # Signature mode: '0' for computer generated (no sign required, default), '1' for physical seal & sign line
+    require_sign = request.GET.get('sign', '0').lower() in ('1', 'true', 'yes', 'seal', 'manual')
 
     context = {
         'bill': bill,
@@ -314,6 +379,7 @@ def bill_pdf_view(request, pk):
         'amount_words': amount_words,
         'qr_code_base64': qr_code_base64,
         'pdf_lang': pdf_lang,
+        'require_sign': require_sign,
         'request': request,
     }
 
@@ -333,15 +399,18 @@ def bill_pdf_view(request, pk):
         else:
             response['Content-Disposition'] = f'inline; filename="{filename}"'
 
-        return response
+        return _disable_response_cache(response)
     except Exception as e:
         # Fallback for environments where WeasyPrint native C-libraries are missing
-        # Renders the HTML print view directly so user can browser-print to PDF
-        messages.warning(
-            request,
-            f"PDF generator notice: {str(e)}. Rendering high-resolution print view instead."
+        # Log real error on server and show a friendly line to user
+        logger.warning("WeasyPrint PDF generation failed: %s", e, exc_info=True)
+        msg = (
+            "पीडीएफ तैयार नहीं किया जा सका। इसके स्थान पर प्रिंट दृश्य दिखाया जा रहा है।"
+            if request.session.get('site_lang') == 'hi'
+            else "PDF could not be generated. Showing the print view instead."
         )
-        return render(request, 'billing/bill_pdf.html', context)
+        messages.warning(request, msg)
+        return _disable_response_cache(render(request, 'billing/bill_pdf.html', context))
 
 
 @login_required
@@ -412,20 +481,116 @@ def bill_search(request):
 @login_required
 def bill_payment_update(request, pk):
     """
-    Quick endpoint to update payment status and received amount.
+    Endpoint to record payment for a bill. Supports HTMX in-place updates.
     """
     site_lang = request.session.get('site_lang', 'en')
     bill = get_object_or_404(Bill, pk=pk)
+
+    # Ensure client exists and is linked
+    if not bill.client and bill.client_name:
+        client_obj, _ = Client.objects.get_or_create(
+            name=bill.client_name.strip(),
+            defaults={
+                'phone': bill.client_phone or '',
+                'address': bill.client_address or '',
+                'gstin': bill.client_gstin or '',
+            }
+        )
+        bill.client = client_obj
+        bill.save(update_fields=['client'])
+
+    is_htmx = bool(request.headers.get('HX-Request'))
+
     if request.method == 'POST':
-        form = BillPaymentUpdateForm(request.POST, instance=bill, site_lang=site_lang)
-        if form.is_valid():
-            form.save()
+        # Check if submitted form is RecordPaymentForm (new desk flow)
+        if 'amount' in request.POST and ('payment_method' in request.POST or 'reference' in request.POST):
+            form = RecordPaymentForm(request.POST, bill=bill, site_lang=site_lang)
+            if form.is_valid():
+                amount = form.cleaned_data['amount']
+                method = form.cleaned_data['payment_method']
+                reference = form.cleaned_data.get('reference', '')
+                note = form.cleaned_data.get('note', '')
+
+                # 1. Create verified PaymentSubmission record
+                if bill.client:
+                    PaymentSubmission.objects.create(
+                        client=bill.client,
+                        bill=bill,
+                        amount=amount,
+                        utr_number=reference or ('Cash' if method == 'Cash' else '-'),
+                        payment_method=method,
+                        notes=note or '',
+                        status='verified',
+                        verified_at=timezone.now(),
+                        verified_by=request.user if request.user.is_authenticated else None,
+                    )
+
+                # 2. Update Bill financials
+                bill.amount_paid += amount
+                bill.payment_method = method
+                if reference:
+                    bill.payment_note = reference
+                if bill.balance_amount <= Decimal('0.00'):
+                    bill.payment_status = PaymentStatus.PAID
+                else:
+                    bill.payment_status = PaymentStatus.PARTIAL
+                bill.save()
+
+                # Refresh from DB
+                bill.refresh_from_db()
+
+                formatted_amt = indian_currency(amount)
+                success_msg = (
+                    f"{formatted_amt} का भुगतान सफलतापूर्वक दर्ज किया गया।"
+                    if site_lang == 'hi'
+                    else f"Payment of {formatted_amt} recorded successfully."
+                )
+
+                if is_htmx:
+                    payment_history = get_bill_payment_history(bill)
+                    new_record_form = RecordPaymentForm(bill=bill, site_lang=site_lang) if bill.balance_amount > Decimal('0.00') else None
+                    portal_url = bill.client.get_portal_url(request) if bill.client else ""
+                    ctx = {
+                        'bill': bill,
+                        'record_form': new_record_form,
+                        'payment_history': payment_history,
+                        'portal_url': portal_url,
+                        'payment_success_msg': success_msg,
+                        'site_lang': site_lang,
+                        'pending_submissions': bill.client.payment_submissions.filter(status='pending') if bill.client else [],
+                    }
+                    return render(request, 'billing/partials/bill_detail_pane.html', ctx)
+
+                messages.success(request, success_msg)
+                return redirect('billing:bill_detail', pk=bill.pk)
+            else:
+                # Form has validation errors
+                payment_history = get_bill_payment_history(bill)
+                portal_url = bill.client.get_portal_url(request) if bill.client else ""
+                ctx = {
+                    'bill': bill,
+                    'record_form': form,
+                    'payment_history': payment_history,
+                    'portal_url': portal_url,
+                    'site_lang': site_lang,
+                    'pending_submissions': bill.client.payment_submissions.filter(status='pending') if bill.client else [],
+                }
+                if is_htmx:
+                    return render(request, 'billing/partials/bill_detail_pane.html', ctx, status=200)
+
+                return render(request, 'billing/bill_detail.html', ctx)
+
+        # Legacy BillPaymentUpdateForm fallback
+        legacy_form = BillPaymentUpdateForm(request.POST, instance=bill, site_lang=site_lang)
+        if legacy_form.is_valid():
+            legacy_form.save()
             msg = (
                 f"बिल {bill.bill_number} की भुगतान स्थिति अपडेट कर दी गई है।"
                 if site_lang == 'hi'
                 else f"Payment status for bill {bill.bill_number} updated successfully."
             )
             messages.success(request, msg)
+
     return redirect('billing:bill_detail', pk=bill.pk)
 
 
@@ -585,7 +750,19 @@ def customer_payment_submit(request, token):
             else:
                 msg = f"Thank you! Your payment reference ({sub.utr_number}) has been submitted. Our accounts team will verify and update your statement shortly."
             messages.success(request, msg)
+            if request.headers.get('HX-Request'):
+                return render(request, 'billing/partials/utr_submitted.html', {
+                    'submission': sub,
+                    'lang': lang,
+                })
         else:
+            if request.headers.get('HX-Request'):
+                return render(request, 'billing/partials/utr_form.html', {
+                    'client': client,
+                    'submission_form': form,
+                    'lang': lang,
+                    'total_outstanding': client.total_outstanding,
+                })
             if lang == 'hi':
                 messages.error(request, "कृपया सही राशि और यूटीआर संख्या दर्ज करें।")
             else:
@@ -617,7 +794,14 @@ def customer_bill_pdf(request, token, bill_id):
         bill_number_or_note=bill.bill_number,
     )
 
-    pdf_lang = request.GET.get('lang', getattr(bill, 'bill_language', 'en') or 'en')
+    req_lang = request.GET.get('lang', '').strip().lower()
+    if req_lang in ('hi', 'hindi'):
+        pdf_lang = 'hi'
+    elif req_lang in ('en', 'english'):
+        pdf_lang = 'en'
+    else:
+        pdf_lang = 'hi' if getattr(bill, 'bill_language', 'en') == 'hi' else 'en'
+    require_sign = request.GET.get('sign', '0').lower() in ('1', 'true', 'yes', 'seal', 'manual')
 
     context = {
         'bill': bill,
@@ -625,6 +809,7 @@ def customer_bill_pdf(request, token, bill_id):
         'amount_words': amount_words,
         'qr_code_base64': qr_code_base64,
         'pdf_lang': pdf_lang,
+        'require_sign': require_sign,
         'request': request,
     }
 
@@ -641,9 +826,10 @@ def customer_bill_pdf(request, token, bill_id):
             response['Content-Disposition'] = f'attachment; filename="{filename}"'
         else:
             response['Content-Disposition'] = f'inline; filename="{filename}"'
-        return response
+        return _disable_response_cache(response)
     except Exception as e:
-        return render(request, 'billing/bill_pdf.html', context)
+        logger.warning('WeasyPrint PDF generation failed in customer_bill_pdf: %s', e, exc_info=True)
+        return _disable_response_cache(render(request, 'billing/bill_pdf.html', context))
 
 
 @login_required
@@ -718,6 +904,12 @@ def payment_submissions_list(request):
     Staff view to review all customer payment submissions.
     """
     status_filter = request.GET.get('status', 'pending')
+    all_submissions = PaymentSubmission.objects.all()
+    submission_counts = all_submissions.aggregate(
+        pending_count=Count('id', filter=Q(status='pending')),
+        verified_count=Count('id', filter=Q(status='verified')),
+        rejected_count=Count('id', filter=Q(status='rejected')),
+    )
     submissions = PaymentSubmission.objects.select_related('client', 'bill', 'verified_by').all()
     if status_filter in ('pending', 'verified', 'rejected'):
         submissions = submissions.filter(status=status_filter)
@@ -726,6 +918,7 @@ def payment_submissions_list(request):
     context = {
         'submissions': submissions,
         'status_filter': status_filter,
+        'submission_counts': submission_counts,
         'title': 'ग्राहक यूपीआई भुगतान सत्यापन' if site_lang == 'hi' else 'Customer UPI Payment Submissions',
     }
     return render(request, 'billing/payment_submissions_list.html', context)

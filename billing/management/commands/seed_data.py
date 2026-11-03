@@ -23,13 +23,13 @@ class Command(BaseCommand):
 
         # 2. Setup PaymentInfo
         payment_info = PaymentInfo.get_solo()
-        payment_info.newspaper_name = 'विश्वगुरु'
+        payment_info.newspaper_name = 'विश्वगुरु की झलक'
         payment_info.tagline = 'दैनिक समाचार पत्र (Daily Hindi Newspaper)'
         payment_info.registration_no = 'RNI Reg. No. MP-HIN/2018/12345'
         payment_info.bank_name = 'State Bank of India'
         payment_info.account_number = '389104829104'
         payment_info.ifsc_code = 'SBIN0001234'
-        payment_info.account_holder_name = 'Vishwaguru Newspaper'
+        payment_info.account_holder_name = 'Vishwaguru Ki Jhalak'
         payment_info.upi_id = 'vishwaguru@sbi'
         payment_info.phone_number = '+91 98260 12345'
         payment_info.email = 'vishwagurunews@gmail.com'

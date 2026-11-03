@@ -1,208 +1,145 @@
-{% load static %}
-<!DOCTYPE html>
-<html lang="{{ site_lang|default:'en' }}">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ title }} | Vishwaguru Billing</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-    <link rel="stylesheet" href="{% static 'billing/css/style.css' %}">
-</head>
-<body>
-    <header class="navbar">
-        <div class="nav-container">
-            <a href="{% url 'billing:dashboard' %}" class="brand-link">
-                <img src="{% static 'billing/img/logo.png' %}" alt="विश्वगुरु" style="height: 40px; max-width: 170px; object-fit: contain;">
-                <div class="brand-text">
-                    <h1>{% if site_lang == 'hi' %}विज्ञापन बिलिंग पोर्टल{% else %}Advertisement Billing{% endif %}</h1>
-                    <p>Vishwaguru Newspaper</p>
-                </div>
+{% extends 'billing/base.html' %}
+{% load static billing_tags %}
+
+{% block title %}
+    {% if site_lang == 'hi' %}यूपीआई भुगतान सत्यापन | विश्वगुरु की झलक{% else %}UPI Payment Submissions | Vishwaguru Ki Jhalak{% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="desk-panel" style="background-color: #ffffff; border: 1px solid #e7e2d9; border-radius: 4px; overflow: hidden; margin-bottom: 2rem;">
+    <!-- Panel Header: Title + Filter Tabs -->
+    <div class="desk-panel-header" style="padding: 16px 20px; border-bottom: 1px solid #e7e2d9; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem;">
+        <div>
+            <h1 class="desk-panel-title" style="font-family: 'Noto Serif Devanagari', serif; font-size: 1.15rem; font-weight: 600; color: #1c1917; margin: 0; display: flex; align-items: center; gap: 0.5rem;">
+                <i class="bi bi-shield-check" style="color: #9f1d1d;"></i>
+                <span>{% if site_lang == 'hi' %}ग्राहक यूपीआई भुगतान सत्यापन{% else %}Customer UPI Payment Submissions{% endif %}</span>
+            </h1>
+            <p style="margin: 0.25rem 0 0 0; font-size: 13px; color: #57534e;">
+                {% if site_lang == 'hi' %}ग्राहकों द्वारा पोर्टल से जमा किए गए यूटीआर (UTR) संदर्भों की जांच व सत्यापन{% else %}Verify and confirm payments submitted by clients on the public portal{% endif %}
+            </p>
+        </div>
+
+        <!-- Status Filter Tabs -->
+        <div style="display: inline-flex; border: 1px solid #e7e2d9; border-radius: 4px; overflow: hidden; background-color: #faf8f4;">
+            <a href="?status=pending" class="office-tab {% if status_filter == 'pending' or not status_filter %}active{% endif %}" {% if status_filter == 'pending' or not status_filter %}aria-current="page"{% endif %} style="min-height: 38px; padding: 6px 14px; font-size: 13px; text-decoration: none;">
+                {% if site_lang == 'hi' %}लंबित{% else %}Pending{% endif %} <span class="queue-count">{{ submission_counts.pending_count }}</span>
             </a>
-            <nav class="nav-links">
-                <a href="{% url 'billing:dashboard' %}" class="nav-item">
-                    <i class="bi bi-speedometer2"></i> {% if site_lang == 'hi' %}डैशबोर्ड{% else %}Dashboard{% endif %}
-                </a>
-                <a href="{% url 'billing:bill_create' %}" class="nav-item">
-                    <i class="bi bi-plus-circle"></i> {% if site_lang == 'hi' %}नया बिल{% else %}New Bill{% endif %}
-                </a>
-
-                <a href="{% url 'billing:bill_create' %}" class="nav-item">
-                    <i class="bi bi-plus-circle"></i> {% if site_lang == 'hi' %}नया बिल{% else %}New Bill{% endif %}
-                </a>
-                <a href="{% url 'billing:bill_search' %}" class="nav-item">
-                    <i class="bi bi-search"></i> {% if site_lang == 'hi' %}बिल सूची{% else %}Search Bills{% endif %}
-                </a>
-                <a href="{% url 'billing:payment_submissions_list' %}" class="nav-item active">
-                    <i class="bi bi-wallet2"></i> {% if site_lang == 'hi' %}भुगतान सत्यापन{% else %}UPI Verifications{% endif %}
-                </a>
-                <a href="{% url 'billing:payment_submissions_list' %}" class="nav-item active">
-                    <i class="bi bi-wallet2"></i> {% if site_lang == 'hi' %}भुगतान सत्यापन{% else %}UPI Verifications{% endif %}
-                </a>
-                <a href="{% url 'billing:payment_info_settings' %}" class="nav-item">
-                    <i class="bi bi-bank"></i> {% if site_lang == 'hi' %}बैंक व UPI{% else %}Bank &amp; UPI{% endif %}
-                </a>
-
-                <a href="{% url 'admin:index' %}" class="nav-item" target="_blank">
-                    <i class="bi bi-gear"></i> Admin
-                </a>
-
-                <!-- Language Switcher -->
-                <div style="display: flex; align-items: center; background: #f8fafc; border: 1.5px solid var(--border); border-radius: 20px; padding: 2px 3px; margin-left: 0.5rem; font-size: 0.8rem; font-weight: 700;">
-                    <a href="{% url 'billing:set_language' 'en' %}" style="text-decoration: none; padding: 4px 10px; border-radius: 16px; {% if site_lang != 'hi' %}background: var(--primary); color: #fff;{% else %}color: var(--text-muted);{% endif %}">
-                        EN
-                    </a>
-                    <a href="{% url 'billing:set_language' 'hi' %}" style="text-decoration: none; padding: 4px 10px; border-radius: 16px; {% if site_lang == 'hi' %}background: var(--primary); color: #fff;{% else %}color: var(--text-muted);{% endif %}">
-                        हिन्दी
-                    </a>
-                </div>
-
-                {% if user.is_authenticated %}
-                <div class="nav-user">
-                    <span><i class="bi bi-person-circle"></i> {{ user.username }}</span>
-                    <form action="{% url 'logout' %}" method="post" style="display:inline;">
-                        {% csrf_token %}
-                        <button type="submit" class="btn-logout"><i class="bi bi-box-arrow-right"></i> Logout</button>
-                    </form>
-                </div>
-                {% endif %}
-            </nav>
+            <a href="?status=verified" class="office-tab {% if status_filter == 'verified' %}active{% endif %}" {% if status_filter == 'verified' %}aria-current="page"{% endif %} style="min-height: 38px; padding: 6px 14px; font-size: 13px; text-decoration: none; border-left: 1px solid #e7e2d9;">
+                {% if site_lang == 'hi' %}सत्यापित{% else %}Verified{% endif %} <span class="queue-count">{{ submission_counts.verified_count }}</span>
+            </a>
+            <a href="?status=rejected" class="office-tab {% if status_filter == 'rejected' %}active{% endif %}" {% if status_filter == 'rejected' %}aria-current="page"{% endif %} style="min-height: 38px; padding: 6px 14px; font-size: 13px; text-decoration: none; border-left: 1px solid #e7e2d9;">
+                {% if site_lang == 'hi' %}अस्वीकृत{% else %}Rejected{% endif %} <span class="queue-count">{{ submission_counts.rejected_count }}</span>
+            </a>
         </div>
-    </header>
+    </div>
 
-    <main class="main-content">
-        {% if messages %}
-        <div class="alert-messages">
-            {% for message in messages %}
-            <div class="alert alert-{{ message.tags|default:'info' }}">
-                <span>{{ message }}</span>
-            </div>
-            {% endfor %}
-        </div>
-        {% endif %}
-
-        <div class="card">
-            <div class="card-header" style="flex-wrap: wrap; gap: 1rem;">
-                <div>
-                    <h2 class="card-title" style="font-size: 1.4rem; display: flex; align-items: center; gap: 0.5rem;">
-                        <i class="bi bi-shield-check" style="color: var(--primary);"></i>
-                        {% if site_lang == 'hi' %}ग्राहक यूपीआई भुगतान सत्यापन (Incoming UPI Submissions){% else %}Customer UPI Payment Submissions{% endif %}
-                    </h2>
-                    <p class="card-subtitle">
-                        {% if site_lang == 'hi' %}ग्राहकों द्वारा पोर्टल से जमा किए गए यूटीआर (UTR) संदर्भों की जांच व सत्यापन{% else %}Verify and confirm payments submitted by clients on the public portal{% endif %}
-                    </p>
-                </div>
-
-                <!-- Status Filter Tabs -->
-                <div style="display: inline-flex; border: 1.5px solid var(--border); border-radius: var(--radius-sm); overflow: hidden; background: #ffffff;">
-                    <a href="?status=pending" class="btn" style="padding: 0.45rem 0.9rem; font-size: 0.85rem; {% if status_filter == 'pending' %}background: var(--primary); color: #fff;{% else %}color: var(--secondary);{% endif %}">
-                        {% if site_lang == 'hi' %}लंबित (Pending){% else %}Pending{% endif %}
-                    </a>
-                    <a href="?status=verified" class="btn" style="padding: 0.45rem 0.9rem; font-size: 0.85rem; border-left: 1px solid var(--border); {% if status_filter == 'verified' %}background: var(--success); color: #fff;{% else %}color: var(--secondary);{% endif %}">
-                        {% if site_lang == 'hi' %}सत्यापित (Verified){% else %}Verified{% endif %}
-                    </a>
-                    <a href="?status=rejected" class="btn" style="padding: 0.45rem 0.9rem; font-size: 0.85rem; border-left: 1px solid var(--border); {% if status_filter == 'rejected' %}background: #475569; color: #fff;{% else %}color: var(--secondary);{% endif %}">
-                        {% if site_lang == 'hi' %}अस्वीकृत (Rejected){% else %}Rejected{% endif %}
-                    </a>
-                </div>
-            </div>
-
-            <!-- Submissions Table -->
-            <div style="overflow-x: auto; margin-top: 1rem;">
-                <table class="table" style="width: 100%; border-collapse: collapse;">
-                    <thead>
-                        <tr style="background: #f8fafc; border-bottom: 2px solid var(--border); text-align: left; font-size: 0.85rem;">
-                            <th style="padding: 0.75rem;">दिनांक / Date</th>
-                            <th style="padding: 0.75rem;">ग्राहक / Client</th>
-                            <th style="padding: 0.75rem;">राशि / Amount</th>
-                            <th style="padding: 0.75rem;">यूटीआर संख्या / UTR No.</th>
-                            <th style="padding: 0.75rem;">संबंधित बिल / Bill</th>
-                            <th style="padding: 0.75rem;">टिप्पणी / Note</th>
-                            <th style="padding: 0.75rem;">स्थिति / Status</th>
-                            <th style="padding: 0.75rem; text-align: right;">कार्रवाई / Action</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for sub in submissions %}
-                        <tr style="border-bottom: 1px solid var(--border); font-size: 0.9rem;">
-                            <td style="padding: 0.75rem; color: var(--text-muted); font-size: 0.825rem;">
-                                {{ sub.submitted_at|date:"d/m/Y H:i" }}
-                            </td>
-                            <td style="padding: 0.75rem; font-weight: 700;">
-                                <div>{{ sub.client.name }}</div>
-                                <div style="font-size: 0.75rem; font-weight: normal; color: var(--text-muted);">
-                                    <a href="{{ sub.client.get_portal_url }}" target="_blank" style="color: var(--primary);">पोर्टल देखें ↗</a>
-                                </div>
-                            </td>
-                            <td style="padding: 0.75rem; font-weight: 800; color: var(--success); font-size: 1.05rem;">
-                                ₹{{ sub.amount|floatformat:2 }}
-                            </td>
-                            <td style="padding: 0.75rem; font-family: monospace; font-size: 0.95rem; font-weight: 700;">
-                                <mark style="background: #fef08a; padding: 2px 6px; border-radius: 4px;">{{ sub.utr_number }}</mark>
-                            </td>
-                            <td style="padding: 0.75rem;">
-                                {% if sub.bill %}
-                                    <a href="{% url 'billing:bill_detail' sub.bill.pk %}" style="font-weight: 600; color: var(--primary);">
-                                        {{ sub.bill.bill_number }}
-                                    </a>
-                                {% else %}
-                                    <span class="badge" style="background: #f1f5f9; color: var(--text-muted);">All Dues</span>
-                                {% endif %}
-                            </td>
-                            <td style="padding: 0.75rem; color: var(--text-muted); font-size: 0.825rem;">
-                                {{ sub.notes|default:"-" }}
-                            </td>
-                            <td style="padding: 0.75rem;">
-                                {% if sub.status == 'pending' %}
-                                    <span class="badge badge-unpaid"><i class="bi bi-clock"></i> Pending</span>
-                                {% elif sub.status == 'verified' %}
-                                    <span class="badge badge-paid"><i class="bi bi-check-circle"></i> Verified</span>
-                                {% else %}
-                                    <span class="badge" style="background: #e2e8f0; color: #475569;">Rejected</span>
-                                {% endif %}
-                            </td>
-                            <td style="padding: 0.75rem; text-align: right;">
-                                {% if sub.status == 'pending' %}
-                                    <div style="display: inline-flex; gap: 0.35rem;">
-                                        <form action="{% url 'billing:verify_payment_submission' sub.id %}" method="POST" style="display: inline;">
-                                            {% csrf_token %}
-                                            <input type="hidden" name="action" value="verify">
-                                            <input type="hidden" name="next" value="{{ request.get_full_path }}">
-                                            <button type="submit" class="btn btn-sm" style="background: var(--success); color: #fff; padding: 0.35rem 0.65rem; font-size: 0.8rem; border: none; border-radius: 4px; cursor: pointer; font-weight: 700;">
-                                                <i class="bi bi-check-lg"></i> {% if site_lang == 'hi' %}सत्यापित करें{% else %}Verify & Paid{% endif %}
-                                            </button>
-                                        </form>
-                                        <form action="{% url 'billing:verify_payment_submission' sub.id %}" method="POST" style="display: inline;">
-                                            {% csrf_token %}
-                                            <input type="hidden" name="action" value="reject">
-                                            <input type="hidden" name="next" value="{{ request.get_full_path }}">
-                                            <button type="submit" class="btn btn-sm" style="background: #f1f5f9; color: var(--danger); padding: 0.35rem 0.55rem; font-size: 0.8rem; border: 1px solid var(--border); border-radius: 4px; cursor: pointer;">
-                                                <i class="bi bi-x-lg"></i>
-                                            </button>
-                                        </form>
-                                    </div>
-                                {% else %}
-                                    <span style="font-size: 0.75rem; color: var(--text-muted);">
-                                        By {{ sub.verified_by.username|default:"Staff" }} ({{ sub.verified_at|date:"d/m H:i" }})
-                                    </span>
-                                {% endif %}
-                            </td>
-                        </tr>
-                        {% empty %}
-                        <tr>
-                            <td colspan="8" style="padding: 2.5rem; text-align: center; color: var(--text-muted);">
-                                <i class="bi bi-inbox" style="font-size: 2rem; display: block; margin-bottom: 0.5rem;"></i>
-                                {% if site_lang == 'hi' %}कोई भुगतान संदर्भ प्राप्त नहीं हुआ।{% else %}No customer payment submissions found for this filter.{% endif %}
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </main>
-
-    <footer class="footer">
-        <p>&copy; {% now "Y" %} Vishwaguru Newspaper. All Rights Reserved.</p>
-    </footer>
-</body>
-</html>
+    <!-- Submissions Table -->
+    <div class="desk-table-container">
+        <table class="desk-table">
+            <thead>
+                <tr>
+                    <th style="padding: 10px 14px;">{% if site_lang == 'hi' %}दिनांक व समय{% else %}Date &amp; Time{% endif %}</th>
+                    <th style="padding: 10px 14px;">{% if site_lang == 'hi' %}ग्राहक{% else %}Client{% endif %}</th>
+                    <th style="padding: 10px 14px; text-align: right;">{% if site_lang == 'hi' %}राशि{% else %}Amount{% endif %}</th>
+                    <th style="padding: 10px 14px;">{% if site_lang == 'hi' %}यूटीआर संख्या{% else %}UTR No.{% endif %}</th>
+                    <th style="padding: 10px 14px;">{% if site_lang == 'hi' %}संबंधित बिल{% else %}Bill{% endif %}</th>
+                    <th style="padding: 10px 14px;">{% if site_lang == 'hi' %}टिप्पणी{% else %}Note{% endif %}</th>
+                    <th style="padding: 10px 14px;">{% if site_lang == 'hi' %}स्थिति{% else %}Status{% endif %}</th>
+                    <th style="padding: 10px 14px; text-align: right;">{% if site_lang == 'hi' %}कार्रवाई{% else %}Action{% endif %}</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for sub in submissions %}
+                <tr id="submission-row-{{ sub.id }}">
+                    <td class="tabular-nums text-muted" style="color: #57534e; white-space: nowrap;">
+                        {{ sub.submitted_at|date:"d M Y, H:i" }}
+                    </td>
+                    <td>
+                        <div style="font-weight: 500; color: #1c1917;">{{ sub.client.name }}</div>
+                        <div style="font-size: 12px; margin-top: 2px;">
+                            <a href="{{ sub.client.get_portal_url }}" target="_blank" style="color: #9f1d1d; text-decoration: none;">
+                                {% if site_lang == 'hi' %}पोर्टल देखें{% else %}View Portal{% endif %} <i class="bi bi-box-arrow-up-right text-[10px]"></i>
+                            </a>
+                        </div>
+                    </td>
+                    <td class="tabular-nums" style="text-align: right; font-weight: 600; color: #15803d; font-size: 1rem;">
+                        {{ sub.amount|indian_currency }}
+                    </td>
+                    <td>
+                        <code style="font-family: monospace; font-size: 13px; font-weight: 600; background-color: #faf8f4; border: 1px solid #e7e2d9; padding: 2px 6px; border-radius: 4px; color: #1c1917;">
+                            {{ sub.utr_number }}
+                        </code>
+                    </td>
+                    <td>
+                        {% if sub.bill %}
+                            <a href="{% url 'billing:bill_detail' sub.bill.pk %}" class="tabular-nums" style="font-weight: 500; color: #1c1917; text-decoration: underline;">
+                                {{ sub.bill.bill_number }}
+                            </a>
+                        {% else %}
+                            <span class="text-muted" style="color: #57534e; font-size: 12px;">{% if site_lang == 'hi' %}समस्त बकाया{% else %}All Dues{% endif %}</span>
+                        {% endif %}
+                    </td>
+                    <td style="color: #57534e; font-size: 13px; max-width: 180px;">
+                        {{ sub.notes|default:"&mdash;" }}
+                    </td>
+                    <td>
+                        {% if sub.status == 'pending' %}
+                            <div class="status-dot-wrap">
+                                <span class="status-dot status-dot-partial"></span>
+                                <span style="color: #b45309; font-size: 13px; font-weight: 500;">{% if site_lang == 'hi' %}लंबित{% else %}Pending{% endif %}</span>
+                            </div>
+                        {% elif sub.status == 'verified' %}
+                            <div class="status-dot-wrap">
+                                <span class="status-dot status-dot-paid"></span>
+                                <span style="color: #15803d; font-size: 13px; font-weight: 500;">{% if site_lang == 'hi' %}सत्यापित{% else %}Verified{% endif %}</span>
+                            </div>
+                        {% else %}
+                            <div class="status-dot-wrap">
+                                <span class="status-dot status-dot-unpaid"></span>
+                                <span style="color: #9f1d1d; font-size: 13px; font-weight: 500;">{% if site_lang == 'hi' %}अस्वीकृत{% else %}Rejected{% endif %}</span>
+                            </div>
+                        {% endif %}
+                    </td>
+                    <td style="text-align: right; white-space: nowrap;">
+                        {% if sub.status == 'pending' %}
+                            <div style="display: inline-flex; gap: 0.4rem; align-items: center;">
+                                <form action="{% url 'billing:verify_payment_submission' sub.id %}" method="POST" style="display: inline;">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="action" value="verify">
+                                    <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                                    <button type="submit" class="btn-desk-primary" style="padding: 6px 14px; font-size: 13px; font-weight: 600; min-height: 36px;">
+                                        <i class="bi bi-check-lg"></i>
+                                        <span>{% if site_lang == 'hi' %}सत्यापित करें{% else %}Verify{% endif %}</span>
+                                    </button>
+                                </form>
+                                <form action="{% url 'billing:verify_payment_submission' sub.id %}" method="POST" style="display: inline;">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="action" value="reject">
+                                    <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                                    <button type="submit" class="btn-desk-secondary" style="padding: 6px 12px; font-size: 13px; min-height: 36px; color: #9f1d1d; border-color: #fca5a5;" aria-label="{% if site_lang == 'hi' %}भुगतान संदर्भ अस्वीकार करें{% else %}Reject payment submission{% endif %}" title="{% if site_lang == 'hi' %}अस्वीकार करें{% else %}Reject{% endif %}" onclick="return confirm('{% if site_lang == 'hi' %}क्या आप इस भुगतान संदर्भ को अस्वीकार करना चाहते हैं?{% else %}Reject this payment submission?{% endif %}')">
+                                        <i class="bi bi-x-lg"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        {% else %}
+                            <span class="text-muted tabular-nums" style="font-size: 12px; color: #57534e;">
+                                {{ sub.verified_by.username|default:"Staff" }} &bull; {{ sub.verified_at|date:"d M H:i" }}
+                            </span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="8" class="empty-state-cell">
+                        <div class="empty-state-icon"><i class="bi bi-inbox" aria-hidden="true"></i></div>
+                        <strong>{% if site_lang == 'hi' %}इस सूची में कोई भुगतान संदर्भ नहीं है।{% else %}No submissions in this queue{% endif %}</strong>
+                        <p>{% if status_filter == 'pending' or not status_filter %}{% if site_lang == 'hi' %}नई ग्राहक भुगतान प्रविष्टियां यहां सत्यापन के लिए दिखाई देंगी।{% else %}New customer payment references will appear here for review.{% endif %}{% else %}{% if site_lang == 'hi' %}दूसरी स्थिति की प्रविष्टियां देखने के लिए ऊपर की सूची चुनें।{% else %}Choose another queue above to review submissions with a different status.{% endif %}{% endif %}</p>
+                        {% if status_filter == 'pending' or not status_filter %}<a class="btn-desk-secondary" href="{% url 'billing:bill_search' %}"><i class="bi bi-receipt"></i> {% if site_lang == 'hi' %}बिल देखें{% else %}View bills{% endif %}</a>{% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

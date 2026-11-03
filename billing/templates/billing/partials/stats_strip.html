@@ -1,53 +1,53 @@
 {% load billing_tags %}
-<div class="mb-6 bg-white border border-rule rounded grid grid-cols-2 md:grid-cols-4 overflow-hidden" style="background-color: #ffffff; border: 1px solid #e7e2d9; border-radius: 4px; font-family: 'Mukta', sans-serif;">
+<div class="dashboard-kpi-strip mb-6 bg-white border border-rule rounded grid grid-cols-2 md:grid-cols-4 overflow-hidden" style="background-color: #ffffff; border: 1px solid #e7e2d9; border-radius: 4px; font-family: 'Mukta', sans-serif; margin-bottom: 24px;">
     <!-- 1. Today's Billed -->
-    <div class="p-4 flex flex-col justify-between border-r border-b md:border-b-0 border-rule" style="padding: 16px; border-color: #e7e2d9;">
-        <span class="text-[12px] font-medium tracking-wider uppercase text-muted h-[16px] flex items-center leading-none truncate" style="color: #57534e; font-size: 12px; height: 16px;">
+    <div class="dashboard-kpi p-4 md:py-5 md:px-6 flex flex-col justify-between border-r border-b md:border-b-0 border-rule" style="border-color: #e7e2d9;">
+        <span class="text-[12px] md:text-[13px] font-semibold tracking-wider uppercase text-muted h-[18px] flex items-center leading-none truncate" style="color: #57534e;">
             {% if site_lang == 'hi' %}आज की बिलिंग{% else %}Today's billed{% endif %}
         </span>
-        <span class="text-[22px] md:text-2xl font-semibold text-ink my-1 tabular-nums leading-tight" style="color: #1c1917; font-size: 22px; font-weight: 600;">
+        <span class="text-[22px] md:text-[32px] font-bold text-ink my-1.5 tabular-nums leading-tight" style="color: #1c1917;">
             {{ today_billed|indian_currency }}
         </span>
-        <span class="text-[11px] text-muted tabular-nums" style="color: #57534e; font-size: 11px;">
+        <span class="text-[12px] md:text-[13px] text-muted tabular-nums" style="color: #57534e;">
             {{ today_count }} {{ today_count|bill_noun:site_lang }} &bull; {{ today_paid|indian_currency }} {% if site_lang == 'hi' %}प्राप्त{% else %}collected{% endif %}
         </span>
     </div>
 
     <!-- 2. This Month's Billed -->
-    <div class="p-4 flex flex-col justify-between border-b md:border-b-0 md:border-r border-rule" style="padding: 16px; border-color: #e7e2d9;">
-        <span class="text-[12px] font-medium tracking-wider uppercase text-muted h-[16px] flex items-center leading-none truncate" style="color: #57534e; font-size: 12px; height: 16px;">
+    <div class="dashboard-kpi p-4 md:py-5 md:px-6 flex flex-col justify-between border-b md:border-b-0 md:border-r border-rule" style="border-color: #e7e2d9;">
+        <span class="text-[12px] md:text-[13px] font-semibold tracking-wider uppercase text-muted h-[18px] flex items-center leading-none truncate" style="color: #57534e;">
             {% if site_lang == 'hi' %}इस माह ({{ today|date:"M" }}){% else %}This month ({{ today|date:"M" }}){% endif %}
         </span>
-        <span class="text-[22px] md:text-2xl font-semibold text-ink my-1 tabular-nums leading-tight" style="color: #1c1917; font-size: 22px; font-weight: 600;">
+        <span class="text-[22px] md:text-[32px] font-bold text-ink my-1.5 tabular-nums leading-tight" style="color: #1c1917;">
             {{ month_billed|indian_currency }}
         </span>
-        <span class="text-[11px] text-muted tabular-nums" style="color: #57534e; font-size: 11px;">
+        <span class="text-[12px] md:text-[13px] text-muted tabular-nums" style="color: #57534e;">
             {{ month_count }} {{ month_count|bill_noun:site_lang }} &bull; {{ month_paid|indian_currency }} {% if site_lang == 'hi' %}प्राप्त{% else %}collected{% endif %}
         </span>
     </div>
 
     <!-- 3. Total Collections -->
-    <div class="p-4 flex flex-col justify-between border-r border-rule" style="padding: 16px; border-color: #e7e2d9;">
-        <span class="text-[12px] font-medium tracking-wider uppercase text-muted h-[16px] flex items-center leading-none truncate" style="color: #57534e; font-size: 12px; height: 16px;">
+    <div class="dashboard-kpi p-4 md:py-5 md:px-6 flex flex-col justify-between border-r border-rule" style="border-color: #e7e2d9;">
+        <span class="text-[12px] md:text-[13px] font-semibold tracking-wider uppercase text-muted h-[18px] flex items-center leading-none truncate" style="color: #57534e;">
             {% if site_lang == 'hi' %}कुल प्राप्त{% else %}Collected{% endif %}
         </span>
-        <span class="text-[22px] md:text-2xl font-semibold tabular-nums my-1 leading-tight" style="color: #15803d; font-size: 22px; font-weight: 600;">
+        <span class="text-[22px] md:text-[32px] font-bold tabular-nums my-1.5 leading-tight" style="color: #15803d;">
             {{ total_collected|indian_currency }}
         </span>
-        <span class="text-[11px] text-muted tabular-nums" style="color: #57534e; font-size: 11px;">
+        <span class="text-[12px] md:text-[13px] text-muted tabular-nums" style="color: #57534e;">
             {{ total_count }} {% if site_lang == 'hi' %}समस्त बिल{% else %}total {{ total_count|bill_noun:site_lang }}{% endif %}
         </span>
     </div>
 
     <!-- 4. Balance Due -->
-    <div class="p-4 flex flex-col justify-between" style="padding: 16px;">
-        <span class="text-[12px] font-medium tracking-wider uppercase text-muted h-[16px] flex items-center leading-none truncate" style="color: #57534e; font-size: 12px; height: 16px;">
+    <div class="dashboard-kpi p-4 md:py-5 md:px-6 flex flex-col justify-between">
+        <span class="text-[12px] md:text-[13px] font-semibold tracking-wider uppercase text-muted h-[18px] flex items-center leading-none truncate" style="color: #57534e;">
             {% if site_lang == 'hi' %}कुल बकाया{% else %}Balance due{% endif %}
         </span>
-        <span class="text-[22px] md:text-2xl font-semibold tabular-nums my-1 leading-tight" style="color: #9f1d1d; font-size: 22px; font-weight: 600;">
+        <span class="text-[22px] md:text-[32px] font-bold tabular-nums my-1.5 leading-tight" style="color: #9f1d1d;">
             {{ total_outstanding|indian_currency }}
         </span>
-        <span class="text-[11px] text-muted tabular-nums" style="color: #57534e; font-size: 11px;">
+        <span class="text-[12px] md:text-[13px] text-muted tabular-nums" style="color: #57534e;">
             {{ unpaid_bills_count }} {% if site_lang == 'hi' %}अदत्त/आंशिक बिल{% else %}unpaid/partial {{ unpaid_bills_count|bill_noun:site_lang }}{% endif %}
         </span>
     </div>

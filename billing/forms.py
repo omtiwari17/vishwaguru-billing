@@ -1,6 +1,8 @@
+from decimal import Decimal
 import re
 from django import forms
 from django.utils import timezone
+from billing.templatetags.billing_tags import indian_currency
 from billing.models import (
     Bill,
     PaymentStatus,
@@ -11,9 +13,6 @@ from billing.models import (
     PLACEMENT_CHOICES_HI,
     EDITION_CHOICES_HI,
     PAYMENT_STATUS_CHOICES_HI,
-    PAYMENT_METHOD_CHOICES_HI,
-    BILL_LANG_CHOICES_HI,
-    PaymentSubmission,
     PAYMENT_METHOD_CHOICES_HI,
     BILL_LANG_CHOICES_HI,
     PaymentSubmission,
@@ -215,6 +214,104 @@ class BillPaymentUpdateForm(forms.ModelForm):
             self.fields['payment_note'].widget.attrs['placeholder'] = 'Transaction Reference / UTR / Cheque No.'
 
 
+
+class RecordPaymentForm(forms.Form):
+    amount = forms.DecimalField(
+        decimal_places=2,
+        max_digits=10,
+        required=True,
+        widget=forms.NumberInput(attrs={'class': 'desk-input tabular-nums', 'step': '0.01', 'min': '0.01'})
+    )
+    payment_method = forms.ChoiceField(
+        choices=PaymentMethod.choices,
+        required=True,
+        widget=forms.Select(attrs={'class': 'desk-input', 'id': 'id_record_payment_method'})
+    )
+    reference = forms.CharField(
+        max_length=64,
+        required=False,
+        widget=forms.TextInput(attrs={'class': 'desk-input', 'id': 'id_record_reference'})
+    )
+    note = forms.CharField(
+        max_length=255,
+        required=False,
+        widget=forms.TextInput(attrs={'class': 'desk-input', 'id': 'id_record_note'})
+    )
+
+    def __init__(self, *args, bill=None, site_lang='en', **kwargs):
+        super().__init__(*args, **kwargs)
+        self.bill = bill
+        self.site_lang = site_lang
+
+        if bill and not self.is_bound:
+            self.fields['amount'].initial = bill.balance_amount if bill.balance_amount > Decimal('0.00') else Decimal('0.00')
+
+        if site_lang == 'hi':
+            self.fields['payment_method'].choices = [
+                (PaymentMethod.CASH, 'नकद (Cash)'),
+                (PaymentMethod.UPI, 'यूपीआई / क्यूआर (UPI)'),
+                (PaymentMethod.BANK_TRANSFER, 'बैंक ट्रांसफर (NEFT / RTGS)'),
+                (PaymentMethod.CHEQUE, 'चेक (Cheque)'),
+            ]
+            self.fields['amount'].widget.attrs.update({'placeholder': 'उदा. 3500'})
+            self.fields['reference'].widget.attrs.update({'placeholder': '12-अंकीय यूटीआर या चेक नंबर'})
+            self.fields['note'].widget.attrs.update({'placeholder': 'टिप्पणी (वैकल्पिक)'})
+        else:
+            self.fields['payment_method'].choices = [
+                (PaymentMethod.CASH, 'Cash'),
+                (PaymentMethod.UPI, 'UPI / QR Code'),
+                (PaymentMethod.BANK_TRANSFER, 'Bank Transfer / NEFT'),
+                (PaymentMethod.CHEQUE, 'Cheque'),
+            ]
+            self.fields['amount'].widget.attrs.update({'placeholder': 'e.g. 3500'})
+            self.fields['reference'].widget.attrs.update({'placeholder': '12-digit UTR or Cheque No.'})
+            self.fields['note'].widget.attrs.update({'placeholder': 'Note (Optional)'})
+
+    def clean_amount(self):
+        amount = self.cleaned_data.get('amount')
+        if amount is None or amount <= Decimal('0.00'):
+            raise forms.ValidationError(
+                'राशि शून्य से अधिक होनी चाहिए।'
+                if self.site_lang == 'hi'
+                else 'Amount must be greater than zero.'
+            )
+        if self.bill and amount > self.bill.balance_amount:
+            balance_str = indian_currency(self.bill.balance_amount)
+            raise forms.ValidationError(
+                f'राशि शेष बकाया ({balance_str}) से अधिक नहीं हो सकती।'
+                if self.site_lang == 'hi'
+                else f'Amount cannot exceed balance due ({balance_str}).'
+            )
+        return amount
+
+    def clean(self):
+        cleaned_data = super().clean()
+        method = cleaned_data.get('payment_method')
+        ref = (cleaned_data.get('reference') or '').strip()
+        ref_clean = re.sub(r'[\s\-]', '', ref)
+
+        if method == PaymentMethod.UPI:
+            if not ref_clean:
+                self.add_error(
+                    'reference',
+                    'यूपीआई के लिए 12 अंकों का यूटीआर आवश्यक है।'
+                    if self.site_lang == 'hi'
+                    else '12-digit UTR is required for UPI payment.'
+                )
+            elif len(ref_clean) != 12 or not ref_clean.isdigit():
+                self.add_error(
+                    'reference',
+                    'यूपीआई के लिए यूटीआर ठीक 12 अंकों का होना चाहिए (केवल 0-9)।'
+                    if self.site_lang == 'hi'
+                    else 'UTR must be exactly 12 digits (numeric only).'
+                )
+            else:
+                cleaned_data['reference'] = ref_clean
+        elif method == PaymentMethod.CASH and not ref:
+            cleaned_data['reference'] = 'Cash'
+
+        return cleaned_data
+
 class CustomerPaymentSubmissionForm(forms.ModelForm):
     class Meta:
         model = PaymentSubmission
@@ -222,12 +319,13 @@ class CustomerPaymentSubmissionForm(forms.ModelForm):
         widgets = {
             'bill': forms.Select(attrs={'class': 'form-select'}),
             'amount': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01', 'min': '1', 'required': True}),
-            'utr_number': forms.TextInput(attrs={'class': 'form-control', 'required': True}),
+            'utr_number': forms.TextInput(attrs={'class': 'form-control', 'required': True, 'inputmode': 'numeric', 'maxlength': '12', 'pattern': '[0-9]{12}'}),
             'notes': forms.TextInput(attrs={'class': 'form-control'}),
         }
 
     def __init__(self, *args, client=None, lang='hi', **kwargs):
         super().__init__(*args, **kwargs)
+        self.lang = lang
         if client:
             unpaid_bills = client.get_unpaid_bills()
             self.fields['bill'].queryset = Bill.objects.filter(id__in=[b.id for b in unpaid_bills])
@@ -242,6 +340,23 @@ class CustomerPaymentSubmissionForm(forms.ModelForm):
             self.fields['amount'].widget.attrs['placeholder'] = 'e.g. 2500'
             self.fields['utr_number'].widget.attrs['placeholder'] = '12-digit UTR or UPI Reference No.'
             self.fields['notes'].widget.attrs['placeholder'] = 'Sender Name / GPay / PhonePe Note (Optional)'
+
+    def clean_utr_number(self):
+        utr = self.cleaned_data.get('utr_number', '').strip()
+        clean = re.sub(r'[\s\-]', '', utr)
+        if not clean:
+            raise forms.ValidationError(
+                "12-अंकीय यूटीआर संख्या आवश्यक है।"
+                if getattr(self, 'lang', 'en') == 'hi'
+                else "12-digit UTR reference number is required."
+            )
+        if len(clean) != 12 or not clean.isdigit():
+            raise forms.ValidationError(
+                "यूटीआर संख्या ठीक 12 अंकों की होनी चाहिए (केवल 0-9)।"
+                if getattr(self, 'lang', 'en') == 'hi'
+                else "UTR number must be exactly 12 digits (numeric only)."
+            )
+        return clean
 
 class PaymentInfoForm(forms.ModelForm):
     class Meta:

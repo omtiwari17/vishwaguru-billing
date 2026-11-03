@@ -1,0 +1,14 @@
+{% load billing_tags %}
+<div class="p-4 bg-paper border border-rule rounded text-left flex flex-col gap-2" style="background-color: #faf8f4; border: 1px solid #e7e2d9; border-radius: 4px; font-family: 'Mukta', sans-serif;">
+    <div class="flex items-center gap-2 text-sm font-semibold text-paid" style="color: #15803d; font-size: 14px; font-weight: 600;">
+        <span class="inline-block w-2 h-2 rounded-full" style="background-color: #15803d; width: 8px; height: 8px; border-radius: 9999px;"></span>
+        <span>{% if lang == 'hi' %}जमा हो गया। हम शीघ्र सत्यापन करेंगे।{% else %}Submitted. We will verify it shortly.{% endif %}</span>
+    </div>
+    <div class="text-xs text-muted leading-relaxed" style="color: #57534e; font-size: 12px;">
+        {% if lang == 'hi' %}
+            यूटीआर संदर्भ क्रमांक <strong class="text-ink font-mono tabular-nums" style="color: #1c1917;">{{ submission.utr_number }}</strong> (राशि: <strong class="text-ink tabular-nums" style="color: #1c1917;">{{ submission.amount|indian_currency }}</strong>) दर्ज हो चुका है। सत्यापन होते ही खाता स्वतः अद्यतन हो जाएगा।
+        {% else %}
+            Payment reference <strong class="text-ink font-mono tabular-nums" style="color: #1c1917;">{{ submission.utr_number }}</strong> (amount: <strong class="text-ink tabular-nums" style="color: #1c1917;">{{ submission.amount|indian_currency }}</strong>) has been logged. Your ledger will reflect the credit once verified.
+        {% endif %}
+    </div>
+</div>

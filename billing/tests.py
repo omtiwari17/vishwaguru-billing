@@ -308,12 +308,28 @@ class VishwaguruBillingTests(TestCase):
         # Check detail page contains Previous Due
         detail_res = self.client.get(reverse('billing:bill_detail', args=[bill.pk]))
         self.assertEqual(detail_res.status_code, 200)
-        self.assertContains(detail_res, '1500.00')
+        self.assertContains(detail_res, '1,500')
 
         # Check PDF view contains Previous Due
         pdf_res = self.client.get(reverse('billing:bill_pdf', args=[bill.pk]))
         self.assertEqual(pdf_res.status_code, 200)
-        self.assertContains(pdf_res, '1500.00')
+
+    def test_customer_portal_wrong_or_unknown_token_returns_404(self):
+        """Test that an unknown or invalid access token returns 404 and leaks zero client data"""
+        import uuid
+        unknown_token = uuid.uuid4()
+        anon_client = Client()
+        portal_url = reverse('billing:customer_portal', kwargs={'token': str(unknown_token)})
+        response = anon_client.get(portal_url)
+        self.assertEqual(response.status_code, 404)
+        self.assertNotContains(response, 'Rajesh Electronics', status_code=404)
+
+        # Also verify invalid token on customer payment submission and PDF routes
+        submit_url = reverse('billing:customer_payment_submit', kwargs={'token': str(unknown_token)})
+        self.assertEqual(anon_client.post(submit_url, {}).status_code, 404)
+
+        pdf_url = reverse('billing:customer_bill_pdf', kwargs={'token': str(unknown_token), 'bill_id': 9999})
+        self.assertEqual(anon_client.get(pdf_url).status_code, 404)
 
     def test_customer_portal_and_upi_intent(self):
         """Test customer portal rendering, outstanding balance calculation, and UPI deep-link generation"""
@@ -393,13 +409,41 @@ class VishwaguruBillingTests(TestCase):
             created_by=self.user
         )
 
-        # 1. Customer submits UTR on public portal
+        # 1. Customer submits invalid UTR (non-numeric, wrong length) on public portal
         anon_client = Client()
         submit_url = reverse('billing:customer_payment_submit', kwargs={'token': str(client_obj.access_token)})
+        
+        # Test non-numeric UTR returns validation error (English via HTMX)
+        bad_res_en = anon_client.post(
+            f"{submit_url}?lang=en",
+            {
+                'bill': bill.id,
+                'amount': '8000.00',
+                'utr_number': 'ABC123456789',
+            },
+            HTTP_HX_REQUEST='true'
+        )
+        self.assertEqual(bad_res_en.status_code, 200)
+        self.assertContains(bad_res_en, "UTR number must be exactly 12 digits (numeric only).")
+
+        # Test non-numeric UTR returns validation error (Hindi via HTMX)
+        bad_res_hi = anon_client.post(
+            f"{submit_url}?lang=hi",
+            {
+                'bill': bill.id,
+                'amount': '8000.00',
+                'utr_number': '12345',  # too short
+            },
+            HTTP_HX_REQUEST='true'
+        )
+        self.assertEqual(bad_res_hi.status_code, 200)
+        self.assertContains(bad_res_hi, "यूटीआर संख्या ठीक 12 अंकों की होनी चाहिए (केवल 0-9)।")
+
+        # Now submit a valid 12-digit numeric UTR
         post_data = {
             'bill': bill.id,
             'amount': '8000.00',
-            'utr_number': 'UTR123456789012',
+            'utr_number': '429812345678',
             'notes': 'Paid via PhonePe by Ramesh',
         }
         submit_res = anon_client.post(submit_url, post_data, follow=True)
@@ -407,7 +451,7 @@ class VishwaguruBillingTests(TestCase):
 
         # Check submission created in database with status 'pending'
         from billing.models import PaymentSubmission
-        submission = PaymentSubmission.objects.filter(utr_number='UTR123456789012').first()
+        submission = PaymentSubmission.objects.filter(utr_number='429812345678').first()
         self.assertIsNotNone(submission)
         self.assertEqual(submission.status, 'pending')
         self.assertEqual(submission.amount, Decimal('8000.00'))
@@ -424,7 +468,7 @@ class VishwaguruBillingTests(TestCase):
         self.assertEqual(bill.payment_status, PaymentStatus.PAID)
         self.assertEqual(bill.amount_paid, Decimal('8000.00'))
         self.assertEqual(bill.balance_amount, Decimal('0.00'))
-        self.assertIn('UTR123456789012', bill.payment_note)
+        self.assertIn('429812345678', bill.payment_note)
 
     def test_dashboard_view_authenticated(self):
         Bill.objects.create(
@@ -512,5 +556,283 @@ class VishwaguruBillingTests(TestCase):
         self.assertEqual(response.status_code, 302)
         self.assertIn('/login/', response.url)
 
+    def test_record_payment_validation_amount(self):
+        """Test amount validation: amount > 0 and amount <= balance_amount in EN and HI."""
+        bill = Bill.objects.create(
+            bill_number='VG-2026-0091',
+            client_name='Test Advertiser',
+            client_phone='9898989898',
+            base_amount=Decimal('3500.00'),
+            total_amount=Decimal('3500.00'),
+            amount_paid=Decimal('0.00'),
+            payment_status=PaymentStatus.UNPAID,
+            created_by=self.user,
+        )
+        url = reverse('billing:bill_payment_update', kwargs={'pk': bill.pk})
 
+        # 1. English: Amount <= 0
+        res = self.client.post(url, {
+            'amount': '0.00',
+            'payment_method': 'Cash',
+            'reference': '',
+            'note': '',
+        }, HTTP_HX_REQUEST='true')
+        self.assertEqual(res.status_code, 200)
+        self.assertContains(res, 'Amount must be greater than zero.')
+
+        # 2. English: Amount > balance_amount
+        res = self.client.post(url, {
+            'amount': '4000.00',
+            'payment_method': 'Cash',
+            'reference': '',
+            'note': '',
+        }, HTTP_HX_REQUEST='true')
+        self.assertEqual(res.status_code, 200)
+        self.assertContains(res, 'Amount cannot exceed balance due')
+
+        # 3. Hindi: Amount <= 0 and Amount > balance_amount
+        session = self.client.session
+        session['site_lang'] = 'hi'
+        session.save()
+
+        res_hi_zero = self.client.post(url, {
+            'amount': '0.00',
+            'payment_method': 'Cash',
+            'reference': '',
+            'note': '',
+        }, HTTP_HX_REQUEST='true')
+        self.assertEqual(res_hi_zero.status_code, 200)
+        self.assertContains(res_hi_zero, 'राशि शून्य से अधिक होनी चाहिए।')
+
+        res_hi_exceed = self.client.post(url, {
+            'amount': '5000.00',
+            'payment_method': 'Cash',
+            'reference': '',
+            'note': '',
+        }, HTTP_HX_REQUEST='true')
+        self.assertEqual(res_hi_exceed.status_code, 200)
+        self.assertContains(res_hi_exceed, 'राशि शेष बकाया')
+
+        # Reset session back to English
+        session['site_lang'] = 'en'
+        session.save()
+
+    def test_record_payment_validation_upi_reference(self):
+        """Test UPI payment mode requires exactly 12 numeric digits in reference."""
+        bill = Bill.objects.create(
+            bill_number='VG-2026-0092',
+            client_name='Test Advertiser 2',
+            base_amount=Decimal('2000.00'),
+            total_amount=Decimal('2000.00'),
+            amount_paid=Decimal('0.00'),
+            payment_status=PaymentStatus.UNPAID,
+            created_by=self.user,
+        )
+        url = reverse('billing:bill_payment_update', kwargs={'pk': bill.pk})
+
+        # Missing reference for UPI
+        res_empty = self.client.post(url, {
+            'amount': '2000.00',
+            'payment_method': 'UPI',
+            'reference': '',
+            'note': '',
+        }, HTTP_HX_REQUEST='true')
+        self.assertEqual(res_empty.status_code, 200)
+        self.assertContains(res_empty, '12-digit UTR is required for UPI payment.')
+
+        # Invalid reference (11 digits or non-digits)
+        res_invalid = self.client.post(url, {
+            'amount': '2000.00',
+            'payment_method': 'UPI',
+            'reference': '12345ABC',
+            'note': '',
+        }, HTTP_HX_REQUEST='true')
+        self.assertEqual(res_invalid.status_code, 200)
+        self.assertContains(res_invalid, 'UTR must be exactly 12 digits (numeric only).')
+
+    def test_record_payment_success_flow_and_history(self):
+        """Test recording partial payment and then remaining payment via HTMX updates balance and history."""
+        session = self.client.session
+        session['site_lang'] = 'en'
+        session.save()
+        bill = Bill.objects.create(
+            bill_number='VG-2026-0093',
+            client_name='Shri Ram Traders (श्री राम ट्रेडर्स)',
+            client_phone='9826011111',
+            base_amount=Decimal('5000.00'),
+            total_amount=Decimal('5000.00'),
+            amount_paid=Decimal('0.00'),
+            payment_status=PaymentStatus.UNPAID,
+            created_by=self.user,
+        )
+        url = reverse('billing:bill_payment_update', kwargs={'pk': bill.pk})
+
+        # 1. Record partial payment of 2000 via UPI
+        res_partial = self.client.post(url, {
+            'amount': '2000.00',
+            'payment_method': 'UPI',
+            'reference': '238910482910',
+            'note': 'GPay payment',
+        }, HTTP_HX_REQUEST='true')
+
+        self.assertEqual(res_partial.status_code, 200)
+        bill.refresh_from_db()
+        self.assertEqual(bill.amount_paid, Decimal('2000.00'))
+        self.assertEqual(bill.balance_amount, Decimal('3000.00'))
+        self.assertEqual(bill.payment_status, PaymentStatus.PARTIAL)
+
+        # Check partial response contents
+        self.assertContains(res_partial, 'Payment of ₹2,000 recorded successfully.')
+        self.assertContains(res_partial, '238910482910')
+        self.assertContains(res_partial, '₹3,000')
+
+        # Check PaymentSubmission created and verified
+        sub = bill.payment_submissions.first()
+        self.assertIsNotNone(sub)
+        self.assertEqual(sub.amount, Decimal('2000.00'))
+        self.assertEqual(sub.status, 'verified')
+        self.assertEqual(sub.utr_number, '238910482910')
+
+        # 2. Record remaining 3000 via Cash
+        res_full = self.client.post(url, {
+            'amount': '3000.00',
+            'payment_method': 'Cash',
+            'reference': '',
+            'note': 'Cash collected at office',
+        }, HTTP_HX_REQUEST='true')
+
+        self.assertEqual(res_full.status_code, 200)
+        bill.refresh_from_db()
+        self.assertEqual(bill.amount_paid, Decimal('5000.00'))
+        self.assertEqual(bill.balance_amount, Decimal('0.00'))
+        self.assertEqual(bill.payment_status, PaymentStatus.PAID)
+
+        # Invoice fully paid banner rendered, record payment form omitted
+        self.assertContains(res_full, 'This invoice is fully paid. No balance due.')
+
+    def test_bill_detail_view_rendering(self):
+        """Test bill detail page renders breadcrumbs, two-column details, actions row and payment history."""
+        bill = Bill.objects.create(
+            bill_number='VG-2026-0094',
+            client_name='Patel Automobiles (पटेल ऑटोमोबाइल्स)',
+            client_phone='9826022222',
+            edition_name=EditionChoice.INDORE,
+            placement_type=PlacementType.INSIDE_QUARTER,
+            page_number='Page 4',
+            base_amount=Decimal('4200.00'),
+            total_amount=Decimal('4200.00'),
+            amount_paid=Decimal('1000.00'),
+            payment_status=PaymentStatus.PARTIAL,
+            created_by=self.user,
+        )
+        url = reverse('billing:bill_detail', kwargs={'pk': bill.pk})
+
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+
+        # Breadcrumbs & Title
+        self.assertContains(response, 'Dashboard')
+        self.assertContains(response, 'VG-2026-0094')
+
+        # Two-column key-value items
+        self.assertContains(response, 'Patel Automobiles')
+        self.assertContains(response, 'पटेल ऑटोमोबाइल्स')
+        self.assertContains(response, '9826022222')
+        self.assertContains(response, 'Indore')
+        self.assertContains(response, 'Inside Page — Quarter')
+        self.assertContains(response, 'Page 4')
+        self.assertContains(response, '₹4,200')
+        self.assertContains(response, '₹1,000')
+        self.assertContains(response, '₹3,200')
+
+        # Actions row
+        self.assertContains(response, 'English PDF')
+        self.assertContains(response, 'Hindi PDF')
+        self.assertContains(response, 'WhatsApp reminder')
+        self.assertContains(response, 'Customer portal')
+
+        # Record payment form prefilled with balance 3200
+        self.assertContains(response, '3200')
+
+        # Payment history lists initial 1000
+        self.assertContains(response, 'Payment History')
+        self.assertContains(response, '₹1,000')
+
+    def test_pure_english_pdf_rendering(self):
+        """Test that ?lang=en renders a 100% pure English invoice with zero mixed Hindi labels."""
+        bill = Bill.objects.create(
+            bill_number='VG-2026-9001',
+            client_name='पटेल ऑटोमोबाइल्स (Patel Automobiles)',
+            client_phone='9826011111',
+            placement_type=PlacementType.FRONT_FULL,
+            edition_name=EditionChoice.INDORE,
+            base_amount=Decimal('5000.00'),
+            amount_paid=Decimal('0.00'),
+            payment_status=PaymentStatus.UNPAID,
+            edition_date='2026-11-03'
+        )
+        url = reverse('billing:bill_pdf', args=[bill.pk]) + '?lang=en&sign=0'
+        res = self.client.get(url)
+        self.assertEqual(res.status_code, 200)
+
+        # Check pure English labels
+        self.assertContains(res, 'ADVERTISEMENT INVOICE')
+        self.assertContains(res, 'Invoice No:')
+        self.assertContains(res, 'Advertiser Details (Billed To)')
+        self.assertContains(res, 'Patel Automobiles')  # Isolated English client name
+        self.assertContains(res, 'Publication & Insertion Details')
+        self.assertContains(res, 'Description & Particulars')
+        self.assertContains(res, 'Rate (₹)')
+        self.assertContains(res, 'Amount in Words:')
+        self.assertContains(res, 'Gross Ad Charges:')
+        self.assertContains(res, 'Net Payable Total:')
+        self.assertContains(res, 'Bank Transfer Details (NEFT / RTGS):')
+        self.assertContains(res, 'DIGITALLY VERIFIED')
+        self.assertContains(res, 'PAYMENT DUE — PAYABLE:')
+
+        # Ensure no Hindi labels leaked into pure English document
+        self.assertNotContains(res, 'विज्ञापन देयक')
+        self.assertNotContains(res, 'बिल क्रमांक:')
+        self.assertNotContains(res, 'विज्ञापनदाता विवरण')
+        self.assertNotContains(res, 'राशि शब्दों में:')
+        self.assertNotContains(res, 'कम्प्यूटरीकृत प्रमाणित')
+
+    def test_pure_hindi_pdf_rendering(self):
+        """Test that ?lang=hi renders a 100% pure Hindi invoice with zero mixed English labels."""
+        bill = Bill.objects.create(
+            bill_number='VG-2026-9002',
+            client_name='पटेल ऑटोमोबाइल्स (Patel Automobiles)',
+            client_phone='9826011111',
+            placement_type=PlacementType.FRONT_FULL,
+            edition_name=EditionChoice.INDORE,
+            base_amount=Decimal('5000.00'),
+            amount_paid=Decimal('5000.00'),
+            payment_status=PaymentStatus.PAID,
+            edition_date='2026-11-03'
+        )
+        url = reverse('billing:bill_pdf', args=[bill.pk]) + '?lang=hi&sign=0'
+        res = self.client.get(url)
+        self.assertEqual(res.status_code, 200)
+
+        # Check pure Hindi labels
+        self.assertContains(res, 'विज्ञापन देयक')
+        self.assertContains(res, 'बिल क्रमांक:')
+        self.assertContains(res, 'विज्ञापनदाता विवरण (बिल धारक)')
+        self.assertContains(res, 'पटेल ऑटोमोबाइल्स')  # Isolated Hindi client name
+        self.assertContains(res, 'प्रकाशन व संस्करण विवरण')
+        self.assertContains(res, 'विज्ञापन विवरण एवं प्रकाशन ब्यौरा')
+        self.assertContains(res, 'दर (₹)')
+        self.assertContains(res, 'राशि शब्दों में:')
+        self.assertContains(res, 'मूल विज्ञापन शुल्क:')
+        self.assertContains(res, 'कुल देय राशि:')
+        self.assertContains(res, 'बैंक खाता विवरण (NEFT / RTGS):')
+        self.assertContains(res, 'कम्प्यूटरीकृत प्रमाणित')
+        self.assertContains(res, 'पूर्ण भुगतान प्राप्त — खाता चुकता')
+
+        # Ensure no English main labels leaked into pure Hindi document
+        self.assertNotContains(res, 'ADVERTISEMENT INVOICE')
+        self.assertNotContains(res, 'Invoice No:')
+        self.assertNotContains(res, 'Advertiser Details (Billed To)')
+        self.assertNotContains(res, 'Gross Ad Charges:')
+        self.assertNotContains(res, 'DIGITALLY VERIFIED')
 

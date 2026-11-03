@@ -1,16 +1,16 @@
 {% if status == 'Paid' or bill.payment_status == 'Paid' %}
 <span class="inline-flex items-center gap-1.5 text-xs font-medium" style="color: #15803d; font-family: 'Mukta', sans-serif;">
     <span class="inline-block w-2 h-2 rounded-full" style="background-color: #15803d; border-radius: 9999px; width: 7px; height: 7px;"></span>
-    <span>{% if site_lang == 'hi' %}पूर्ण चुकता{% else %}Paid{% endif %}</span>
+    <span>{% if site_lang == 'hi' or lang == 'hi' %}पूर्ण चुकता{% else %}Paid{% endif %}</span>
 </span>
 {% elif status == 'Partial' or bill.payment_status == 'Partial' %}
 <span class="inline-flex items-center gap-1.5 text-xs font-medium" style="color: #b45309; font-family: 'Mukta', sans-serif;">
     <span class="inline-block w-2 h-2 rounded-full" style="background-color: #b45309; border-radius: 9999px; width: 7px; height: 7px;"></span>
-    <span>{% if site_lang == 'hi' %}आंशिक{% else %}Partial{% endif %}</span>
+    <span>{% if site_lang == 'hi' or lang == 'hi' %}आंशिक{% else %}Partial{% endif %}</span>
 </span>
 {% else %}
 <span class="inline-flex items-center gap-1.5 text-xs font-medium" style="color: #9f1d1d; font-family: 'Mukta', sans-serif;">
     <span class="inline-block w-2 h-2 rounded-full" style="background-color: #9f1d1d; border-radius: 9999px; width: 7px; height: 7px;"></span>
-    <span>{% if site_lang == 'hi' %}अदत्त{% else %}Unpaid{% endif %}</span>
+    <span>{% if site_lang == 'hi' or lang == 'hi' %}अदत्त{% else %}Unpaid{% endif %}</span>
 </span>
 {% endif %}

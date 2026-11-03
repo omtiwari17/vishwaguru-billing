@@ -1,0 +1,88 @@
+{% load static %}
+<!-- Shared Masthead Partial for Staff Dashboard and Customer Portal -->
+<header class="office-header bg-paper" style="background-color: #faf8f4; border-bottom: 1px solid #e7e2d9;">
+    <div class="{% if variant == 'customer' %}portal-container{% else %}office-container{% endif %}">
+        <!-- Masthead Top Row -->
+        <div class="masthead-row flex items-center justify-between" {% if variant == 'customer' or not user.is_authenticated %}style="border-bottom: none;"{% endif %}>
+            {% if variant == 'staff' and user.is_authenticated %}
+            <a href="{% url 'billing:dashboard' %}" class="masthead-brand flex items-center py-1" aria-label="{% if site_lang == 'hi' or lang == 'hi' %}विश्वगुरु की झलक - डैशबोर्ड{% else %}Vishwaguru Ki Jhalak - Dashboard{% endif %}">
+                <img src="{% static 'billing/img/logo.png' %}" alt="{% if site_lang == 'hi' or lang == 'hi' %}विश्वगुरु की झलक{% else %}Vishwaguru Ki Jhalak{% endif %}" class="masthead-logo-img">
+            </a>
+            {% else %}
+            <div class="masthead-brand flex items-center py-1">
+                <img src="{% static 'billing/img/logo.png' %}" alt="{% if site_lang == 'hi' or lang == 'hi' %}विश्वगुरु की झलक{% else %}Vishwaguru Ki Jhalak{% endif %}" class="masthead-logo-img">
+            </div>
+            {% endif %}
+
+            <div class="flex items-center gap-3 text-xs shrink-0">
+                <!-- Plain Clerk Language Switcher -->
+                <div class="inline-flex items-center gap-1.5 text-xs text-muted" style="font-family: 'Mukta', sans-serif;">
+                    {% if variant == 'staff' %}
+                    <a href="{% url 'billing:set_language' 'en' %}" class="hover:text-ink {% if site_lang != 'hi' and lang != 'hi' %}font-semibold text-maroon underline underline-offset-2{% endif %}" style="text-decoration: none; {% if site_lang != 'hi' and lang != 'hi' %}color: #9f1d1d; font-weight: 600; text-decoration: underline;{% else %}color: #57534e;{% endif %}">
+                        EN
+                    </a>
+                    <span style="color: #e7e2d9;">&bull;</span>
+                    <a href="{% url 'billing:set_language' 'hi' %}" class="hover:text-ink {% if site_lang == 'hi' or lang == 'hi' %}font-semibold text-maroon underline underline-offset-2{% endif %}" style="text-decoration: none; {% if site_lang == 'hi' or lang == 'hi' %}color: #9f1d1d; font-weight: 600; text-decoration: underline;{% else %}color: #57534e;{% endif %}">
+                        हिन्दी
+                    </a>
+                    {% else %}
+                    <a href="?lang=en" class="hover:text-ink {% if site_lang != 'hi' and lang != 'hi' %}font-semibold text-maroon underline underline-offset-2{% endif %}" style="text-decoration: none; {% if site_lang != 'hi' and lang != 'hi' %}color: #9f1d1d; font-weight: 600; text-decoration: underline;{% else %}color: #57534e;{% endif %}">
+                        EN
+                    </a>
+                    <span style="color: #e7e2d9;">&bull;</span>
+                    <a href="?lang=hi" class="hover:text-ink {% if site_lang == 'hi' or lang == 'hi' %}font-semibold text-maroon underline underline-offset-2{% endif %}" style="text-decoration: none; {% if site_lang == 'hi' or lang == 'hi' %}color: #9f1d1d; font-weight: 600; text-decoration: underline;{% else %}color: #57534e;{% endif %}">
+                        हिन्दी
+                    </a>
+                    {% endif %}
+                </div>
+
+                {% if variant == 'staff' and user.is_authenticated %}
+                <!-- Staff Desktop user & logout (hidden on mobile, moved to bottom on mobile) -->
+                <div class="hidden md:flex items-center gap-2 pl-3 border-l border-rule text-muted" style="border-left: 1px solid #e7e2d9; padding-left: 12px;">
+                    <span class="font-medium text-ink">{{ user.username }}</span>
+                    <span>&bull;</span>
+                    <form action="{% url 'logout' %}" method="post" class="inline">
+                        {% csrf_token %}
+                        <button type="submit" class="text-xs text-muted hover:text-maroon underline cursor-pointer bg-transparent border-0 p-0" style="background: none; border: none; padding: 0; color: #57534e; cursor: pointer;">
+                            {% if site_lang == 'hi' or lang == 'hi' %}लॉगआउट{% else %}Logout{% endif %}
+                        </button>
+                    </form>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        {% if variant == 'staff' and user.is_authenticated %}
+        <!-- Navigation Tabs Row with Right-Edge Fade for Mobile Scroll Cue -->
+        <div class="relative w-full overflow-hidden">
+            <nav class="office-nav-row">
+                <div class="office-nav-tabs">
+                    <a href="{% url 'billing:dashboard' %}" class="office-tab {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}" {% if request.resolver_match.url_name == 'dashboard' %}aria-current="page"{% endif %}>
+                        {% if site_lang == 'hi' or lang == 'hi' %}डैशबोर्ड{% else %}Dashboard{% endif %}
+                    </a>
+                    <a href="{% url 'billing:bill_create' %}" class="office-tab {% if request.resolver_match.url_name == 'bill_create' %}active{% endif %}" {% if request.resolver_match.url_name == 'bill_create' %}aria-current="page"{% endif %}>
+                        {% if site_lang == 'hi' or lang == 'hi' %}नया बिल{% else %}New Bill{% endif %}
+                    </a>
+                    <a href="{% url 'billing:bill_search' %}" class="office-tab {% if request.resolver_match.url_name == 'bill_search' %}active{% endif %}" {% if request.resolver_match.url_name == 'bill_search' %}aria-current="page"{% endif %}>
+                        {% if site_lang == 'hi' or lang == 'hi' %}बिल सूची{% else %}Bills{% endif %}
+                    </a>
+                    <a href="{% url 'billing:payment_submissions_list' %}" class="office-tab {% if request.resolver_match.url_name == 'payment_submissions_list' %}active{% endif %}" {% if request.resolver_match.url_name == 'payment_submissions_list' %}aria-current="page"{% endif %}>
+                        <span>{% if site_lang == 'hi' or lang == 'hi' %}सत्यापन{% else %}UPI Verifications{% endif %}</span>
+                        <span id="nav-upi-badge-container">
+                            {% include 'billing/partials/upi_badge.html' %}
+                        </span>
+                    </a>
+                    <a href="{% url 'billing:payment_info_settings' %}" class="office-tab {% if request.resolver_match.url_name == 'payment_info_settings' %}active{% endif %}" {% if request.resolver_match.url_name == 'payment_info_settings' %}aria-current="page"{% endif %}>
+                        {% if site_lang == 'hi' or lang == 'hi' %}बैंक खाता{% else %}Bank &amp; UPI{% endif %}
+                    </a>
+                    <a href="{% url 'admin:index' %}" class="office-tab" target="_blank">
+                        {% if site_lang == 'hi' or lang == 'hi' %}एडमिन{% else %}Admin{% endif %}
+                    </a>
+                </div>
+            </nav>
+            <!-- Right-edge fade overlay (tells user the row scrolls) -->
+            <div class="pointer-events-none absolute right-0 top-0 bottom-0 w-8 md:hidden" style="background: linear-gradient(to right, rgba(250,248,244,0), #faf8f4);"></div>
+        </div>
+        {% endif %}
+    </div>
+</header>

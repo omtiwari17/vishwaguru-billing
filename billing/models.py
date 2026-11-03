@@ -126,7 +126,7 @@ class PaymentInfo(models.Model):
     """
     newspaper_name = models.CharField(
         max_length=150,
-        default='विश्वगुरु (Vishwaguru)',
+        default='विश्वगुरु की झलक (Vishwaguru Ki Jhalak)',
         verbose_name='समाचार पत्र का नाम / Newspaper Name'
     )
     tagline = models.CharField(
@@ -298,7 +298,7 @@ class Client(models.Model):
 
         lines = [
             f"सादर नमस्ते {self.name} जी,",
-            f"*विश्वगुरु समाचार पत्र* में आपके विज्ञापनों का पूरा विवरण व खाता स्टेटमेंट निम्न लिंक पर उपलब्ध है:",
+            f"*विश्वगुरु की झलक* में आपके विज्ञापनों का पूरा विवरण व खाता स्टेटमेंट निम्न लिंक पर उपलब्ध है:",
             f"",
             f"• कुल विज्ञापन संख्या: {total_count}",
             f"• कुल शेष बकाया राशि (Outstanding): ₹{outstanding:,.2f}",
@@ -307,7 +307,7 @@ class Client(models.Model):
             f"{portal_url}",
             f"",
             f"धन्यवाद,",
-            f"*विश्वगुरु समाचार पत्र प्रबंधन*",
+            f"*विश्वगुरु की झलक प्रबंधन*",
         ]
         msg = "\n".join(lines)
         return f"https://wa.me/{clean_phone}?text={urllib.parse.quote(msg)}"
@@ -549,7 +549,7 @@ class Bill(models.Model):
         if self.bill_language == 'en':
             lines = [
                 f"Dear {self.client_name},",
-                f"Greetings from *Vishwaguru Newspaper*.",
+                f"Greetings from *Vishwaguru Ki Jhalak*.",
                 f"Here are your advertisement bill details:",
                 f"",
                 f"• *Invoice No:* {self.bill_number}",
@@ -573,12 +573,12 @@ class Bill(models.Model):
                 "",
                 "Please review the invoice and complete payment.",
                 "Thank you,",
-                "*Vishwaguru Newspaper Management*",
+                "*Vishwaguru Ki Jhalak Management*",
             ])
         else:
             lines = [
                 f"सादर नमस्ते {self.client_name} जी,",
-                f"*विश्वगुरु समाचार पत्र* में आपके विज्ञापन का बिल विवरण निम्न अनुसार है:",
+                f"*विश्वगुरु की झलक* में आपके विज्ञापन का बिल विवरण निम्न अनुसार है:",
                 f"",
                 f"• *बिल क्रमांक:* {self.bill_number}",
                 f"• *प्रकाशन दिनांक:* {self.edition_date.strftime('%d/%m/%Y')}",
@@ -601,7 +601,7 @@ class Bill(models.Model):
                 "",
                 "कृपया बिल का अवलोकन कर भुगतान सुनिश्चित करें।",
                 "धन्यवाद,",
-                "*विश्वगुरु समाचार पत्र प्रबंधन*",
+                "*विश्वगुरु की झलक प्रबंधन*",
             ])
 
         msg = "\n".join(lines)
