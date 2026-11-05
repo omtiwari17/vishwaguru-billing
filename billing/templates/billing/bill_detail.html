@@ -8,13 +8,13 @@
 {% block content %}
 <div class="office-container w-full max-w-full" style="max-width: 920px; margin: 0 auto; padding-top: 14px; padding-bottom: 36px;">
     <!-- 1. Breadcrumb -->
-    <nav class="mb-4 text-sm text-muted font-medium flex items-center gap-2" aria-label="Breadcrumb" style="font-family: 'Mukta', sans-serif;">
-        <a href="{% url 'billing:dashboard' %}" class="text-muted hover:text-ink transition-colors flex items-center gap-1" style="text-decoration: none; color: #57534e;">
+    <nav class="mb-5 text-xs text-muted font-medium flex items-center gap-2" aria-label="Breadcrumb">
+        <a href="{% url 'billing:dashboard' %}" class="text-muted hover:text-maroon transition-colors flex items-center gap-1.5" style="text-decoration: none; color: var(--muted);">
             <i class="bi bi-speedometer2 text-xs"></i>
             <span>{% if site_lang == 'hi' %}डैशबोर्ड{% else %}Dashboard{% endif %}</span>
         </a>
-        <span class="text-muted" style="color: #78716c;">/</span>
-        <span class="text-ink font-semibold" style="color: #1c1917;">{{ bill.bill_number }}</span>
+        <span class="text-stone-300">/</span>
+        <span class="text-ink font-semibold" style="color: var(--ink);">{{ bill.bill_number }}</span>
     </nav>
 
     <!-- 2. Dynamic Pane (Updated in-place via HTMX on record payment) -->

@@ -2,54 +2,87 @@
 {% load static %}
 
 {% block title %}
-    {% if site_lang == 'hi' %}कर्मचारी लॉगिन | विश्वगुरु की झलक{% else %}Staff Login | Vishwaguru Ki Jhalak{% endif %}
+    {% if site_lang == 'hi' %}कर्मचारी लॉगिन | विश्वगुरु की झलक{% else %}Staff Sign In | Vishwaguru Ki Jhalak{% endif %}
 {% endblock %}
 
 {% block content %}
-<div style="max-width: 440px; margin: 4rem auto 5rem auto; padding: 0 16px;">
-    <div class="desk-panel" style="background-color: #ffffff; border: 1px solid #d6cfc4; border-radius: 4px; padding: 36px 32px; box-shadow: none;">
-        <div style="text-align: center; margin-bottom: 2rem;">
-            <div style="width: 48px; height: 48px; background-color: #fef2f2; color: #9f1d1d; border-radius: 4px; display: inline-flex; align-items: center; justify-content: center; font-size: 1.5rem; margin-bottom: 0.85rem;">
-                <i class="bi bi-shield-lock"></i>
-            </div>
-            <h1 style="font-family: 'Noto Serif Devanagari', serif; font-size: 1.35rem; font-weight: 600; color: #1c1917; margin: 0 0 0.4rem 0;">
+<div class="flex items-center justify-center py-10 md:py-16">
+    <div class="desk-panel w-full max-w-[420px] bg-white border border-rule rounded-md p-8 md:p-9"
+         style="background-color: #ffffff; border: 1px solid var(--rule); border-radius: 6px; box-shadow: var(--shadow-border); margin: 0 auto;">
+        
+        <!-- Newspaper Brand Masthead Logo inside card -->
+        <div class="text-center mb-6">
+            <img src="{% static 'billing/img/logo.png' %}"
+                 alt="{% if site_lang == 'hi' %}विश्वगुरु की झलक{% else %}Vishwaguru Ki Jhalak{% endif %}"
+                 class="masthead-logo-img mx-auto mb-3"
+                 style="height: 44px; max-height: 44px; margin: 0 auto 12px auto; display: block; object-fit: contain;">
+            <h1 class="font-serif text-xl md:text-2xl font-semibold text-ink m-0"
+                style="font-family: 'Noto Serif Devanagari', serif; font-size: 22px; font-weight: 600; color: #1c1917; margin: 0 0 4px 0;">
                 {% if site_lang == 'hi' %}कर्मचारी लॉगिन{% else %}Staff Sign In{% endif %}
             </h1>
-            <p style="font-size: 14px; color: #57534e; margin: 0; font-family: 'Mukta', sans-serif;">
+            <p class="text-sm text-muted m-0"
+               style="font-size: 14px; color: #57534e; margin: 0; font-family: 'Mukta', sans-serif;">
                 {% if site_lang == 'hi' %}विज्ञापन बिलिंग पोर्टल में प्रवेश हेतु विवरण दर्ज करें{% else %}Enter credentials to access ad billing portal{% endif %}
             </p>
         </div>
 
         {% if form.errors %}
-        <div class="alert alert-danger" style="margin-bottom: 1.5rem; padding: 12px 14px; font-size: 14px; display: flex; align-items: flex-start; gap: 8px;">
-            <i class="bi bi-exclamation-triangle-fill" style="margin-top: 2px;"></i>
+        <div class="p-3 mb-5 text-sm rounded bg-red-50 border border-red-200 text-maroon flex items-start gap-2.5"
+             style="background-color: #fef2f2; border: 1px solid #fecaca; color: #9f1d1d; border-radius: 4px; padding: 10px 14px; font-size: 14px; margin-bottom: 20px;">
+            <i class="bi bi-exclamation-triangle-fill shrink-0" style="margin-top: 2px;"></i>
             <span>{% if site_lang == 'hi' %}उपयोगकर्ता नाम या पासवर्ड गलत है। कृपया पुनः प्रयास करें।{% else %}Invalid username or password. Please try again.{% endif %}</span>
         </div>
         {% endif %}
 
-        <form method="post" style="display: flex; flex-direction: column; gap: 1.25rem;">
+        <form method="post" class="flex flex-col gap-4">
             {% csrf_token %}
-            <div class="form-group">
-                <label class="form-label" for="id_username" style="font-size: 14px; font-weight: 500; color: #44403c; margin-bottom: 0.35rem;">
-                    <i class="bi bi-person"></i>
+            <div class="form-group flex flex-col gap-1.5">
+                <label class="form-label flex items-center gap-1.5 text-sm font-medium"
+                       for="id_username"
+                       style="font-size: 14px; font-weight: 500; color: #44403c;">
+                    <i class="bi bi-person text-muted" style="color: #57534e;"></i>
                     <span>{% if site_lang == 'hi' %}उपयोगकर्ता नाम (Username){% else %}Username{% endif %}</span>
                 </label>
-                <input type="text" name="username" autofocus required id="id_username" class="desk-input" placeholder="admin" style="min-height: 48px; font-size: 16px; padding: 10px 14px; border: 1px solid #d6cfc4;">
+                <input type="text"
+                       name="username"
+                       autofocus
+                       required
+                       id="id_username"
+                       class="desk-input w-full"
+                       placeholder="admin"
+                       style="min-height: 44px; font-size: 15px; padding: 10px 14px; border: 1px solid #d6cfc4; border-radius: 4px; background: #ffffff;">
             </div>
 
-            <div class="form-group">
-                <label class="form-label" for="id_password" style="font-size: 14px; font-weight: 500; color: #44403c; margin-bottom: 0.35rem;">
-                    <i class="bi bi-lock"></i>
+            <div class="form-group flex flex-col gap-1.5">
+                <label class="form-label flex items-center gap-1.5 text-sm font-medium"
+                       for="id_password"
+                       style="font-size: 14px; font-weight: 500; color: #44403c;">
+                    <i class="bi bi-lock text-muted" style="color: #57534e;"></i>
                     <span>{% if site_lang == 'hi' %}पासवर्ड (Password){% else %}Password{% endif %}</span>
                 </label>
-                <input type="password" name="password" required id="id_password" class="desk-input" placeholder="••••••••" style="min-height: 48px; font-size: 16px; padding: 10px 14px; border: 1px solid #d6cfc4;">
+                <input type="password"
+                       name="password"
+                       required
+                       id="id_password"
+                       class="desk-input w-full"
+                       placeholder="••••••••"
+                       style="min-height: 44px; font-size: 15px; padding: 10px 14px; border: 1px solid #d6cfc4; border-radius: 4px; background: #ffffff;">
             </div>
 
-            <button type="submit" class="btn-desk-primary" style="width: 100%; min-height: 48px; justify-content: center; font-size: 16px; font-weight: 600; margin-top: 0.5rem;">
+            <button type="submit"
+                    class="btn-desk-primary w-full justify-center text-sm font-semibold mt-2"
+                    style="min-height: 44px; justify-content: center; font-size: 15px; font-weight: 600; margin-top: 8px;">
                 <i class="bi bi-box-arrow-in-right"></i>
                 <span>{% if site_lang == 'hi' %}लॉगइन करें{% else %}Sign In{% endif %}</span>
             </button>
         </form>
+
+        <!-- High-end BroadSheet Desk Security Notice -->
+        <div class="text-center pt-4 border-t border-rule mt-5 flex items-center justify-center gap-1.5 text-xs text-muted"
+             style="border-top: 1px solid #e7e2d9; margin-top: 24px; padding-top: 16px; font-size: 12px; color: #57534e;">
+            <i class="bi bi-shield-check" style="color: #15803d; font-size: 14px;"></i>
+            <span>{% if site_lang == 'hi' %}आंतरिक विज्ञापन बिलिंग डेस्क &bull; केवल अधिकृत कर्मचारी{% else %}Internal ad billing desk &bull; Authorized staff only{% endif %}</span>
+        </div>
     </div>
 </div>
 {% endblock %}

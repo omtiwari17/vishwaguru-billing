@@ -343,6 +343,20 @@
   - **Search & Forms (`bill_search.html`, `bill_form.html`, `payment_submissions_list.html`)**: Standardized all form controls, chips, and filter selects to 42px height and 14px/15px typography.
   - **Automated Test Suite Verified**: All 27 automated unit tests passed (100% OK). Dev server running cleanly on port 8080.
   - **Authoritative Design Manual Updated (`UI_UX_REDESIGN.md`)**: Replaced initial audit with the comprehensive, production-accurate specification and implementation record covering typography tokens, button scale hierarchy, strict vector icons, security auth-gating, responsive breakpoints, and full A4 PDF architecture.
+* **Dashboard Unslop & Editorial Polish Pass Complete (`unslop` pass)**:
+  - **KPI Metrics Strip (`partials/stats_strip.html`)**: Replaced uppercase tracked labels with clean broadsheet sentence-case (`Today's billed`, `This month`, `Collected`, `Balance due`). Removed all inline style overrides; defined `.dashboard-kpi-strip` and `.dashboard-kpi` on strict 4px grid (padding 16px/24px, min-height 104px/112px).
+  - **Payment Status Distribution Bar (`dashboard.html`)**: Introduced a calm 6px segmented proportional collection health bar (`.status-bar`) showing Paid (green), Partial (amber), and Unpaid (maroon) percentages computed cleanly in `views.py`.
+  - **Recent Bills Table (`partials/bills_table.html`)**: Converted table headers (`th`) from uppercase tracked styling to sentence case. Removed redundant inline styles; quieted the row actions into clean, non-competing buttons.
+  - **Clean Copy & Strict 4px Grid**: Removed trailing ellipses from search placeholders (`Search bills` / `बिल खोजें`). Standardized desktop search to 260px $\times$ 40px and primary action to `+ New bill` (Hindi: `+ नया बिल`).
+  - **Automated Test Suite Verified**: All 27 automated unit tests passed (100% OK). Dev server running cleanly on port 8080.
+* **UI Craft Elevation Pass with `better-ui` & `styleseed`**:
+  - **Eliminated Destructive Font-Size & Border Overrides**: Removed blunt inline `!important` font and border overrides from `base.html` and cleaned `app-refresh.css` to restore natural typographic hierarchy and authentic broadsheet density.
+  - **Concentric Geometry & Elevation (`better-ui`)**: Integrated `--shadow-border` (`0px 0px 0px 1px rgba(28, 25, 23, 0.08), 0px 1px 2px -1px rgba(28, 25, 23, 0.06), 0px 2px 4px 0px rgba(28, 25, 23, 0.04)`) across panels and cards with concentric 6px outer radius and 4px inner button radius.
+  - **Active Press Feedback & Optical Alignment**: Added `0.96` active press scale over 150ms with `cubic-bezier(0, 0, 0.2, 1)` on all interactive buttons, chips, and table pills (`:not(:disabled):active`). Added 2px optical alignment on icon side for leading/trailing icons. Guarded hovers under `@media (hover: hover)` and motion under `@media (prefers-reduced-motion: reduce)`.
+  - **Screen 1: Staff Sign In (`login.html`)**: Auth-gated navbar tabs in `_masthead.html` to present a distraction-free gateway. Centered 420px broadsheet card with official newspaper logo, Noto Serif Devanagari heading, 44px inputs with calm maroon focus rings (zero red borders when valid), 44px primary button, and internal desk security notice.
+  - **Screen 2: Dashboard (`dashboard.html`, `stats_strip.html`, `bills_table.html`)**: Clean masthead tabs, 4-cell broadsheet KPI strip with hairline dividers and tabular numbers, recent bills table with sentence-case headers and `.desk-action-pill` buttons (`View`, `PDF`, `WhatsApp`, `Portal`), proportional collection bar, and overdue accounts panel.
+  - **Screen 3: Bill Detail (`bill_detail.html`, `bill_detail_pane.html`)**: Breadcrumb with speedometer icon, 28px Noto Serif Devanagari invoice heading with status pill, 2-column broadsheet ledger (Client & Publication on left, Financial summary box on right), authoritative action toolbar with strictly vector Bootstrap icons (ZERO Unicode emojis), refined settlement banner, and tabular payment history.
+  - **Automated Test Suite Verified**: All 27 automated unit tests passed (100% OK).
 
 ---
 

@@ -5,25 +5,25 @@
     <table class="w-full text-left border-collapse" style="width: 100%; border-collapse: collapse; font-family: 'Mukta', sans-serif;">
         <thead>
             <tr class="border-b border-rule bg-paper" style="border-bottom: 1px solid #e7e2d9; background-color: #faf8f4;">
-                <th class="py-3 px-3.5 font-semibold text-muted uppercase tracking-wider" style="padding: 12px 14px 12px 20px; color: #57534e; font-size: 13px;">
+                <th class="py-3 px-3.5 font-medium text-muted" style="padding: 12px 14px 12px 20px; color: #57534e; font-size: 13px;">
                     {% if site_lang == 'hi' %}बिल क्र.{% else %}Invoice no{% endif %}
                 </th>
-                <th class="py-3 px-3.5 font-semibold text-muted uppercase tracking-wider" style="padding: 12px 14px; color: #57534e; font-size: 13px;">
+                <th class="py-3 px-3.5 font-medium text-muted" style="padding: 12px 14px; color: #57534e; font-size: 13px;">
                     {% if site_lang == 'hi' %}विज्ञापनदाता{% else %}Client{% endif %}
                 </th>
-                <th class="py-3 px-3.5 font-semibold text-muted uppercase tracking-wider" style="padding: 12px 14px; color: #57534e; font-size: 13px;">
+                <th class="py-3 px-3.5 font-medium text-muted" style="padding: 12px 14px; color: #57534e; font-size: 13px;">
                     {% if site_lang == 'hi' %}प्रकाशन व आकार{% else %}Placement &amp; page{% endif %}
                 </th>
-                <th class="py-3 px-3.5 font-semibold text-muted uppercase tracking-wider text-right" style="padding: 12px 14px; color: #57534e; font-size: 13px; text-align: right;">
+                <th class="py-3 px-3.5 font-medium text-muted text-right" style="padding: 12px 14px; color: #57534e; font-size: 13px; text-align: right;">
                     {% if site_lang == 'hi' %}कुल राशि{% else %}Amount{% endif %}
                 </th>
-                <th class="py-3 px-3.5 font-semibold text-muted uppercase tracking-wider text-right" style="padding: 12px 14px; color: #57534e; font-size: 13px; text-align: right;">
+                <th class="py-3 px-3.5 font-medium text-muted text-right" style="padding: 12px 14px; color: #57534e; font-size: 13px; text-align: right;">
                     {% if site_lang == 'hi' %}बकाया{% else %}Balance due{% endif %}
                 </th>
-                <th class="py-3 px-3.5 font-semibold text-muted uppercase tracking-wider" style="padding: 12px 14px; color: #57534e; font-size: 13px;">
+                <th class="py-3 px-3.5 font-medium text-muted" style="padding: 12px 14px; color: #57534e; font-size: 13px;">
                     {% if site_lang == 'hi' %}स्थिति{% else %}Status{% endif %}
                 </th>
-                <th class="py-3 px-3.5 font-semibold text-muted uppercase tracking-wider text-right" style="padding: 12px 20px 12px 14px; color: #57534e; font-size: 13px; text-align: right;">
+                <th class="py-3 px-3.5 font-medium text-muted text-right" style="padding: 12px 20px 12px 14px; color: #57534e; font-size: 13px; text-align: right;">
                     {% if site_lang == 'hi' %}क्रियाएं{% else %}Actions{% endif %}
                 </th>
             </tr>
@@ -86,7 +86,7 @@
                                 <span>PDF</span>
                             </a>
                             {% if b.client_phone %}
-                            <a href="{{ b.whatsapp_share_url }}" target="_blank" class="btn-desk-sm btn-whatsapp" title="WhatsApp">
+                            <a href="{{ b.whatsapp_share_url }}" target="_blank" class="btn-desk-sm btn-whatsapp" title="WhatsApp reminder">
                                 <i class="bi bi-whatsapp"></i>
                             </a>
                             {% endif %}
@@ -130,10 +130,10 @@
                     <div class="flex items-center gap-2">
                         {% include 'billing/partials/status_dot.html' with status=b.payment_status %}
                         <details class="relative">
-                            <summary class="min-h-[36px] min-w-[36px] w-9 h-9 flex items-center justify-center border border-rule bg-white hover:bg-paper rounded cursor-pointer list-none select-none text-ink font-bold text-sm" style="border: 1px solid #e7e2d9; border-radius: 4px; min-height: 36px; min-width: 36px; cursor: pointer; list-style: none;">
+                            <summary class="min-h-[36px] min-w-[36px] w-9 h-9 flex items-center justify-center border border-rule bg-white hover:bg-paper rounded cursor-pointer list-none select-none text-ink font-bold text-sm" style="border: 1px solid #d6cfc4; border-radius: 4px; min-height: 36px; min-width: 36px; cursor: pointer; list-style: none;">
                                 &hellip;
                             </summary>
-                            <div class="absolute right-0 top-full mt-1 w-48 bg-white border border-rule rounded shadow-lg z-50 divide-y divide-rule py-1" style="background-color: #ffffff; border: 1px solid #e7e2d9; border-radius: 4px; z-index: 50; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);">
+                            <div class="absolute right-0 top-full mt-1 w-48 bg-white border border-rule rounded z-50 divide-y divide-rule py-1" style="background-color: #ffffff; border: 1px solid #d6cfc4; border-radius: 4px; z-index: 50; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
                                 <a href="{% url 'billing:bill_detail' b.pk %}" class="min-h-[44px] px-4 py-2.5 flex items-center gap-2 text-sm text-ink hover:bg-paper hover:text-maroon transition-colors" style="text-decoration: none; color: #1c1917; min-height: 44px;">
                                     <i class="bi bi-eye"></i>
                                     <span>{% if site_lang == 'hi' %}बिल विवरण देखें{% else %}View invoice{% endif %}</span>
@@ -240,7 +240,7 @@
                         <summary class="min-h-[44px] min-w-[44px] w-11 h-11 flex items-center justify-center border border-rule bg-white hover:bg-paper rounded cursor-pointer list-none select-none text-ink font-bold text-base" style="border: 1px solid #d6cfc4; border-radius: 4px; min-height: 44px; min-width: 44px; cursor: pointer; list-style: none;">
                             &hellip;
                         </summary>
-                        <div class="absolute right-0 bottom-full mb-1 w-48 bg-white border border-rule rounded shadow-lg z-50 divide-y divide-rule py-1" style="background-color: #ffffff; border: 1px solid #d6cfc4; border-radius: 4px; z-index: 50; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);">
+                        <div class="absolute right-0 bottom-full mb-1 w-48 bg-white border border-rule rounded z-50 divide-y divide-rule py-1" style="background-color: #ffffff; border: 1px solid #d6cfc4; border-radius: 4px; z-index: 50; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
                             <a href="{% url 'billing:bill_detail' b.pk %}" class="min-h-[44px] px-4 py-2.5 flex items-center gap-2 text-sm text-ink hover:bg-paper hover:text-maroon transition-colors" style="text-decoration: none; color: #1c1917; min-height: 44px;">
                                 <i class="bi bi-eye"></i>
                                 <span>{% if site_lang == 'hi' %}बिल विवरण देखें{% else %}View invoice{% endif %}</span>

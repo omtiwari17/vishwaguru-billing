@@ -22,37 +22,37 @@
 {% include 'billing/partials/stats_strip.html' %}
 
 <!-- 3. Primary Dense Bills Table (Recent Invoices) -->
-<div class="bills-desk-panel mb-6 md:mb-6 md:border md:border-rule md:rounded md:bg-white" style="margin-bottom: 24px;">
+<div class="bills-desk-panel">
     <!-- Panel Header: Desktop Header Row (md+) -->
-    <div class="hidden md:flex desk-panel-header items-center justify-between gap-4 border-b border-rule bg-white" style="border-bottom: 1px solid #e7e2d9; background-color: #ffffff; padding: 18px 24px;">
+    <div class="hidden md:flex desk-panel-header items-center justify-between gap-4 border-b border-rule bg-white">
         <div class="flex items-center gap-3">
-            <h2 class="desk-panel-title" style="font-family: 'Noto Serif Devanagari', serif; font-size: 1.15rem; font-weight: 600; color: #1c1917; margin: 0;">
+            <h2 class="desk-panel-title">
                 {% if site_lang == 'hi' %}हाल के विज्ञापन बिल{% else %}Recent bills{% endif %}
             </h2>
-            <span class="text-sm text-muted tabular-nums" style="color: #57534e;">
-                ({{ total_count }} {{ total_count|bill_noun:site_lang }} {% if site_lang == 'hi' %}कुल{% else %}total{% endif %})
+            <span class="text-sm text-muted tabular-nums">
+                ({{ total_count }} {% if site_lang == 'hi' %}कुल बिल{% else %}{{ total_count|bill_noun:site_lang }} total{% endif %})
             </span>
         </div>
 
         <div class="flex items-center gap-3">
-            <div class="relative" style="width: 280px;">
+            <div class="relative" style="width: 260px;">
                 <input 
                     type="search" 
                     name="q" 
                     aria-label="{% if site_lang == 'hi' %}बिल खोजें{% else %}Search bills{% endif %}"
-                    placeholder="{% if site_lang == 'hi' %}बिल खोजें...{% else %}Search bills...{% endif %}"
+                    placeholder="{% if site_lang == 'hi' %}बिल खोजें{% else %}Search bills{% endif %}"
                     hx-get="{% url 'billing:dashboard' %}" 
                     hx-trigger="keyup changed delay:250ms, search" 
                     hx-target="#bills-table-container"
                     class="desk-input"
-                    style="width: 100%; min-height: 42px; padding: 8px 12px; font-size: 14px; border: 1px solid #d6cfc4; border-radius: 4px; background-color: #ffffff; color: #1c1917; outline: none;"
+                    style="min-height: 40px; font-size: 14px;"
                 >
             </div>
-            <a href="{% url 'billing:bill_create' %}" class="btn-desk-primary min-h-[42px] px-4" style="background-color: #9f1d1d; color: #ffffff; border: 1px solid #7f1d1d; border-radius: 4px; font-size: 14px; font-weight: 600; text-decoration: none; display: inline-flex; align-items: center; gap: 6px;">
+            <a href="{% url 'billing:bill_create' %}" class="btn-desk-primary" style="min-height: 40px; font-size: 14px; padding: 8px 16px;">
                 <i class="bi bi-plus-lg"></i>
                 <span>{% if site_lang == 'hi' %}नया बिल{% else %}New bill{% endif %}</span>
             </a>
-            <a href="{% url 'billing:bill_search' %}" class="btn-desk-secondary min-h-[42px] px-4" style="background-color: #ffffff; color: #1c1917; border: 1px solid #d6cfc4; border-radius: 4px; font-size: 14px; font-weight: 500; text-decoration: none; display: inline-flex; align-items: center; gap: 4px;">
+            <a href="{% url 'billing:bill_search' %}" class="btn-desk-secondary" style="min-height: 40px; font-size: 14px; padding: 8px 14px;">
                 <span>{% if site_lang == 'hi' %}सभी देखें &rarr;{% else %}View all &rarr;{% endif %}</span>
             </a>
         </div>
@@ -61,10 +61,10 @@
     <!-- Mobile Header Layout (< md: Clean, unbordered, directly on paper) -->
     <div class="flex md:hidden flex-col gap-2.5 mb-3">
         <div class="flex items-center justify-between">
-            <h2 class="desk-panel-title" style="font-family: 'Noto Serif Devanagari', serif; font-size: 1.1rem; font-weight: 600; color: #1c1917; margin: 0;">
+            <h2 class="desk-panel-title">
                 {% if site_lang == 'hi' %}हाल के विज्ञापन बिल{% else %}Recent bills{% endif %}
             </h2>
-            <span class="text-xs text-muted tabular-nums" style="color: #57534e;">
+            <span class="text-xs text-muted tabular-nums">
                 ({{ total_count }} {{ total_count|bill_noun:site_lang }})
             </span>
         </div>
@@ -74,18 +74,18 @@
             type="search" 
             name="q" 
             aria-label="{% if site_lang == 'hi' %}बिल खोजें{% else %}Search bills{% endif %}"
-            placeholder="{% if site_lang == 'hi' %}बिल खोजें...{% else %}Search bills...{% endif %}"
+            placeholder="{% if site_lang == 'hi' %}बिल खोजें{% else %}Search bills{% endif %}"
             hx-get="{% url 'billing:dashboard' %}" 
             hx-trigger="keyup changed delay:250ms, search" 
             hx-target="#bills-table-container"
             class="desk-input w-full"
-            style="width: 100%; min-height: 44px; padding: 10px 14px; font-size: 15px; border: 1px solid #d6cfc4; border-radius: 4px; background-color: #ffffff; color: #1c1917; outline: none; box-sizing: border-box;"
+            style="min-height: 44px; font-size: 15px;"
         >
 
         <!-- Full-width Primary + New Bill Button -->
-        <a href="{% url 'billing:bill_create' %}" class="btn-desk-primary w-full justify-center min-h-[48px] px-4 py-2.5" style="width: 100%; background-color: #9f1d1d; color: #ffffff; border: 1px solid #7f1d1d; border-radius: 4px; font-size: 15px; font-weight: 600; text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 6px; box-sizing: border-box;">
+        <a href="{% url 'billing:bill_create' %}" class="btn-desk-primary w-full justify-center" style="min-height: 44px; font-size: 15px;">
             <i class="bi bi-plus-lg"></i>
-            <span>{% if site_lang == 'hi' %}नया बिल बनाएं{% else %}Create New Bill{% endif %}</span>
+            <span>{% if site_lang == 'hi' %}नया बिल{% else %}New bill{% endif %}</span>
         </a>
     </div>
 
@@ -99,43 +99,58 @@
 <div class="grid grid-cols-1 md:grid-cols-2 gap-6" style="gap: 24px; margin-bottom: 24px;">
 
     <!-- Panel A: Payment Status Overview -->
-    <div class="desk-panel" style="background-color: #ffffff; border: 1px solid #d6cfc4; border-radius: 4px; margin-bottom: 0;">
-        <div class="desk-panel-header" style="padding: 12px 18px; border-bottom: 1px solid #e7e2d9;">
-            <h3 class="desk-panel-title" style="font-family: 'Noto Serif Devanagari', serif; font-size: 1.05rem; font-weight: 600; color: #1c1917; margin: 0;">
+    <div class="desk-panel" style="margin-bottom: 0;">
+        <div class="desk-panel-header" style="padding: 14px 18px;">
+            <h3 class="desk-panel-title">
                 {% if site_lang == 'hi' %}भुगतान स्थिति{% else %}Payment status{% endif %}
             </h3>
         </div>
-        <div class="desk-panel-body" style="padding: 16px 18px; font-size: 15px; font-family: 'Mukta', sans-serif;">
-            <div class="flex flex-col gap-3.5">
+        <div class="desk-panel-body" style="padding: 16px 18px;">
+            <!-- Proportional Status Bar -->
+            {% if total_count > 0 %}
+            <div class="status-bar" title="{% if site_lang == 'hi' %}पूर्ण: {{ status_summary.Paid.pct }}% | आंशिक: {{ status_summary.Partial.pct }}% | अदत्त: {{ status_summary.Unpaid.pct }}%{% else %}Paid: {{ status_summary.Paid.pct }}% | Partial: {{ status_summary.Partial.pct }}% | Unpaid: {{ status_summary.Unpaid.pct }}%{% endif %}">
+                {% if status_summary.Paid.pct > 0 %}
+                <div class="status-bar-paid" style="width: {{ status_summary.Paid.pct }}%;"></div>
+                {% endif %}
+                {% if status_summary.Partial.pct > 0 %}
+                <div class="status-bar-partial" style="width: {{ status_summary.Partial.pct }}%;"></div>
+                {% endif %}
+                {% if status_summary.Unpaid.pct > 0 %}
+                <div class="status-bar-unpaid" style="width: {{ status_summary.Unpaid.pct }}%;"></div>
+                {% endif %}
+            </div>
+            {% endif %}
+
+            <div class="flex flex-col gap-3">
                 <!-- Paid -->
-                <div class="flex items-center justify-between pb-3 border-b border-rule" style="border-bottom: 1px solid #e7e2d9;">
-                    <span class="inline-flex items-center gap-2 font-medium" style="color: #15803d;">
-                        <span class="inline-block rounded-full" style="background-color: #15803d; border-radius: 9999px; width: 8px; height: 8px;"></span>
+                <div class="flex items-center justify-between pb-3 border-b border-rule">
+                    <span class="inline-flex items-center gap-2 font-medium" style="color: var(--paid);">
+                        <span class="status-dot status-dot-paid"></span>
                         <span>{% if site_lang == 'hi' %}पूर्ण चुकता{% else %}Paid{% endif %}</span>
                     </span>
-                    <span class="tabular-nums font-medium text-ink" style="color: #1c1917;">
+                    <span class="tabular-nums font-medium text-ink">
                         {{ status_summary.Paid.count }} {{ status_summary.Paid.count|bill_noun:site_lang }} &bull; {{ status_summary.Paid.amount|indian_currency }}
                     </span>
                 </div>
 
                 <!-- Partial -->
-                <div class="flex items-center justify-between pb-3 border-b border-rule" style="border-bottom: 1px solid #e7e2d9;">
-                    <span class="inline-flex items-center gap-2 font-medium" style="color: #b45309;">
-                        <span class="inline-block rounded-full" style="background-color: #b45309; border-radius: 9999px; width: 8px; height: 8px;"></span>
+                <div class="flex items-center justify-between pb-3 border-b border-rule">
+                    <span class="inline-flex items-center gap-2 font-medium" style="color: var(--partial);">
+                        <span class="status-dot status-dot-partial"></span>
                         <span>{% if site_lang == 'hi' %}आंशिक भुगतान{% else %}Partial{% endif %}</span>
                     </span>
-                    <span class="tabular-nums font-medium text-ink" style="color: #1c1917;">
+                    <span class="tabular-nums font-medium text-ink">
                         {{ status_summary.Partial.count }} {{ status_summary.Partial.count|bill_noun:site_lang }} &bull; {{ status_summary.Partial.amount|indian_currency }}
                     </span>
                 </div>
 
                 <!-- Unpaid -->
                 <div class="flex items-center justify-between pt-0.5">
-                    <span class="inline-flex items-center gap-2 font-medium" style="color: #9f1d1d;">
-                        <span class="inline-block rounded-full" style="background-color: #9f1d1d; border-radius: 9999px; width: 8px; height: 8px;"></span>
+                    <span class="inline-flex items-center gap-2 font-medium" style="color: var(--maroon);">
+                        <span class="status-dot status-dot-unpaid"></span>
                         <span>{% if site_lang == 'hi' %}अदत्त / शेष{% else %}Unpaid{% endif %}</span>
                     </span>
-                    <span class="tabular-nums font-medium text-ink" style="color: #1c1917;">
+                    <span class="tabular-nums font-medium text-ink">
                         {{ status_summary.Unpaid.count }} {{ status_summary.Unpaid.count|bill_noun:site_lang }} &bull; {{ status_summary.Unpaid.amount|indian_currency }}
                     </span>
                 </div>
@@ -144,34 +159,34 @@
     </div>
 
     <!-- Panel B: Overdue Accounts (Top 5 Debtors) -->
-    <div class="desk-panel" style="background-color: #ffffff; border: 1px solid #d6cfc4; border-radius: 4px; margin-bottom: 0;">
-        <div class="desk-panel-header" style="padding: 12px 18px; border-bottom: 1px solid #e7e2d9;">
-            <h3 class="desk-panel-title" style="font-family: 'Noto Serif Devanagari', serif; font-size: 1.05rem; font-weight: 600; color: #1c1917; margin: 0;">
+    <div class="desk-panel" style="margin-bottom: 0;">
+        <div class="desk-panel-header" style="padding: 14px 18px;">
+            <h3 class="desk-panel-title">
                 {% if site_lang == 'hi' %}बकायादार ग्राहक{% else %}Overdue accounts{% endif %}
             </h3>
         </div>
-        <div class="desk-panel-body" style="padding: 14px 18px; font-size: 15px; font-family: 'Mukta', sans-serif;">
+        <div class="desk-panel-body" style="padding: 14px 18px;">
             {% if top_debtors %}
-            <div class="flex flex-col divide-y divide-rule" style="border-top: 1px solid transparent;">
+            <div class="flex flex-col divide-y divide-rule">
                 {% for d in top_debtors %}
-                <div class="py-3 flex items-center justify-between gap-3" style="border-bottom: 1px solid #e7e2d9;">
+                <div class="py-3 flex items-center justify-between gap-3">
                     <div style="min-width: 0;">
-                        <div class="font-medium text-ink truncate" style="color: #1c1917; font-size: 15px;">
+                        <div class="font-medium text-ink truncate" style="font-size: 15px;">
                             {{ d.client.name }}
                         </div>
-                        <div class="text-sm text-muted tabular-nums" style="color: #57534e; margin-top: 2px;">
-                            <span class="font-semibold" style="color: #9f1d1d;">{{ d.outstanding|indian_currency }}</span>
+                        <div class="text-sm text-muted tabular-nums" style="margin-top: 2px;">
+                            <span class="font-semibold" style="color: var(--maroon);">{{ d.outstanding|indian_currency }}</span>
                             &bull; {{ d.unpaid_count }} {{ d.unpaid_count|bill_noun:site_lang }}
                         </div>
                     </div>
                     <div class="inline-flex items-center gap-2 flex-shrink-0">
                         {% if d.client.phone %}
-                        <a href="{{ d.whatsapp_url }}" target="_blank" class="btn-desk-sm btn-whatsapp">
+                        <a href="{{ d.whatsapp_url }}" target="_blank" class="btn-desk-sm btn-whatsapp" title="WhatsApp reminder">
                             <i class="bi bi-whatsapp"></i>
                             <span>{% if site_lang == 'hi' %}तगादा{% else %}Remind{% endif %}</span>
                         </a>
                         {% endif %}
-                        <a href="{% url 'billing:customer_portal' d.client.access_token %}" target="_blank" class="btn-desk-sm">
+                        <a href="{% url 'billing:customer_portal' d.client.access_token %}" target="_blank" class="btn-desk-sm" title="Client portal">
                             <i class="bi bi-box-arrow-up-right"></i>
                             <span>{% if site_lang == 'hi' %}खाता{% else %}Portal{% endif %}</span>
                         </a>
@@ -180,7 +195,7 @@
                 {% endfor %}
             </div>
             {% else %}
-            <div class="text-center py-6 text-muted" style="text-align: center; color: #57534e; font-size: 14px;">
+            <div class="text-center py-6 text-muted" style="font-size: 14px;">
                 {% if site_lang == 'hi' %}कोई बकाया राशि शेष नहीं है।{% else %}No overdue balances.{% endif %}
             </div>
             {% endif %}

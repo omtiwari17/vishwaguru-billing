@@ -1,214 +1,180 @@
-/* Visible staff UI refresh: warm editorial colors with clearer, softer surfaces. */
-.app-shell {
-    --paper: #f5f3ef;
-    --paper-card: #fff;
-    --ink: #231d1a;
-    --muted: #6b625d;
-    --rule: #e8e1d9;
-    --maroon: #8b2428;
-    --maroon-hover: #701c20;
-    background: #f5f3ef !important;
-    color: var(--ink) !important;
+/* Vishwaguru Ki Jhalak - Editorial Design System Companion
+   Harmonized with style.css tokens (Mukta typography, Noto Serif Devanagari titles,
+   concentric 6px/4px radii, layered --shadow-border, 0.96 active press scale).
+*/
+
+:root {
+    --shadow-border: 0px 0px 0px 1px rgba(28, 25, 23, 0.08), 0px 1px 2px -1px rgba(28, 25, 23, 0.06), 0px 2px 4px 0px rgba(28, 25, 23, 0.04);
+    --shadow-border-hover: 0px 0px 0px 1px rgba(28, 25, 23, 0.12), 0px 2px 4px -1px rgba(28, 25, 23, 0.08), 0px 4px 8px 0px rgba(28, 25, 23, 0.05);
+    --shadow-btn: 0px 1px 2px rgba(28, 25, 23, 0.05);
+    --shadow-btn-primary: 0px 1px 2px rgba(159, 29, 29, 0.25);
 }
 
-/* Comfortable reading scale across staff and customer pages. */
-.app-shell, .portal-shell {
-    font-size: 18px !important;
-    line-height: 1.55;
+.app-shell {
+    background-color: var(--paper);
+    color: var(--ink);
 }
-.app-shell .office-container { max-width: 1380px; }
-.portal-shell .portal-container { max-width: 820px; }
-.app-shell .office-tab { font-size: 17px !important; }
-.app-shell .desk-table td,
-.app-shell .data-table td { font-size: 17px !important; }
-.app-shell .desk-table th,
-.app-shell .data-table th { font-size: 15px !important; }
-.app-shell .desk-input,
-.app-shell .form-control,
-.app-shell .form-select,
-.app-shell label,
-.app-shell .form-label { font-size: 17px !important; }
-.app-shell .stat-chip-title,
-.app-shell .stat-chip-value,
-.app-shell .step-subtitle,
-.app-shell .receipt-row,
-.app-shell .receipt-due-row { font-size: 16px !important; }
-.app-shell .btn-desk-primary,
-.app-shell .btn-desk-secondary,
-.app-shell .btn-desk-sm,
-.app-shell .btn-generate,
-.app-shell .chip-btn,
-.app-shell .pill-choice { font-size: 16px !important; }
-.app-shell .desk-panel-title,
-.app-shell .step-title { font-size: 20px !important; }
-.app-shell .stat-chip-value { font-size: 22px !important; }
-.app-shell :is(small, .text-xs:not(.bi), .text-sm:not(.bi), [class*="text-[10px]"], [class*="text-[11px]"], [class*="text-[12px]"]),
-.app-shell [style*="font-size: 10px"],
-.app-shell [style*="font-size: 11px"],
-.app-shell [style*="font-size: 12px"],
-.app-shell [style*="font-size: 13px"],
-.portal-shell :is(small, .text-xs:not(.bi), .text-sm:not(.bi), [class*="text-[10px]"], [class*="text-[11px]"], [class*="text-[12px]"]),
-.portal-shell [style*="font-size: 10px"],
-.portal-shell [style*="font-size: 11px"],
-.portal-shell [style*="font-size: 12px"],
-.portal-shell [style*="font-size: 13px"] {
-    font-size: 16px !important;
-    line-height: 1.45;
+
+.app-shell .office-container {
+    max-width: 1240px;
+    margin: 0 auto;
+    padding-inline: 16px;
 }
-.app-shell :is(.status-dot-wrap, .badge, .queue-count) { font-size: 15px !important; }
+
+@media (min-width: 768px) {
+    .app-shell .office-container {
+        padding-inline: 24px;
+    }
+}
 
 .app-shell .office-header {
-    background: rgba(255, 255, 255, .96) !important;
-    border-bottom: 1px solid #e8e1d9 !important;
-    box-shadow: 0 2px 12px rgba(45, 35, 28, .045);
-    backdrop-filter: blur(12px);
+    background-color: #ffffff;
+    border-bottom: 1px solid var(--rule);
+    box-shadow: 0 1px 3px rgba(28, 25, 23, 0.03);
 }
-.app-shell .masthead-row { border-bottom-color: #eee8e2 !important; padding-block: 12px; }
-.app-shell .office-nav-tabs { gap: 6px; padding-block: 5px; }
+
 .app-shell .office-tab {
-    min-height: 40px;
-    padding: 7px 13px;
-    border: 0 !important;
-    border-radius: 9px;
-    color: #625954 !important;
-    font-size: 15px;
-    transition: background-color .16s ease, color .16s ease;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--muted);
+    padding: 8px 14px;
+    border-radius: 4px;
+    text-decoration: none;
+    transition-property: color, background-color, border-color;
+    transition-duration: 150ms;
 }
-.app-shell .office-tab:hover { background: #f7f1ed !important; color: #6f2024 !important; }
+
+.app-shell .office-tab:hover {
+    color: var(--ink);
+    background-color: #f7f5f0;
+}
+
 .app-shell .office-tab.active {
-    background: #f7e9e7 !important;
-    color: #7d2025 !important;
-    box-shadow: inset 0 0 0 1px #efdad7;
+    color: var(--maroon);
+    font-weight: 600;
+    background-color: #fef2f2;
 }
-.app-shell .office-tab.active .queue-count { background: #fff !important; }
 
-.app-shell .office-main { padding-top: 28px; padding-bottom: 40px; }
-.app-shell .office-container { max-width: 1240px; }
-.app-shell .dashboard-kpi-strip {
-    display: grid !important;
-    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
-    overflow: hidden;
-    border-radius: 12px !important;
+.desk-panel,
+.bills-desk-panel,
+.step-card,
+.receipt-card {
+    background-color: #ffffff;
+    border: 1px solid var(--rule);
+    border-radius: 6px;
+    box-shadow: var(--shadow-border);
+    margin-bottom: 24px;
 }
-.app-shell .dashboard-kpi {
-    display: flex !important;
-    flex-direction: column;
-    justify-content: center !important;
+
+.desk-panel-header {
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--rule);
+}
+
+.desk-panel-title {
+    font-family: var(--font-masthead);
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--ink);
+    margin: 0;
+}
+
+.desk-panel-body {
+    padding: 20px;
+}
+
+/* Micro-action ghost pills for tables and lists */
+.desk-action-pill,
+.btn-desk-sm {
+    display: inline-flex;
+    align-items: center;
     gap: 5px;
-    min-width: 0;
-    padding: 14px 20px !important;
-}
-.app-shell .page-heading { margin-bottom: 24px; }
-.app-shell .page-heading h1 { font-size: clamp(1.6rem, 2.6vw, 2rem); letter-spacing: -.02em; }
-.app-shell .page-heading p { font-size: 15px; }
-.app-shell .page-heading-date {
-    padding: 7px 12px;
-    border: 1px solid #e8e1d9;
-    border-radius: 999px;
-    background: #fff;
-}
-
-.app-shell .desk-panel,
-.app-shell .step-card,
-.app-shell .receipt-card,
-.app-shell .card,
-.app-shell .bills-desk-panel {
-    border: 1px solid #e6dfd6 !important;
-    border-radius: 12px !important;
-    background-color: #fff !important;
-    box-shadow: 0 5px 18px rgba(45, 35, 28, .045);
-}
-.app-shell .bills-desk-panel { overflow: hidden; }
-.app-shell .desk-panel-header,
-.app-shell .step-header,
-.app-shell .receipt-header {
-    background: #fcfaf8 !important;
-    border-bottom-color: #eee8e2 !important;
-}
-.app-shell .desk-panel-header { padding: 17px 22px !important; }
-.app-shell .step-header { padding: 15px 19px; }
-.app-shell .desk-panel-title { font-size: 1.08rem; }
-.app-shell .step-title { font-size: 1rem; }
-.app-shell .desk-panel-body { padding: 18px 20px; }
-
-.app-shell .btn-desk-primary,
-.app-shell .btn-generate {
-    border-radius: 9px !important;
-    background: #8b2428 !important;
-    border-color: #8b2428 !important;
-    box-shadow: 0 2px 5px rgba(94, 24, 28, .14);
-    transition: background-color .15s ease, box-shadow .15s ease, transform .15s ease;
-}
-.app-shell .btn-desk-primary:hover,
-.app-shell .btn-generate:hover {
-    background: #701c20 !important;
-    box-shadow: 0 4px 10px rgba(94, 24, 28, .2);
-    transform: translateY(-1px);
-}
-.app-shell .btn-desk-secondary,
-.app-shell .btn-desk-sm,
-.app-shell .chip-btn,
-.app-shell .pill-choice {
-    border-radius: 8px !important;
-    transition: background-color .15s ease, border-color .15s ease, color .15s ease;
-}
-.app-shell .desk-input,
-.app-shell .form-control,
-.app-shell .form-select,
-.app-shell select,
-.app-shell textarea,
-.app-shell input:not([type="checkbox"]):not([type="radio"]) {
-    border-color: #ded6cd;
-    border-radius: 8px;
-    background-color: #fff;
-}
-.app-shell .desk-input:focus,
-.app-shell .form-control:focus,
-.app-shell .form-select:focus { border-color: #9b3d40; }
-
-.app-shell .badge {
-    border-radius: 999px;
     padding: 4px 10px;
-}
-.app-shell .desk-table th,
-.app-shell .data-table th { background: #f8f5f1; }
-.app-shell .desk-table td,
-.app-shell .data-table td { padding-block: 14px; }
-.app-shell .desk-table tr:hover td,
-.app-shell .data-table tr:hover td { background: #fcfaf8; }
-.app-shell .status-dot { width: 8px; height: 8px; }
-.app-shell .step-badge { border-radius: 9px; }
-.app-shell .chip-btn { min-height: 42px; }
-.app-shell .chip-btn.active { background: #8b2428; border-color: #8b2428; }
-.app-shell .receipt-card { box-shadow: 0 12px 30px rgba(45, 35, 28, .08); }
-.app-shell .receipt-footer-actions { background: #fcfaf8; }
-.app-shell .office-footer { background: #fff; border-top-color: #e8e1d9; }
-
-@media (max-width: 767px) {
-    .app-shell .office-main { padding-top: 18px; padding-bottom: 28px; }
-    .app-shell .office-container { padding-inline: 18px; }
-    .portal-shell .portal-container { padding-inline: 18px; }
-    .app-shell, .portal-shell { font-size: 16px !important; }
-    .app-shell .masthead-row { padding-block: 9px; }
-    .app-shell .office-nav-tabs { padding-block: 4px; }
-    .app-shell .page-heading { margin-bottom: 18px; }
-    .app-shell .desk-panel-header { padding: 14px 16px !important; }
-    .app-shell .step-card { margin-bottom: 14px; }
-    .app-shell .form-grid { gap: 14px; padding: 14px; }
-    .app-shell .receipt-card { box-shadow: 0 4px 14px rgba(45, 35, 28, .06); }
-    .app-shell, .portal-shell { font-size: 17px !important; }
+    min-height: 32px;
+    background-color: #ffffff;
+    color: #44403c;
+    font-family: var(--font-ui);
+    font-size: 13px;
+    font-weight: 500;
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    cursor: pointer;
+    text-decoration: none;
+    line-height: 1.2;
+    transition-property: transform, background-color, border-color, box-shadow, color;
+    transition-duration: 150ms;
+    transition-timing-function: cubic-bezier(0, 0, 0.2, 1);
+    -webkit-tap-highlight-color: transparent;
 }
 
-@media (max-width: 640px) {
-    .app-shell .dashboard-kpi-strip { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
-    .app-shell .dashboard-kpi { padding: 16px 22px !important; }
+@media (hover: hover) {
+    .desk-action-pill:hover,
+    .btn-desk-sm:hover {
+        background-color: #f5f3ef;
+        border-color: #d6cfc4;
+        color: #1c1917;
+    }
 }
 
+.desk-action-pill:not(:disabled):active,
+.btn-desk-sm:not(:disabled):active {
+    transform: scale(0.96);
+}
+
+.desk-action-pill.btn-pdf,
+.btn-desk-sm.btn-pdf {
+    color: var(--maroon);
+    border-color: #fecaca;
+}
+
+@media (hover: hover) {
+    .desk-action-pill.btn-pdf:hover,
+    .btn-desk-sm.btn-pdf:hover {
+        background-color: #fef2f2;
+        border-color: #f87171;
+    }
+}
+
+.desk-action-pill.btn-whatsapp,
+.btn-desk-sm.btn-whatsapp {
+    color: var(--paid);
+    border-color: #bbf7d0;
+}
+
+@media (hover: hover) {
+    .desk-action-pill.btn-whatsapp:hover,
+    .btn-desk-sm.btn-whatsapp:hover {
+        background-color: #f0fdf4;
+        border-color: #86efac;
+    }
+}
+
+/* Optical Alignment: 2px less padding on icon side */
+.btn-desk-primary:has(> i:first-child),
+.btn-desk-secondary:has(> i:first-child) {
+    padding-inline-start: 12px;
+    padding-inline-end: 15px;
+}
+
+.btn-desk-sm:has(> i:first-child),
+.desk-action-pill:has(> i:first-child) {
+    padding-inline-start: 8px;
+    padding-inline-end: 10px;
+}
+
+/* Scale on active press for all interactive elements */
+.btn-desk-primary:not(:disabled):active,
+.btn-desk-secondary:not(:disabled):active,
+.chip-btn:not(:disabled):active,
+.pill-choice:not(:disabled):active {
+    transform: scale(0.96);
+}
+
+/* Reduced motion preference */
 @media (prefers-reduced-motion: reduce) {
-    .app-shell *, .app-shell *::before, .app-shell *::after {
-        scroll-behavior: auto !important;
-        animation-duration: .01ms !important;
-        animation-iteration-count: 1 !important;
-        transition-duration: .01ms !important;
+    *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.01ms !important;
+        transform: none !important;
     }
 }

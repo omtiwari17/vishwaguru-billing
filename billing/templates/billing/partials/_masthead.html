@@ -4,7 +4,7 @@
     <div class="{% if variant == 'customer' %}portal-container{% else %}office-container{% endif %}">
         <!-- Masthead Top Row -->
         <div class="masthead-row flex items-center justify-between" {% if variant == 'customer' or not user.is_authenticated %}style="border-bottom: none;"{% endif %}>
-            {% if variant == 'staff' and user.is_authenticated %}
+            {% if variant == 'staff' and user.is_authenticated and request.resolver_match.url_name != 'login' %}
             <a href="{% url 'billing:dashboard' %}" class="masthead-brand flex items-center py-1" aria-label="{% if site_lang == 'hi' or lang == 'hi' %}विश्वगुरु की झलक - डैशबोर्ड{% else %}Vishwaguru Ki Jhalak - Dashboard{% endif %}">
                 <img src="{% static 'billing/img/logo.png' %}" alt="{% if site_lang == 'hi' or lang == 'hi' %}विश्वगुरु की झलक{% else %}Vishwaguru Ki Jhalak{% endif %}" class="masthead-logo-img">
             </a>
@@ -36,7 +36,7 @@
                     {% endif %}
                 </div>
 
-                {% if variant == 'staff' and user.is_authenticated %}
+                {% if variant == 'staff' and user.is_authenticated and request.resolver_match.url_name != 'login' %}
                 <!-- Staff Desktop user & logout (hidden on mobile, moved to bottom on mobile) -->
                 <div class="hidden md:flex items-center gap-2 pl-3 border-l border-rule text-muted" style="border-left: 1px solid #e7e2d9; padding-left: 12px;">
                     <span class="font-medium text-ink">{{ user.username }}</span>
@@ -52,7 +52,7 @@
             </div>
         </div>
 
-        {% if variant == 'staff' and user.is_authenticated %}
+        {% if variant == 'staff' and user.is_authenticated and request.resolver_match.url_name != 'login' %}
         <!-- Navigation Tabs Row with Right-Edge Fade for Mobile Scroll Cue -->
         <div class="relative w-full overflow-hidden">
             <nav class="office-nav-row">

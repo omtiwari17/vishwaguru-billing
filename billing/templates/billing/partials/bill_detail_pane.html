@@ -2,37 +2,38 @@
 
 <div id="bill-detail-pane" class="w-full max-w-full min-w-0">
     <!-- 1. Title & Status Row -->
-    <div class="flex items-center justify-between flex-wrap gap-2 pb-3.5 mb-5 border-b border-rule" style="border-bottom: 1px solid #e7e2d9;">
+    <div class="flex items-center justify-between flex-wrap gap-3 pb-4 mb-6 border-b border-rule" style="border-bottom: 1px solid var(--rule);">
         <div class="flex items-center gap-3.5 min-w-0">
-            <h1 class="text-2xl md:text-3xl font-serif font-semibold text-ink m-0 truncate" style="font-family: 'Noto Serif Devanagari', serif; color: #1c1917;">
+            <h1 class="text-2xl md:text-3xl font-serif font-semibold text-ink m-0 truncate" style="font-family: 'Noto Serif Devanagari', serif; color: var(--ink);">
                 {{ bill.bill_number }}
             </h1>
-            <span style="font-size: 15px;">
+            <div class="inline-flex items-center px-2.5 py-1 rounded bg-white border border-rule text-xs font-medium" style="border: 1px solid var(--rule); border-radius: 4px; background: #ffffff;">
                 {% include 'billing/partials/status_dot.html' with status=bill.payment_status %}
-            </span>
+            </div>
         </div>
-        <div class="text-sm text-muted tabular-nums shrink-0" style="color: #57534e; font-size: 14px;">
-            {% if site_lang == 'hi' %}निर्मित:{% else %}Created:{% endif %} {{ bill.created_at|date:"d M Y" }}
+        <div class="text-xs md:text-sm text-muted tabular-nums flex items-center gap-1.5 shrink-0" style="color: var(--muted);">
+            <i class="bi bi-calendar3 text-xs"></i>
+            <span>{% if site_lang == 'hi' %}निर्मित:{% else %}Created:{% endif %} {{ bill.created_at|date:"d M Y" }}</span>
         </div>
     </div>
 
     <!-- 2. Success Alert (on payment record) -->
     {% if payment_success_msg %}
-    <div class="border rounded p-3.5 mb-5 text-sm font-medium flex items-center justify-between"
-         style="background-color: #f0fdf4; border-color: #bbf7d0; color: #15803d; border-radius: 4px;">
+    <div class="p-3.5 mb-6 text-sm font-medium rounded flex items-center justify-between border"
+         style="background-color: #f0fdf4; border-color: #bbf7d0; color: var(--paid); border-radius: 4px;">
         <div class="flex items-center gap-2">
             <i class="bi bi-check-circle-fill"></i>
             <span>{{ payment_success_msg }}</span>
         </div>
-        <span class="text-xs text-muted tabular-nums" style="color: #57534e;">{% now "H:i" %}</span>
+        <span class="text-xs text-muted tabular-nums" style="color: var(--muted);">{% now "H:i" %}</span>
     </div>
     {% endif %}
 
     <!-- 3. Client Pending Payment Submissions Alert Banner -->
     {% if pending_submissions %}
-    <div class="border rounded p-4 mb-5 text-sm" style="background-color: #fffbeb; border-color: #fde68a; color: #78350f; border-radius: 4px;">
+    <div class="border rounded p-4 mb-6 text-sm" style="background-color: #fffbeb; border-color: #fde68a; color: #78350f; border-radius: 6px; box-shadow: var(--shadow-border);">
         <div class="font-semibold mb-2.5 flex items-center gap-2">
-            <i class="bi bi-shield-exclamation"></i>
+            <i class="bi bi-shield-exclamation text-amber-600"></i>
             <span>{% if site_lang == 'hi' %}ग्राहक द्वारा पोर्टल पर यूटीआर दर्ज किया गया है:{% else %}Client submitted payment verification via portal:{% endif %}</span>
         </div>
         {% for sub in pending_submissions %}
@@ -68,173 +69,208 @@
     </div>
     {% endif %}
 
-    <!-- 4. Bill Details as a Plain Two-Column List (label muted, value ink), no cards inside cards -->
-    <div class="border border-rule bg-white rounded p-5 md:p-6 mb-5 w-full max-w-full min-w-0" style="border: 1px solid #d6cfc4; background-color: #ffffff; border-radius: 4px;">
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-y-4 md:gap-x-12 min-w-0">
+    <!-- 4. Bill Details: Structured Broadsheet 2-Column Ledger -->
+    <div class="desk-panel bg-white border border-rule rounded-md p-5 md:p-6 mb-6 w-full max-w-full min-w-0"
+         style="background-color: #ffffff; border: 1px solid var(--rule); border-radius: 6px; box-shadow: var(--shadow-border);">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-10 min-w-0">
             <!-- Left Column: Client & Ad Publication Details -->
-            <div class="space-y-4 min-w-0">
-                <!-- Client Row -->
-                <div class="flex items-start justify-between gap-3 min-w-0">
-                    <span class="text-sm font-medium text-muted shrink-0 w-28 sm:w-32 md:w-36 pt-0.5" style="color: #57534e;">
-                        {% if site_lang == 'hi' %}विज्ञापनदाता (Client){% else %}Client{% endif %}
-                    </span>
-                    <div class="text-right flex-1 min-w-0 break-words">
-                        <div class="text-base font-semibold text-ink" style="color: #1c1917;">
-                            {{ bill.client_name|client_primary_name }}
-                        </div>
-                        {% if bill.client_name|client_secondary_name %}
-                        <div class="text-sm text-muted" style="color: #57534e; margin-top: 1px;">
-                            {{ bill.client_name|client_secondary_name }}
-                        </div>
-                        {% endif %}
-                        {% if bill.client_phone %}
-                        <a href="tel:{{ bill.client_phone }}" class="text-sm text-muted hover:text-ink block mt-1 tabular-nums" style="text-decoration: none; color: #57534e;">
-                            <i class="bi bi-telephone text-xs"></i> {{ bill.client_phone }}
+            <div class="flex flex-col justify-between space-y-4 min-w-0">
+                <div>
+                    <div class="text-xs uppercase tracking-wider font-semibold text-muted mb-2" style="color: var(--muted); font-size: 12px;">
+                        {% if site_lang == 'hi' %}विज्ञापनदाता (Client){% else %}Client Details{% endif %}
+                    </div>
+                    <div class="text-lg font-bold text-ink leading-snug" style="color: var(--ink);">
+                        {{ bill.client_name|client_primary_name }}
+                    </div>
+                    {% if bill.client_name|client_secondary_name %}
+                    <div class="text-sm text-muted mt-0.5" style="color: var(--muted);">
+                        {{ bill.client_name|client_secondary_name }}
+                    </div>
+                    {% endif %}
+                    {% if bill.client_phone %}
+                    <div class="mt-2">
+                        <a href="tel:{{ bill.client_phone }}" class="text-sm text-muted hover:text-ink inline-flex items-center gap-1.5 tabular-nums" style="text-decoration: none; color: var(--muted);">
+                            <i class="bi bi-telephone text-xs"></i> <span>{{ bill.client_phone }}</span>
                         </a>
-                        {% endif %}
-                        {% if bill.client_address %}
-                        <div class="text-xs text-muted mt-1 break-words" style="color: #57534e;">
-                            {{ bill.client_address }}
-                        </div>
-                        {% endif %}
-                        {% if bill.client_gstin %}
-                        <div class="text-xs text-muted mt-1 font-mono" style="color: #57534e;">
-                            GSTIN/PAN: {{ bill.client_gstin }}
-                        </div>
-                        {% endif %}
                     </div>
+                    {% endif %}
+                    {% if bill.client_address %}
+                    <div class="text-xs text-muted mt-1.5 flex items-start gap-1.5" style="color: var(--muted);">
+                        <i class="bi bi-geo-alt text-xs shrink-0 mt-0.5"></i>
+                        <span>{{ bill.client_address }}</span>
+                    </div>
+                    {% endif %}
+                    {% if bill.client_gstin %}
+                    <div class="mt-2">
+                        <span class="inline-block text-xs font-mono px-2 py-0.5 bg-stone-100 text-stone-700 rounded border border-rule" style="font-size: 11px;">
+                            GSTIN: {{ bill.client_gstin }}
+                        </span>
+                    </div>
+                    {% endif %}
                 </div>
 
-                <!-- Edition & Date Row -->
-                <div class="flex items-start justify-between gap-3 pt-3.5 border-t border-rule min-w-0" style="border-top: 1px solid #e7e2d9;">
-                    <span class="text-sm font-medium text-muted shrink-0 w-28 sm:w-32 md:w-36" style="color: #57534e;">
-                        {% if site_lang == 'hi' %}संस्करण व दिनांक{% else %}Edition &amp; date{% endif %}
-                    </span>
-                    <div class="text-right flex-1 min-w-0 text-base text-ink tabular-nums break-words" style="color: #1c1917;">
-                        {% if site_lang == 'hi' %}{{ bill.edition_hindi }}{% else %}{{ bill.get_edition_name_display }}{% endif %} &bull; {{ bill.edition_date|date:"d M Y" }}
+                <!-- Publication Details Block -->
+                <div class="pt-4 border-t border-rule" style="border-top: 1px solid var(--rule);">
+                    <div class="text-xs uppercase tracking-wider font-semibold text-muted mb-2.5" style="color: var(--muted); font-size: 12px;">
+                        {% if site_lang == 'hi' %}प्रकाशन विवरण{% else %}Publication Details{% endif %}
                     </div>
-                </div>
-
-                <!-- Placement & Page Row -->
-                <div class="flex items-start justify-between gap-3 pt-3.5 border-t border-rule min-w-0" style="border-top: 1px solid #e7e2d9;">
-                    <span class="text-sm font-medium text-muted shrink-0 w-28 sm:w-32 md:w-36" style="color: #57534e;">
-                        {% if site_lang == 'hi' %}स्थान व पृष्ठ{% else %}Placement &amp; page{% endif %}
-                    </span>
-                    <div class="text-right flex-1 min-w-0 text-base text-ink break-words" style="color: #1c1917;">
-                        <div>
-                            {% if site_lang == 'hi' %}{{ bill.placement_hindi }}{% else %}{{ bill.get_placement_type_display }}{% endif %}
-                            {% if bill.custom_size_text %} &bull; {{ bill.custom_size_text }}{% endif %}
-                            {% if bill.page_number %} &bull; <span class="tabular-nums">{{ bill.page_number|format_page:site_lang }}</span>{% endif %}
+                    <div class="flex flex-col gap-2 text-sm">
+                        <div class="flex items-center justify-between gap-3">
+                            <span class="text-muted" style="color: var(--muted);">{% if site_lang == 'hi' %}संस्करण व दिनांक{% else %}Edition &amp; date{% endif %}</span>
+                            <span class="font-medium text-ink tabular-nums text-right" style="color: var(--ink);">
+                                {% if site_lang == 'hi' %}{{ bill.edition_hindi }}{% else %}{{ bill.get_edition_name_display }}{% endif %} &bull; {{ bill.edition_date|date:"d M Y" }}
+                            </span>
+                        </div>
+                        <div class="flex items-center justify-between gap-3">
+                            <span class="text-muted" style="color: var(--muted);">{% if site_lang == 'hi' %}स्थान व पृष्ठ{% else %}Placement &amp; page{% endif %}</span>
+                            <span class="font-medium text-ink text-right" style="color: var(--ink);">
+                                {% if site_lang == 'hi' %}{{ bill.placement_hindi }}{% else %}{{ bill.get_placement_type_display }}{% endif %}
+                                {% if bill.custom_size_text %} &bull; {{ bill.custom_size_text }}{% endif %}
+                                {% if bill.page_number %} &bull; <span class="tabular-nums">{{ bill.page_number|format_page:site_lang }}</span>{% endif %}
+                            </span>
                         </div>
                         {% if bill.ad_title %}
-                        <div class="text-sm text-muted mt-1 font-normal break-words" style="color: #57534e;">
+                        <div class="text-xs text-muted italic mt-1" style="color: var(--muted);">
                             "{{ bill.ad_title }}"
                         </div>
                         {% endif %}
                         {% if bill.epaper_link %}
-                        <a href="{{ bill.epaper_link }}" target="_blank" class="text-sm text-maroon hover:underline inline-flex items-center gap-1 mt-1" style="text-decoration: none; color: #9f1d1d;">
-                            <i class="bi bi-box-arrow-up-right text-xs"></i>
-                            <span>{% if site_lang == 'hi' %}विज्ञापन देखें{% else %}View ad{% endif %}</span>
-                        </a>
+                        <div class="text-right mt-1">
+                            <a href="{{ bill.epaper_link }}" target="_blank" class="text-xs font-semibold text-maroon hover:underline inline-flex items-center gap-1" style="text-decoration: none; color: var(--maroon);">
+                                <i class="bi bi-box-arrow-up-right text-[11px]"></i>
+                                <span>{% if site_lang == 'hi' %}ई-पेपर में देखें{% else %}View in E-paper{% endif %}</span>
+                            </a>
+                        </div>
                         {% endif %}
                     </div>
                 </div>
             </div>
 
-            <!-- Right Column: Financials -->
-            <div class="space-y-4 pt-4 md:pt-0 border-t md:border-t-0 md:border-l md:border-rule md:pl-10 min-w-0" style="border-color: #e7e2d9;">
-                <!-- Total Amount -->
-                <div class="flex items-center justify-between gap-3 min-w-0">
-                    <span class="text-sm font-medium text-muted shrink-0 w-28 sm:w-32 md:w-36" style="color: #57534e;">
-                        {% if site_lang == 'hi' %}कुल राशि{% else %}Total amount{% endif %}
-                    </span>
-                    <div class="text-right flex-1 min-w-0">
-                        <span class="text-lg md:text-xl font-bold text-ink tabular-nums" style="color: #1c1917;">
-                            {{ bill.total_amount|indian_currency }}
-                        </span>
+            <!-- Right Column: Financial Ledger Box -->
+            <div class="flex flex-col justify-between pt-4 md:pt-0 border-t md:border-t-0 md:border-l md:border-rule md:pl-8 min-w-0" style="border-color: var(--rule);">
+                <div>
+                    <div class="text-xs uppercase tracking-wider font-semibold text-muted mb-2.5" style="color: var(--muted); font-size: 12px;">
+                        {% if site_lang == 'hi' %}लेखा व भुगतान विवरण{% else %}Billing &amp; Settlement{% endif %}
+                    </div>
+                    
+                    <div class="rounded p-4 bg-stone-50 border border-rule flex flex-col gap-2.5"
+                         style="background-color: var(--paper); border: 1px solid var(--rule); border-radius: 4px;">
+                        <!-- Total Amount -->
+                        <div class="flex items-center justify-between gap-3">
+                            <span class="text-sm font-medium text-muted" style="color: var(--muted);">
+                                {% if site_lang == 'hi' %}कुल राशि{% else %}Total amount{% endif %}
+                            </span>
+                            <div class="text-right">
+                                <span class="text-xl font-bold text-ink tabular-nums" style="color: var(--ink);">
+                                    {{ bill.total_amount|indian_currency }}
+                                </span>
+                            </div>
+                        </div>
+
                         {% if bill.discount_amount > 0 %}
-                        <div class="text-xs text-muted tabular-nums" style="color: #57534e; margin-top: 1px;">
-                            {% if site_lang == 'hi' %}छूट:{% else %}Discount:{% endif %} -{{ bill.discount_amount|indian_currency }}
+                        <div class="flex items-center justify-between gap-3 text-xs text-muted tabular-nums" style="color: var(--muted);">
+                            <span>{% if site_lang == 'hi' %}छूट (Discount){% else %}Discount{% endif %}</span>
+                            <span class="font-medium">-{{ bill.discount_amount|indian_currency }}</span>
                         </div>
                         {% endif %}
+
                         {% if bill.previous_due > 0 %}
-                        <div class="text-xs text-muted tabular-nums" style="color: #57534e; margin-top: 1px;">
-                            {% if site_lang == 'hi' %}पुराना बकाया शामिल:{% else %}Prev due incl:{% endif %} {{ bill.previous_due|indian_currency }}
+                        <div class="flex items-center justify-between gap-3 text-xs text-muted tabular-nums" style="color: var(--muted);">
+                            <span>{% if site_lang == 'hi' %}पुराना बकाया शामिल{% else %}Previous due incl{% endif %}</span>
+                            <span class="font-medium">{{ bill.previous_due|indian_currency }}</span>
                         </div>
                         {% endif %}
+
+                        <div class="border-t border-rule my-1" style="border-top: 1px solid var(--rule);"></div>
+
+                        <!-- Paid So Far -->
+                        <div class="flex items-center justify-between gap-3">
+                            <span class="text-sm font-medium text-muted" style="color: var(--muted);">
+                                {% if site_lang == 'hi' %}प्राप्त राशि{% else %}Paid so far{% endif %}
+                            </span>
+                            <span class="text-lg font-semibold tabular-nums text-paid" style="color: var(--paid);">
+                                {{ bill.amount_paid|indian_currency }}
+                            </span>
+                        </div>
+
+                        <!-- Balance Due -->
+                        <div class="flex items-center justify-between gap-3 pt-2 border-t border-rule" style="border-top: 1px solid var(--rule);">
+                            <span class="text-sm font-semibold text-ink" style="color: var(--ink);">
+                                {% if site_lang == 'hi' %}शेष देय राशि{% else %}Balance due{% endif %}
+                            </span>
+                            <span class="text-2xl font-bold tabular-nums"
+                                  style="color: {% if bill.balance_amount > 0 %}var(--maroon){% else %}var(--paid){% endif %};">
+                                {{ bill.balance_amount|indian_currency }}
+                            </span>
+                        </div>
                     </div>
                 </div>
 
-                <!-- Paid So Far -->
-                <div class="flex items-center justify-between gap-3 pt-3.5 border-t border-rule min-w-0" style="border-top: 1px solid #e7e2d9;">
-                    <span class="text-sm font-medium text-muted shrink-0 w-28 sm:w-32 md:w-36" style="color: #57534e;">
-                        {% if site_lang == 'hi' %}प्राप्त राशि{% else %}Paid so far{% endif %}
-                    </span>
-                    <span class="text-lg md:text-xl font-semibold text-paid tabular-nums text-right flex-1 min-w-0" style="color: #15803d;">
-                        {{ bill.amount_paid|indian_currency }}
-                    </span>
-                </div>
-
-                <!-- Balance Due -->
-                <div class="flex items-center justify-between gap-3 pt-3.5 border-t border-rule min-w-0" style="border-top: 1px solid #e7e2d9;">
-                    <span class="text-sm font-medium text-muted shrink-0 w-28 sm:w-32 md:w-36" style="color: #57534e;">
-                        {% if site_lang == 'hi' %}शेष देय राशि{% else %}Balance due{% endif %}
-                    </span>
-                    <span class="text-xl md:text-2xl font-bold tabular-nums text-right flex-1 min-w-0"
-                          style="color: {% if bill.balance_amount > 0 %}#9f1d1d{% else %}#15803d{% endif %};">
-                        {{ bill.balance_amount|indian_currency }}
+                <!-- Payment Status Cue -->
+                <div class="mt-4 pt-3 border-t border-rule text-xs text-muted flex items-center justify-between" style="border-top: 1px solid var(--rule); color: var(--muted);">
+                    <span>{% if site_lang == 'hi' %}भुगतान स्थिति:{% else %}Status:{% endif %}</span>
+                    <span class="font-semibold" style="color: {% if bill.balance_amount == 0 %}var(--paid){% elif bill.amount_paid > 0 %}var(--partial){% else %}var(--maroon){% endif %};">
+                        {% if bill.balance_amount == 0 %}
+                            {% if site_lang == 'hi' %}पूर्ण चुकता{% else %}Paid in Full{% endif %}
+                        {% elif bill.amount_paid > 0 %}
+                            {% if site_lang == 'hi' %}आंशिक भुगतान{% else %}Partially Paid{% endif %}
+                        {% else %}
+                            {% if site_lang == 'hi' %}अदत्त (लंबित){% else %}Unpaid{% endif %}
+                        {% endif %}
                     </span>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- 5. Actions Row (Authoritative Buttons with Bootstrap Icons, No Emojis) -->
-    <div class="flex flex-col md:flex-row items-stretch md:items-center gap-3 mb-6 w-full min-w-0">
+    <!-- 5. Actions Row (Authoritative Buttons with Bootstrap Icons, Zero Emojis) -->
+    <div class="flex flex-wrap items-center gap-2.5 mb-6 w-full min-w-0">
         <!-- Download Pure English PDF -->
         <a href="{% url 'billing:bill_pdf' bill.pk %}?download=1&lang=en&sign=0"
            target="_blank"
-           class="btn-desk-secondary justify-center min-h-[44px] px-4 text-sm font-medium w-full md:w-auto"
+           class="btn-desk-secondary text-xs sm:text-sm font-medium"
            style="text-decoration: none;"
-           title="Download 100% Full English Invoice PDF">
-            <i class="bi bi-file-earmark-pdf" style="color: #9f1d1d;"></i>
-            <span>{% if site_lang == 'hi' %}English पीडीएफ{% else %}English PDF{% endif %}</span>
+           title="Download Full English Invoice PDF">
+            <i class="bi bi-file-earmark-pdf" style="color: var(--maroon);"></i>
+            <span>English PDF</span>
         </a>
 
         <!-- Download Pure Hindi PDF -->
         <a href="{% url 'billing:bill_pdf' bill.pk %}?download=1&lang=hi&sign=0"
            target="_blank"
-           class="btn-desk-secondary justify-center min-h-[44px] px-4 text-sm font-medium w-full md:w-auto"
+           class="btn-desk-secondary text-xs sm:text-sm font-medium"
            style="text-decoration: none;"
-           title="पूर्ण हिन्दी देयक पीडीएफ डाउनलोड करें">
-            <i class="bi bi-file-earmark-pdf" style="color: #9f1d1d;"></i>
+           title="पूर्ण हिन्दी देयक डाउनलोड करें">
+            <i class="bi bi-file-earmark-pdf" style="color: var(--maroon);"></i>
             <span>{% if site_lang == 'hi' %}हिंदी पीडीएफ{% else %}Hindi PDF{% endif %}</span>
         </a>
 
         <!-- Seal & Sign PDF (Physical Stamp Version) -->
         <a href="{% url 'billing:bill_pdf' bill.pk %}?download=1&lang={{ bill.bill_language|default:'hi' }}&sign=1"
            target="_blank"
-           class="btn-desk-secondary justify-center min-h-[44px] px-4 text-sm font-medium w-full md:w-auto text-muted hover:text-ink"
+           class="btn-desk-secondary text-xs sm:text-sm font-medium text-muted hover:text-ink"
            style="text-decoration: none;"
            title="{% if site_lang == 'hi' %}भौतिक मुहर व हस्ताक्षर हेतु प्रति{% else %}Print version with physical seal & signature line{% endif %}">
             <i class="bi bi-pen"></i>
-            <span>{% if site_lang == 'hi' %}मुहर प्रति{% else %}Seal & Sign{% endif %}</span>
+            <span>{% if site_lang == 'hi' %}मुहर प्रति{% else %}Seal &amp; Sign{% endif %}</span>
         </a>
 
         <!-- WhatsApp Reminder -->
+        {% if bill.whatsapp_share_url %}
         <a href="{{ bill.whatsapp_share_url }}"
            target="_blank"
-           class="btn-desk-secondary justify-center min-h-[44px] px-4 text-sm font-medium w-full md:w-auto"
+           class="btn-desk-secondary btn-whatsapp text-xs sm:text-sm font-medium"
            style="text-decoration: none;">
-            <i class="bi bi-whatsapp" style="color: #15803d;"></i>
+            <i class="bi bi-whatsapp"></i>
             <span>{% if site_lang == 'hi' %}व्हाट्सऐप तगादा{% else %}WhatsApp reminder{% endif %}</span>
         </a>
+        {% endif %}
 
         <!-- Customer Portal Link -->
         {% if portal_url %}
         <a href="{{ portal_url }}"
            target="_blank"
-           class="btn-desk-secondary justify-center min-h-[44px] px-4 text-sm font-medium w-full md:w-auto"
+           class="btn-desk-secondary text-xs sm:text-sm font-medium"
            style="text-decoration: none;">
             <i class="bi bi-box-arrow-up-right"></i>
             <span>{% if site_lang == 'hi' %}ग्राहक खाता पोर्टल{% else %}Customer portal{% endif %}</span>
@@ -242,11 +278,13 @@
         {% endif %}
     </div>
 
-    <!-- 6. "Record Payment" Section (only if balance due > 0) -->
+    <!-- 6. "Record Payment" Section or Settled Banner -->
     {% if bill.balance_amount > 0 %}
-    <div class="border border-rule bg-white rounded p-5 md:p-6 mb-6 w-full max-w-full min-w-0" style="border: 1px solid #d6cfc4; background-color: #ffffff; border-radius: 4px;">
-        <h2 class="text-base md:text-lg font-semibold text-ink mb-4 font-serif flex items-center gap-2" style="font-family: 'Noto Serif Devanagari', serif; color: #1c1917;">
-            <i class="bi bi-cash-stack" style="color: #9f1d1d;"></i>
+    <div class="desk-panel bg-white border border-rule rounded-md p-5 md:p-6 mb-6 w-full max-w-full min-w-0"
+         style="background-color: #ffffff; border: 1px solid var(--rule); border-radius: 6px; box-shadow: var(--shadow-border);">
+        <h2 class="text-base md:text-lg font-semibold text-ink mb-4 font-serif flex items-center gap-2"
+            style="font-family: 'Noto Serif Devanagari', serif; color: var(--ink);">
+            <i class="bi bi-cash-stack" style="color: var(--maroon);"></i>
             <span>{% if site_lang == 'hi' %}भुगतान दर्ज करें{% else %}Record Payment{% endif %}</span>
         </h2>
 
@@ -265,7 +303,7 @@
                     </label>
                     {{ record_form.amount }}
                     {% if record_form.amount.errors %}
-                    <p class="text-xs text-maroon mt-1 font-medium" style="color: #9f1d1d;">{{ record_form.amount.errors.0 }}</p>
+                    <p class="text-xs text-maroon mt-1 font-medium" style="color: var(--maroon);">{{ record_form.amount.errors.0 }}</p>
                     {% endif %}
                 </div>
 
@@ -276,7 +314,7 @@
                     </label>
                     {{ record_form.payment_method }}
                     {% if record_form.payment_method.errors %}
-                    <p class="text-xs text-maroon mt-1 font-medium" style="color: #9f1d1d;">{{ record_form.payment_method.errors.0 }}</p>
+                    <p class="text-xs text-maroon mt-1 font-medium" style="color: var(--maroon);">{{ record_form.payment_method.errors.0 }}</p>
                     {% endif %}
                 </div>
 
@@ -287,7 +325,7 @@
                     </label>
                     {{ record_form.reference }}
                     {% if record_form.reference.errors %}
-                    <p class="text-xs text-maroon mt-1 font-medium" style="color: #9f1d1d;">{{ record_form.reference.errors.0 }}</p>
+                    <p class="text-xs text-maroon mt-1 font-medium" style="color: var(--maroon);">{{ record_form.reference.errors.0 }}</p>
                     {% endif %}
                 </div>
 
@@ -298,13 +336,13 @@
                     </label>
                     {{ record_form.note }}
                     {% if record_form.note.errors %}
-                    <p class="text-xs text-maroon mt-1 font-medium" style="color: #9f1d1d;">{{ record_form.note.errors.0 }}</p>
+                    <p class="text-xs text-maroon mt-1 font-medium" style="color: var(--maroon);">{{ record_form.note.errors.0 }}</p>
                     {% endif %}
                 </div>
             </div>
 
             {% if record_form.non_field_errors %}
-            <div class="text-xs text-maroon font-medium mb-3" style="color: #9f1d1d;">
+            <div class="text-xs text-maroon font-medium mb-3" style="color: var(--maroon);">
                 {% for err in record_form.non_field_errors %}
                 <p>{{ err }}</p>
                 {% endfor %}
@@ -313,7 +351,7 @@
 
             <div>
                 <button type="submit"
-                        class="btn-desk-primary w-full sm:w-auto min-h-[44px] px-6 text-sm font-semibold justify-center">
+                        class="btn-desk-primary w-full sm:w-auto min-h-[42px] px-6 text-sm font-semibold justify-center">
                     <i class="bi bi-check-lg"></i>
                     <span>{% if site_lang == 'hi' %}भुगतान सहेजें{% else %}Save payment{% endif %}</span>
                 </button>
@@ -321,17 +359,27 @@
         </form>
     </div>
     {% else %}
-    <div class="border rounded p-4 mb-6 flex items-center gap-2.5 text-paid text-sm font-medium"
-         style="background-color: #f0fdf4; border-color: #bbf7d0; color: #15803d; border-radius: 4px;">
-        <i class="bi bi-check-circle-fill" style="font-size: 16px;"></i>
-        <span>{% if site_lang == 'hi' %}यह बिल पूर्ण रूप से चुकता है। कोई बकाया नहीं है।{% else %}This invoice is fully paid. No balance due.{% endif %}</span>
+    <!-- Refined Settled Banner -->
+    <div class="p-4 mb-6 rounded-md border flex items-center justify-between gap-3"
+         style="background-color: #f0fdf4; border-color: #bbf7d0; color: var(--paid); border-radius: 6px; box-shadow: var(--shadow-border);">
+        <div class="flex items-center gap-2.5">
+            <i class="bi bi-check-circle-fill" style="font-size: 18px; color: var(--paid);"></i>
+            <div>
+                <span class="font-semibold text-sm">
+                    {% if site_lang == 'hi' %}यह बिल पूर्ण रूप से चुकता है। कोई बकाया नहीं है।{% else %}This invoice is fully paid. No balance due.{% endif %}
+                </span>
+            </div>
+        </div>
+        <span class="status-dot status-dot-paid shrink-0"></span>
     </div>
     {% endif %}
 
     <!-- 7. Payment History list -->
-    <div class="border border-rule bg-white rounded p-5 md:p-6 w-full max-w-full min-w-0" style="border: 1px solid #d6cfc4; background-color: #ffffff; border-radius: 4px;">
-        <h3 class="text-base font-semibold text-ink mb-4 font-serif flex items-center gap-2" style="font-family: 'Noto Serif Devanagari', serif; color: #1c1917;">
-            <i class="bi bi-clock-history"></i>
+    <div class="desk-panel bg-white border border-rule rounded-md p-5 md:p-6 w-full max-w-full min-w-0"
+         style="background-color: #ffffff; border: 1px solid var(--rule); border-radius: 6px; box-shadow: var(--shadow-border);">
+        <h3 class="text-base font-semibold text-ink mb-4 font-serif flex items-center gap-2"
+            style="font-family: 'Noto Serif Devanagari', serif; color: var(--ink);">
+            <i class="bi bi-clock-history text-muted"></i>
             <span>{% if site_lang == 'hi' %}भुगतान इतिहास{% else %}Payment History{% endif %}</span>
         </h3>
 
@@ -339,27 +387,27 @@
         <div class="w-full max-w-full overflow-x-auto">
             <table class="w-full desk-table" style="font-size: 14px;">
                 <thead>
-                    <tr>
-                        <th class="py-2.5 px-3.5 text-left font-semibold">{% if site_lang == 'hi' %}दिनांक{% else %}Date{% endif %}</th>
-                        <th class="py-2.5 px-3.5 text-left font-semibold">{% if site_lang == 'hi' %}माध्यम{% else %}Mode{% endif %}</th>
-                        <th class="py-2.5 px-3.5 text-left font-semibold">{% if site_lang == 'hi' %}संदर्भ / UTR{% else %}Reference{% endif %}</th>
-                        <th class="py-2.5 px-3.5 text-right font-semibold">{% if site_lang == 'hi' %}राशि{% else %}Amount{% endif %}</th>
+                    <tr class="border-b border-rule" style="border-bottom: 1px solid var(--rule);">
+                        <th class="py-2.5 px-3.5 text-left font-semibold text-xs text-muted" style="color: var(--muted); font-size: 12px;">{% if site_lang == 'hi' %}दिनांक{% else %}Date{% endif %}</th>
+                        <th class="py-2.5 px-3.5 text-left font-semibold text-xs text-muted" style="color: var(--muted); font-size: 12px;">{% if site_lang == 'hi' %}माध्यम{% else %}Mode{% endif %}</th>
+                        <th class="py-2.5 px-3.5 text-left font-semibold text-xs text-muted" style="color: var(--muted); font-size: 12px;">{% if site_lang == 'hi' %}संदर्भ / UTR{% else %}Reference{% endif %}</th>
+                        <th class="py-2.5 px-3.5 text-right font-semibold text-xs text-muted" style="color: var(--muted); font-size: 12px;">{% if site_lang == 'hi' %}राशि{% else %}Amount{% endif %}</th>
                     </tr>
                 </thead>
-                <tbody class="divide-y divide-rule" style="border-top: 1px solid #e7e2d9;">
+                <tbody class="divide-y divide-rule" style="border-top: 1px solid var(--rule);">
                     {% for item in payment_history %}
-                    <tr class="hover:bg-paper transition-colors" style="border-bottom: 1px solid #e7e2d9;">
-                        <td class="py-3 px-3.5 text-muted tabular-nums whitespace-nowrap" style="color: #57534e;">{{ item.date|date:"d M Y, H:i" }}</td>
-                        <td class="py-3 px-3.5 text-ink font-medium" style="color: #1c1917;">{{ item.method }}</td>
-                        <td class="py-3 px-3.5 text-muted font-mono" style="color: #57534e;">{{ item.reference|default:"-" }}</td>
-                        <td class="py-3 px-3.5 text-right tabular-nums font-semibold text-ink" style="color: #1c1917;">{{ item.amount|indian_currency }}</td>
+                    <tr class="hover:bg-paper transition-colors" style="border-bottom: 1px solid var(--rule);">
+                        <td class="py-3 px-3.5 text-muted tabular-nums whitespace-nowrap" style="color: var(--muted);">{{ item.date|date:"d M Y, H:i" }}</td>
+                        <td class="py-3 px-3.5 text-ink font-medium" style="color: var(--ink);">{{ item.method }}</td>
+                        <td class="py-3 px-3.5 text-muted font-mono" style="color: var(--muted);">{{ item.reference|default:"-" }}</td>
+                        <td class="py-3 px-3.5 text-right tabular-nums font-semibold text-ink" style="color: var(--ink);">{{ item.amount|indian_currency }}</td>
                     </tr>
                     {% endfor %}
                 </tbody>
             </table>
         </div>
         {% else %}
-        <p class="text-sm text-muted py-2" style="color: #57534e;">
+        <p class="text-sm text-muted py-2 m-0" style="color: var(--muted);">
             {% if site_lang == 'hi' %}कोई भुगतान दर्ज नहीं है।{% else %}No payments recorded yet.{% endif %}
         </p>
         {% endif %}

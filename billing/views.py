@@ -111,6 +111,16 @@ def dashboard(request):
             status_summary[st]['count'] = item['count']
             status_summary[st]['amount'] = item['amount'] or Decimal('0.00')
 
+    if total_count > 0:
+        paid_pct = round((status_summary['Paid']['count'] / total_count) * 100)
+        partial_pct = round((status_summary['Partial']['count'] / total_count) * 100)
+        unpaid_pct = max(0, 100 - paid_pct - partial_pct)
+    else:
+        paid_pct, partial_pct, unpaid_pct = 0, 0, 0
+    status_summary['Paid']['pct'] = paid_pct
+    status_summary['Partial']['pct'] = partial_pct
+    status_summary['Unpaid']['pct'] = unpaid_pct
+
     unpaid_bills_count = status_summary['Unpaid']['count'] + status_summary['Partial']['count']
 
     # 5. Customer UPI Payment Submissions Pending Verification
