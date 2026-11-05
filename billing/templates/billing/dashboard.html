@@ -67,9 +67,47 @@
         </div>
     </div>
 
-    <!-- Segmented Status Filter Tabs Bar (Pure HTMX, zero page reload) -->
-    <div class="px-4 py-2.5 bg-paper border-b border-rule flex items-center justify-between gap-3 flex-wrap">
-        <div class="desk-segmented-track" role="tablist">
+    <!-- Mobile Header Layout (< md: Clean, structured clerk header directly above filter tabs) -->
+    <div class="flex md:hidden flex-col gap-3 p-4 bg-white border-b border-rule">
+        <div class="flex items-center justify-between">
+            <h2 class="desk-panel-title" style="font-size: 1.25rem; font-weight: 700; margin: 0; color: var(--ink);">
+                {% if site_lang == 'hi' %}हाल के विज्ञापन बिल{% else %}Recent bills{% endif %}
+            </h2>
+            <span class="text-muted tabular-nums" style="font-size: 13.5px; font-weight: 500;">
+                ({{ total_count }} {% if site_lang == 'hi' %}कुल बिल{% else %}{{ total_count|bill_noun:site_lang }} total{% endif %})
+            </span>
+        </div>
+
+        <!-- Full-width Search Input on mobile -->
+        <div class="relative w-full">
+            <input 
+                type="search" 
+                name="q" 
+                aria-label="{% if site_lang == 'hi' %}बिल खोजें{% else %}Search bills{% endif %}"
+                placeholder="{% if site_lang == 'hi' %}बिल खोजें...{% else %}Search bills...{% endif %}"
+                hx-get="{% url 'billing:dashboard' %}" 
+                hx-trigger="keyup changed delay:250ms, search" 
+                hx-target="#bills-table-container"
+                class="desk-input w-full"
+                style="min-height: 44px; font-size: 15px;"
+            >
+        </div>
+
+        <!-- Mobile Action Buttons: New Bill & View All side by side -->
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+            <a href="{% url 'billing:bill_create' %}" class="btn-desk-primary" style="min-height: 44px; font-size: 15px; justify-content: center; padding: 8px 12px;">
+                <i class="bi bi-plus-lg"></i>
+                <span>{% if site_lang == 'hi' %}नया बिल{% else %}New bill{% endif %}</span>
+            </a>
+            <a href="{% url 'billing:bill_search' %}" class="btn-desk-secondary" style="min-height: 44px; font-size: 15px; justify-content: center; padding: 8px 12px;">
+                <span>{% if site_lang == 'hi' %}सभी देखें &rarr;{% else %}View all &rarr;{% endif %}</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- Segmented Status Filter Tabs Bar (Pure HTMX, zero page reload, smooth horizontal scroll) -->
+    <div class="px-3 py-2 sm:px-4 sm:py-2.5 bg-paper border-b border-rule flex items-center justify-between gap-3" style="overflow-x: auto; -webkit-overflow-scrolling: touch;">
+        <div class="desk-segmented-track" role="tablist" style="overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; white-space: nowrap; flex-shrink: 0;">
             <button type="button"
                     hx-get="{% url 'billing:dashboard' %}?status=ALL"
                     hx-target="#bills-table-container"
@@ -107,41 +145,10 @@
             </button>
         </div>
 
-        <div class="text-xs text-muted tabular-nums hidden sm:flex items-center gap-1.5">
+        <div class="text-xs text-muted tabular-nums hidden sm:flex items-center gap-1.5 shrink-0">
             <i class="bi bi-shield-check text-paid"></i>
             <span>{% if site_lang == 'hi' %}लाइव बिलिंग लेजर{% else %}Live billing ledger{% endif %}</span>
         </div>
-    </div>
-
-    <!-- Mobile Header Layout (< md: Clean, unbordered, directly on paper) -->
-    <div class="flex md:hidden flex-col gap-2.5 mb-3">
-        <div class="flex items-center justify-between">
-            <h2 class="desk-panel-title">
-                {% if site_lang == 'hi' %}हाल के विज्ञापन बिल{% else %}Recent bills{% endif %}
-            </h2>
-            <span class="text-xs text-muted tabular-nums">
-                ({{ total_count }} {{ total_count|bill_noun:site_lang }})
-            </span>
-        </div>
-
-        <!-- Full-width Search Input on mobile -->
-        <input 
-            type="search" 
-            name="q" 
-            aria-label="{% if site_lang == 'hi' %}बिल खोजें{% else %}Search bills{% endif %}"
-            placeholder="{% if site_lang == 'hi' %}बिल खोजें{% else %}Search bills{% endif %}"
-            hx-get="{% url 'billing:dashboard' %}" 
-            hx-trigger="keyup changed delay:250ms, search" 
-            hx-target="#bills-table-container"
-            class="desk-input w-full"
-            style="min-height: 44px; font-size: 15px;"
-        >
-
-        <!-- Full-width Primary + New Bill Button -->
-        <a href="{% url 'billing:bill_create' %}" class="btn-desk-primary w-full justify-center" style="min-height: 44px; font-size: 15px;">
-            <i class="bi bi-plus-lg"></i>
-            <span>{% if site_lang == 'hi' %}नया बिल{% else %}New bill{% endif %}</span>
-        </a>
     </div>
 
     <!-- Live HTMX Reusable Table Container -->

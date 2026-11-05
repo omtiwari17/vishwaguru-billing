@@ -7,7 +7,7 @@
 
 {% block content %}
 <!-- Top Title & Navigation Card -->
-<div class="desk-panel" style="background-color: #ffffff; border: 1px solid var(--rule); border-radius: 6px; box-shadow: var(--shadow-border); margin-bottom: 1.75rem; padding: 22px 28px;">
+<div class="desk-panel" style="background-color: #ffffff; border: 1px solid var(--rule); border-radius: 6px; box-shadow: var(--shadow-border); margin-bottom: 1.5rem; padding: clamp(16px, 3vw, 26px);">
     <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem;">
         <div style="display: flex; align-items: center; gap: 1rem;">
             <div style="width: 48px; height: 48px; background-color: #fef2f2; color: var(--maroon); border: 1px solid #fecaca; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 1.45rem; flex-shrink: 0;">
@@ -36,7 +36,7 @@
 </div>
 
 <!-- 2-Column Settings Workspace (Form on Left, Active Credentials & QR on Right) -->
-<div class="settings-workspace" style="display: grid; grid-template-columns: 1fr 380px; gap: 2rem; align-items: start;">
+<div class="settings-workspace">
 
     <!-- Left Column: Settings Form -->
     <div style="min-width: 0;">

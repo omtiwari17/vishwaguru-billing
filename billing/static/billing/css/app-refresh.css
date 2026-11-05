@@ -72,7 +72,6 @@
 }
 
 .desk-panel,
-.bills-desk-panel,
 .step-card,
 .receipt-card {
     background-color: #ffffff;
@@ -253,4 +252,140 @@
     font-size: 15.5px !important;
     padding: 15px 18px !important;
     border-bottom: 1px solid var(--rule) !important;
+}
+
+
+/* --- Responsive Layout & Mobile Viewport Rules --- */
+
+/* Bills Desk Panel Responsive Box */
+.bills-desk-panel {
+    background-color: transparent;
+    border: none;
+    border-radius: 0;
+    margin-bottom: 24px;
+}
+@media (min-width: 768px) {
+    .bills-desk-panel {
+        background-color: #ffffff;
+        border: 1px solid var(--rule);
+        border-radius: 6px;
+        box-shadow: var(--shadow-border);
+        overflow: hidden;
+    }
+}
+
+/* Responsive Bill Detail Layout */
+.bill-detail-card {
+    padding: 16px !important;
+    background-color: #ffffff;
+    border: 1px solid var(--rule);
+    border-radius: 8px;
+}
+@media (min-width: 768px) {
+    .bill-detail-card {
+        padding: 28px 32px !important;
+    }
+}
+
+.bill-detail-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+    align-items: start;
+}
+@media (min-width: 1024px) {
+    .bill-detail-grid {
+        grid-template-columns: 1fr 380px;
+        gap: 2.75rem;
+    }
+}
+
+.bill-detail-finance {
+    border-top: 1px solid var(--rule);
+    padding-top: 1.5rem;
+    margin-top: 1.5rem;
+    min-width: 0;
+}
+@media (min-width: 1024px) {
+    .bill-detail-finance {
+        border-top: none;
+        border-left: 1px solid var(--rule);
+        padding-top: 0;
+        margin-top: 0;
+        padding-left: 2.75rem;
+    }
+}
+
+.meta-row {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 3px;
+    margin-bottom: 8px;
+}
+@media (min-width: 640px) {
+    .meta-row {
+        grid-template-columns: 130px 1fr;
+        gap: 8px 16px;
+        align-items: baseline;
+        margin-bottom: 0;
+    }
+}
+.meta-label {
+    color: var(--muted);
+    font-size: 14px;
+}
+.meta-val {
+    font-weight: 600;
+    color: var(--ink);
+    font-size: 15px;
+}
+
+.bill-actions-bar {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    padding: 12px;
+    background-color: #ffffff;
+    border: 1px solid var(--rule);
+    border-radius: 6px;
+    margin-bottom: 1.5rem;
+}
+.bill-actions-bar > a {
+    width: 100%;
+    justify-content: center;
+    min-height: 44px;
+    font-size: 14.5px;
+}
+.bill-actions-bar > a.full-mobile {
+    grid-column: 1 / -1;
+}
+@media (min-width: 768px) {
+    .bill-actions-bar {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        padding: 14px 20px;
+    }
+    .bill-actions-bar > a {
+        width: auto;
+        min-height: 44px;
+    }
+    .bill-actions-bar > a.full-mobile {
+        grid-column: auto;
+    }
+}
+
+/* Responsive Settings Workspace Layout */
+.settings-workspace {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+    align-items: start;
+}
+@media (min-width: 1024px) {
+    .settings-workspace {
+        grid-template-columns: 1fr 380px;
+        gap: 2rem;
+    }
 }

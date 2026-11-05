@@ -444,6 +444,26 @@
 
 ---
 
+* **Comprehensive Mobile Responsive Layout Overhaul & Zero-Collision Verification**:
+  - **Bill Detail (`/bills/<id>/` & `bill_detail_pane.html`)**:
+    - Replaced the rigid inline grid `grid-template-columns: 1fr 380px; gap: 3rem;` with `.bill-detail-grid` (1 column on `< 1024px`, 2-column `1fr 380px` on desktop).
+    - Client Details and Billing & Settlement stack cleanly on mobile with a distinct 1px rule divider (`border-top: 1px solid var(--rule); padding-top: 1.5rem; margin-top: 1.5rem;`).
+    - Fixed publication details into responsive `.meta-row` (`grid-template-columns: 1fr; gap: 3px;` on mobile, `130px 1fr` on `sm+`), preventing words from breaking into vertical single-character columns.
+    - Upgraded action toolbar into `.bill-actions-bar` (2-column touch-friendly grid on mobile, inline flex bar on desktop) with $\ge 44	ext{px}$ touch targets.
+  - **Bank & UPI Settings (`/bills/settings/payment-info/`)**:
+    - Replaced hardcoded inline style on `.settings-workspace` with responsive CSS (`grid-template-columns: 1fr;` on mobile, `1fr 380px;` on `lg+`), restoring the form to full width and stacking the credentials preview below it on small viewports.
+    - Updated top panel padding to fluid scaling `clamp(16px, 3vw, 26px)`.
+  - **Dashboard (`/bills/` & `dashboard.html`)**:
+    - Reordered mobile layout: Mobile Header (`Recent bills` title, count, full-width search bar, side-by-side `+ New bill` & `View all` buttons) placed directly *above* the Segmented Status Filter Tabs Bar.
+    - Scoped `.bills-desk-panel` to unboxed/transparent on mobile and boxed on desktop (`@media (min-width: 768px)`), eliminating boxed border collisions.
+    - Filter tabs set to smooth horizontal touch-scrolling (`overflow-x: auto; white-space: nowrap; -webkit-overflow-scrolling: touch;`), eliminating wrapping and text overlaps.
+  - **Automated Verification**:
+    - CDP Headless Chrome mobile inspection verified across `390x844` and `427x952` with zero horizontal overflow (`scrollWidth == innerWidth`).
+    - Desktop inspection verified at `1280x900` with 2-column layouts and responsive metrics intact.
+    - Automated test suite: 28/28 tests passing (100% OK).
+
+---
+
 ## 7. Android Termux Co-Hosting Configuration
 * **Host Device:** Xiaomi Redmi Note 8 Pro (MIUI 12.5.10 / Android 11, arm64-v8a)
 * **Static IP:** `192.168.1.50`, SSH Port: `8022`
