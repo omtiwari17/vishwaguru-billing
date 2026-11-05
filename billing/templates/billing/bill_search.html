@@ -6,46 +6,27 @@
 {% endblock %}
 
 {% block content %}
-<!-- Top Metrics Summary Chips -->
-<div class="dashboard-stats-grid">
-    <div class="stat-chip">
-        <div class="stat-chip-icon blue">
-            <i class="bi bi-receipt"></i>
-        </div>
-        <div class="stat-chip-body">
-            <span class="stat-chip-title">{% if site_lang == 'hi' %}कुल बिल{% else %}Total Bills{% endif %}</span>
-            <span class="stat-chip-value tabular-nums">{{ total_count }}</span>
-        </div>
+<!-- Top Metrics Summary Strip (Unified Desk KPI Strip) -->
+<div class="dashboard-kpi-strip" style="margin-bottom: 24px;">
+    <div class="dashboard-kpi">
+        <span class="dashboard-kpi-label">{% if site_lang == 'hi' %}कुल बिल{% else %}Total bills{% endif %}</span>
+        <span class="dashboard-kpi-value">{{ total_count }}</span>
+        <span class="dashboard-kpi-sub">{% if site_lang == 'hi' %}अभिलेख में{% else %}in record{% endif %}</span>
     </div>
-
-    <div class="stat-chip">
-        <div class="stat-chip-icon primary">
-            <i class="bi bi-currency-rupee"></i>
-        </div>
-        <div class="stat-chip-body">
-            <span class="stat-chip-title">{% if site_lang == 'hi' %}कुल बिलिंग{% else %}Total Billed{% endif %}</span>
-            <span class="stat-chip-value tabular-nums">{{ total_billed|indian_currency }}</span>
-        </div>
+    <div class="dashboard-kpi">
+        <span class="dashboard-kpi-label">{% if site_lang == 'hi' %}कुल बिलिंग{% else %}Total billed{% endif %}</span>
+        <span class="dashboard-kpi-value">{{ total_billed|indian_currency }}</span>
+        <span class="dashboard-kpi-sub">{{ total_count }} {% if site_lang == 'hi' %}बिल{% else %}bills{% endif %}</span>
     </div>
-
-    <div class="stat-chip">
-        <div class="stat-chip-icon success">
-            <i class="bi bi-check2-circle"></i>
-        </div>
-        <div class="stat-chip-body">
-            <span class="stat-chip-title">{% if site_lang == 'hi' %}प्राप्त राशि{% else %}Total Received{% endif %}</span>
-            <span class="stat-chip-value tabular-nums" style="color: #15803d;">{{ total_collected|indian_currency }}</span>
-        </div>
+    <div class="dashboard-kpi">
+        <span class="dashboard-kpi-label">{% if site_lang == 'hi' %}कुल प्राप्त{% else %}Collected{% endif %}</span>
+        <span class="dashboard-kpi-value" style="color: var(--paid);">{{ total_collected|indian_currency }}</span>
+        <span class="dashboard-kpi-sub">{% if site_lang == 'hi' %}प्राप्त राशि{% else %}total received{% endif %}</span>
     </div>
-
-    <div class="stat-chip">
-        <div class="stat-chip-icon warning">
-            <i class="bi bi-clock-history"></i>
-        </div>
-        <div class="stat-chip-body">
-            <span class="stat-chip-title">{% if site_lang == 'hi' %}बकाया राशि{% else %}Outstanding Due{% endif %}</span>
-            <span class="stat-chip-value tabular-nums" style="color: #9f1d1d;">{{ total_outstanding|indian_currency }}</span>
-        </div>
+    <div class="dashboard-kpi">
+        <span class="dashboard-kpi-label">{% if site_lang == 'hi' %}कुल बकाया{% else %}Balance due{% endif %}</span>
+        <span class="dashboard-kpi-value" style="color: {% if total_outstanding > 0 %}var(--maroon){% else %}var(--muted){% endif %};">{{ total_outstanding|indian_currency }}</span>
+        <span class="dashboard-kpi-sub">{% if site_lang == 'hi' %}शेष देय{% else %}balance due{% endif %}</span>
     </div>
 </div>
 

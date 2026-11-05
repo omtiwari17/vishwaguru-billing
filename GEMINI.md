@@ -377,8 +377,70 @@
     - Controls & Actions: search bar 320px width x 44px height, primary buttons 44px–46px height, micro action pills (`View`, `PDF`, `WhatsApp`, `Portal`) 36px height with 14px typography.
     - Masthead & Nav: logo 40px–44px, nav tabs 46px height with 16px typography, language toggle 14px.
   - **Removed Hardcoded Inline Constraints**: Cleaned restrictive inline `font-size: 13px;` from `bills_table.html` and `bill_search.html`, and removed the `max-width: 920px;` double wrapper from `bill_detail.html`.
-  - **Cache Busting**: Bumped asset cache-busting query strings to `?v=20261105-wide-3` across `base.html` and `customer_portal.html`.
+  - **Cache Busting**: Bumped asset cache-busting query strings to `?v=20261105-wide-6` across `base.html` and `customer_portal.html`.
   - **Automated Test Suite Verified**: All 27 automated unit tests passed (100% OK). Dev server running cleanly on port 8000/8080.
+* **Widescreen Fluid Layout, Form Anti-Clashing & Typography Upgrade**:
+  - **Resolved TemplateSyntaxError in `bill_form.html`**: Loaded `billing_tags` along with `static` on line 2, resolving the 500 error preventing the new form from rendering.
+  - **Fluid Broadsheet Layout (Zero Wasted Margins)**: Upgraded `.office-container` across `style.css` and `app-refresh.css` to `max-width: 100%` / up to `1920px` with fluid responsive padding (`20px` mobile, `32px` tablet, `40px` desktop, `48px` wide screens), eliminating large dead gutters on 1080p monitors.
+  - **Anti-Clashing Step Body Architecture**: Every `.step-card` now encloses form inputs inside a `.step-body` with `28px` internal padding and `24px` vertical gap (`18px` on mobile), ensuring zero labels or inputs touch or clash with card borders.
+  - **Elevated Form Controls & Custom SVG Chevrons**: Standardized `.form-control` and `.form-select` to `50px` min-height, `16px` font size, `12px 18px` inner padding, and `6px` radius with custom inline SVG chevrons (`padding-right: 44px`) so text never collides with native OS arrows.
+  - **Structured Placement Selection**: Presets chips (`.chip-btn`, `44px` height, `15px` font) and placement dropdown now feature a clear helper label (`Or select standard placement from dropdown:`), eliminating confusion and tight stacking.
+  - **Expanded Sticky POS Receipt**: Increased sidebar width to `400px` with `24px` padding, `16px` line items, `32px` bold tabular-nums net total, and full-width `52px` `Generate Bill & Print` button.
+  - **Recently Generated Invoices Panel**: Converted the bottom table in `bill_form.html` to a clean `.desk-panel` using `status_dot.html`, `16px` text, and Indian currency formatting.
+  - **Automated Test Suite Verified**: All 27 automated unit tests passed (100% OK).
+* **Payment Info Settings Restyling (`payment_info_settings.html`)**:
+  - **Eliminated Wasted Margins**: Integrated with widescreen `.office-container` (fluid width up to `1920px`) and `.settings-workspace` (`1fr 380px` on desktop, `1fr` on tablet/mobile).
+  - **Anti-Clashing Step Body Architecture**: Wrapped both Section 1 (Payment Accounts) and Section 2 (Newspaper Masthead) inside `.step-body` with `28px` internal padding and `24px` vertical gap, ensuring zero inputs touch or collide with card borders.
+  - **Elevated Inputs & Typography**: All form fields standardized to `50px` height, `16px` font size, `12px 18px` inner padding, and `6px` radius.
+  - **Highlighted UPI Card**: Enlarged and padded green panel (`background: #f0fdf4; border: 1px solid #bbf7d0; padding: 22px 24px;`) with prominent `16px` label and `13.5px` explanation.
+  - **Right Sidebar Polish**: Active credentials card with `15px–16px` bold values, masked account toggle, 1-click UPI copy button, centered live QR test card (`160x160px`), and Fernet encryption compliance note.
+  - **Cache Busting**: Bumped asset version to `?v=20261105-wide-7`.
+  - **Automated Test Suite Verified**: All 27 automated unit tests passed (100% OK).
+* **Bill Detail Screen Craft Elevation with `better-ui` & `styleseed` (`bill_detail.html`, `bill_detail_pane.html`)**:
+  - **Eliminated Container Bottleneck**: Removed hardcoded `max-width: 1360px` in `bill_detail.html`, enabling full alignment with the widescreen broadsheet layout up to `1920px`.
+  - **Elevated Typographic Scale**: Invoice title scaled to `32px–36px` bold tabular Noto Serif Devanagari, Client name to `24px` bold, financial numbers to `24px–30px` bold tabular nums, and body labels to `15px–16px`.
+  - **Concentric Geometry & Layered Depth (`better-ui`)**: Outer ledger cards use `6px` radius with `--shadow-border`, enclosing the financial summary box with concentric `6px` radius and `24px` inner padding.
+  - **Authoritative Action Toolbar**: Upgraded action buttons (`English PDF`, `Hindi PDF`, `Seal & Sign`, `WhatsApp Reminder`, `Customer Portal`) to `min-height: 44px`, `15px` typography, `10px 20px` padding, optical alignment (2px less padding on icon side), and `0.96` active press scale.
+  - **Refined Payment History Table**: Converted table to `.data-table` with `14px` sentence-case headers, `16px` rows, `17px` bold tabular amounts, and generous `16px 18px` cell padding.
+  - **Cache Busting**: Bumped asset query version to `?v=20261105-wide-9`.
+  - **Automated Test Suite Verified**: All 27 automated unit tests passed (100% OK).
+* **Bill Detail Overlapping Boxes & Lines Elimination Pass**:
+  - **Root Cause Eliminated**: Removed colliding inner horizontal divider lines that were cutting across text descenders and causing visual box overlap in the financial summary and publication sections.
+  - **Strict 24px Rhythmic Separation**: Enforced explicit `margin-bottom: 1.5rem;` (24px) via inline styles on all top-level sections (Primary Ledger -> Actions Toolbar -> Settled Banner -> Payment History), preventing cards from sticking or colliding.
+  - **Clean Isolated Financial Card**: The financial summary is now housed in a single clean tinted box (`background-color: var(--paper); border: 1px solid var(--rule); border-radius: 6px; padding: 22px 24px;`) with a natural vertical `gap: 12px;` and only two functional dividers (dashed line before totals, solid line before balance due).
+  - **Spacious Payment History Table**: Added `background-color: var(--paper);` and `padding: 12px 18px;` to table headers and `padding: 14px 18px;` to table rows with clean separation below the section title.
+  - **Automated Test Suite Verified**: All 27 automated unit tests passed (100% OK).
+* **Headless Browser Automated Layout Verification & Comprehensive Polish Pass**:
+  - **Automated Headless CDP Inspection Suite**: Developed and executed `scratch/run_browser_inspector.py` using Chrome DevTools Protocol to inspect live pages (`/bills/`, `/bills/new/`, `/bills/settings/payment-info/`, `/bills/3/`, `/bills/search/`) for horizontal overflow, vertical collisions, overlapping boxes, and small font violations.
+  - **Zero Overlap & Zero Layout Clashing Verified**: Live automated evaluation confirmed 0 horizontal overflows and 0 vertical collisions across all top-level desk panels, step cards, and grids.
+  - **Bill Detail (`/bills/3/`) Refinements**:
+    - Replaced the wide-split `display: flex; justify-content: space-between;` in Publication Details with a structured key-value CSS grid (`grid-template-columns: 140px 1fr; gap: 8px 16px;`), eliminating the awkward 500px void between labels and values.
+    - Removed the redundant stray green dot on the far right of the Settled Banner (`This invoice is fully paid. No balance due.`).
+    - Fixed the WhatsApp action button copy to dynamically say "Share on WhatsApp" / "व्हाट्सऐप रसीद" when the balance is ₹0, and "WhatsApp reminder" / "व्हाट्सऐप तगादा" only when balance is outstanding.
+    - Enforced explicit 24px vertical separation above and below all sections, preventing any collision between the banner and payment history.
+  - **Create Bill (`/bills/new/`) & Search (`/bills/search/`) Metric Strips**:
+    - Replaced the bulky, outdated `.dashboard-stats-grid` and colored `.stat-chip` elements with the unified `.dashboard-kpi-strip` with 1px vertical borders, matching the dashboard broadsheet aesthetic.
+    - Updated amount formatting in tables to use the `indian_currency` filter (e.g. `₹3,500` instead of `₹3500.00`).
+  - **Cache Busting**: Bumped asset query strings to `?v=20261105-v11-desk` in `base.html` and `customer_portal.html` to guarantee immediate browser invalidation of cached stylesheets and scripts.
+  - **Automated Test Suite Verified**: All 27 automated unit tests passed (100% OK).
+* **Visual Craft & UI Polish Pass (Human Design Review)**:
+  - **Eliminated Artificial Side Margins ("Too Much Border in Left and Right")**: Removed the `1840px`/`1920px` max-width container chokehold across `.office-container` in `style.css` and `app-refresh.css`, allowing the desk UI to fluidly use the widescreen width with comfortable `36px` padding.
+  - **Bill Detail Architectural Overhaul (`/bills/3/`)**:
+    - Eliminated nested boxes: merged client metadata and financial settlement into a single broadsheet card with a clean 1px vertical rule dividing the two columns (`1fr 380px`).
+    - Enclosed action buttons in a dedicated clerk toolbar (`padding: 14px 20px`, `44px` height).
+    - Fixed WhatsApp copy to say "Share on WhatsApp" on settled invoices, avoiding embarrassing reminder notices to paid clients.
+    - Added generous 28px vertical separation around the settled banner and payment history table, eliminating visual collisions.
+  - **Create Bill Form Polish (`/bills/new/`)**:
+    - Added a primary `[ Generate Bill & Print ]` button directly at the bottom of Step 3 so staff can submit without hunting for the right sidebar.
+    - Unified the top 4-metric strip with the clean broadsheet `.dashboard-kpi-strip`.
+    - Increased form field vertical rhythm (`margin-bottom: 22px; label-gap: 8px; input-height: 48px; font-size: 16px`).
+  - **Cache Invalidation**: Bumped static query string to `?v=20261105-v12-fluid` across `base.html` and `customer_portal.html`.
+  - **Automated Test Suite Verified**: All 28 automated unit tests passed (100% OK).
+* **Fault-Tolerant Cryptography & Termux Resilience**:
+  - **Graceful Cryptography Fallback (illing/crypto.py)**: rom cryptography.fernet import Fernet, InvalidToken is now wrapped in a safe 	ry...except ImportError. If cryptography is not yet installed on low-resource hosts (e.g. Android Termux without rust compiler), Django will never crash with ModuleNotFoundError.
+  - **Zero-Dependency Standard-Library Stream Cipher**: Transparently falls back to an authenticated HMAC-SHA256 stream cipher (enc:std:...) using Python's built-in hashlib, hmac, and os.urandom. Sensitive data remains encrypted at rest even without external C/Rust dependencies.
+  - **Termux Pre-compiled Binary**: Documented pkg install -y python-cryptography for Android Termux hosts.
+  - **Automated Test Suite Verified**: All 28 automated unit tests passed (100% OK).
 
 ---
 

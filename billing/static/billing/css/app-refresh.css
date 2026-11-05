@@ -16,9 +16,11 @@
 }
 
 .app-shell .office-container {
-    max-width: 1680px;
+    width: 100%;
+    max-width: 100%;
     margin: 0 auto;
     padding-inline: 20px;
+    box-sizing: border-box;
 }
 
 @media (min-width: 768px) {
@@ -30,14 +32,14 @@
 @media (min-width: 1280px) {
     .app-shell .office-container {
         padding-inline: 36px;
-        max-width: 1720px;
+        max-width: 100%;
     }
 }
 
 @media (min-width: 1536px) {
     .app-shell .office-container {
-        padding-inline: 44px;
-        max-width: 1800px;
+        padding-inline: 40px;
+        max-width: 100%;
     }
 }
 
@@ -48,10 +50,10 @@
 }
 
 .app-shell .office-tab {
-    font-size: 14px;
+    font-size: 15px;
     font-weight: 500;
     color: var(--muted);
-    padding: 8px 14px;
+    padding: 10px 18px;
     border-radius: 4px;
     text-decoration: none;
     transition-property: color, background-color, border-color;
@@ -191,4 +193,64 @@
         transition-duration: 0.01ms !important;
         transform: none !important;
     }
+}
+
+
+/* Anti-Clash Form Group Spacing & High-Contrast Typography */
+.form-group {
+    margin-bottom: 22px !important;
+}
+
+.form-label {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    font-size: 15px !important;
+    font-weight: 500 !important;
+    color: var(--ink) !important;
+    margin-bottom: 8px !important;
+}
+
+.form-control,
+.form-select {
+    font-size: 16px !important;
+    height: 48px !important;
+    min-height: 48px !important;
+    border-radius: 6px !important;
+    border: 1px solid var(--rule) !important;
+    background-color: #ffffff !important;
+    padding: 10px 16px !important;
+    transition: border-color 150ms ease, box-shadow 150ms ease !important;
+}
+
+.form-control:focus,
+.form-select:focus {
+    border-color: var(--maroon) !important;
+    outline: none !important;
+    box-shadow: 0 0 0 3px rgba(159, 29, 29, 0.12) !important;
+}
+
+/* Desk Panel & Table Refinements */
+.desk-panel {
+    border: 1px solid var(--rule) !important;
+    border-radius: 8px !important;
+    background-color: #ffffff !important;
+    box-shadow: var(--shadow-border) !important;
+}
+
+.data-table th,
+.desk-table th {
+    font-size: 14px !important;
+    font-weight: 600 !important;
+    color: var(--muted) !important;
+    padding: 14px 18px !important;
+    background-color: var(--paper) !important;
+    border-bottom: 1px solid var(--rule) !important;
+}
+
+.data-table td,
+.desk-table td {
+    font-size: 15.5px !important;
+    padding: 15px 18px !important;
+    border-bottom: 1px solid var(--rule) !important;
 }

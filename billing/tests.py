@@ -520,6 +520,16 @@ class VishwaguruBillingTests(TestCase):
         self.assertTrue(raw_in_db.startswith('enc:'))
         self.assertNotIn('987654321098', raw_in_db)
 
+    def test_payment_info_stdlib_crypto_fallback(self):
+        from unittest.mock import patch
+        from billing.crypto import encrypt_value, decrypt_value
+
+        with patch('billing.crypto.HAS_CRYPTOGRAPHY', False):
+            ciphertext = encrypt_value('555444333222')
+            self.assertTrue(ciphertext.startswith('enc:std:'))
+            decrypted = decrypt_value(ciphertext)
+            self.assertEqual(decrypted, '555444333222')
+
     def test_payment_info_settings_view(self):
         url = reverse('billing:payment_info_settings')
 

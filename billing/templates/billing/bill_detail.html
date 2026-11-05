@@ -6,15 +6,15 @@
 {% endblock %}
 
 {% block content %}
-<div class="w-full max-w-full" style="max-width: 1360px; margin: 0 auto; padding-top: 14px; padding-bottom: 36px;">
+<div class="bill-detail-page w-full min-w-0" style="padding-top: 8px; padding-bottom: 40px;">
     <!-- 1. Breadcrumb -->
-    <nav class="mb-5 text-xs text-muted font-medium flex items-center gap-2" aria-label="Breadcrumb">
-        <a href="{% url 'billing:dashboard' %}" class="text-muted hover:text-maroon transition-colors flex items-center gap-1.5" style="text-decoration: none; color: var(--muted);">
-            <i class="bi bi-speedometer2 text-xs"></i>
+    <nav class="mb-4 text-sm text-muted font-medium flex items-center gap-2" aria-label="Breadcrumb">
+        <a href="{% url 'billing:dashboard' %}" class="text-muted hover:text-maroon transition-colors flex items-center gap-1.5" style="text-decoration: none; color: var(--muted); font-size: 14px;">
+            <i class="bi bi-speedometer2 text-sm"></i>
             <span>{% if site_lang == 'hi' %}डैशबोर्ड{% else %}Dashboard{% endif %}</span>
         </a>
-        <span class="text-stone-300">/</span>
-        <span class="text-ink font-semibold" style="color: var(--ink);">{{ bill.bill_number }}</span>
+        <span style="color: var(--rule);">&bull;</span>
+        <span class="text-ink font-semibold tabular-nums" style="color: var(--ink); font-size: 14.5px;">{{ bill.bill_number }}</span>
     </nav>
 
     <!-- 2. Dynamic Pane (Updated in-place via HTMX on record payment) -->

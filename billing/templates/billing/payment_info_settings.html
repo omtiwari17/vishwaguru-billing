@@ -6,26 +6,28 @@
 {% endblock %}
 
 {% block content %}
-<div class="desk-panel" style="background-color: #ffffff; border: 1px solid #e7e2d9; border-radius: 4px; margin-bottom: 1.5rem; padding: 18px 20px;">
+<!-- Top Title & Navigation Card -->
+<div class="desk-panel" style="background-color: #ffffff; border: 1px solid var(--rule); border-radius: 6px; box-shadow: var(--shadow-border); margin-bottom: 1.75rem; padding: 22px 28px;">
     <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem;">
-        <div style="display: flex; align-items: center; gap: 0.85rem;">
-            <div style="width: 40px; height: 40px; background-color: #fef2f2; color: #9f1d1d; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 1.25rem;">
+        <div style="display: flex; align-items: center; gap: 1rem;">
+            <div style="width: 48px; height: 48px; background-color: #fef2f2; color: var(--maroon); border: 1px solid #fecaca; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 1.45rem; flex-shrink: 0;">
                 <i class="bi bi-shield-lock-fill"></i>
             </div>
             <div>
-                <h1 style="font-family: 'Noto Serif Devanagari', serif; margin: 0; font-size: 1.2rem; font-weight: 600; color: #1c1917;">
+                <h1 style="font-family: var(--font-masthead); margin: 0; font-size: 1.5rem; font-weight: 700; color: var(--ink); line-height: 1.25;">
                     {% if site_lang == 'hi' %}बैंक खाता व यूपीआई आईडी सेटिंग्स{% else %}Official Bank &amp; UPI Settings{% endif %}
                 </h1>
-                <p style="margin: 0.2rem 0 0 0; font-size: 13px; color: #57534e;">
-                    {% if site_lang == 'hi' %}समाचार पत्र के भुगतान प्राप्त करने वाले खाते व क्यूआर कोड का प्रबंधन करें{% else %}Manage newspaper payment accounts, UPI IDs, and billing letterhead details{% endif %}
+                <p style="margin: 4px 0 0 0; font-size: 15px; color: var(--muted);">
+                    {% if site_lang == 'hi' %}समाचार पत्र के भुगतान प्राप्त करने वाले खाते, यूपीआई आईडी व बिल पत्रशीर्ष का प्रबंधन करें{% else %}Manage newspaper payment accounts, UPI IDs, and billing letterhead details{% endif %}
                 </p>
             </div>
         </div>
-        <div style="display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap;">
-            <span class="badge" style="background-color: #f0fdf4; color: #166534; border: 1px solid #bbf7d0; font-size: 12px; padding: 5px 10px;">
-                <i class="bi bi-lock-fill"></i> {% if site_lang == 'hi' %}डेटाबेस में एन्क्रिप्टेड{% else %}Encrypted at rest{% endif %}
+        <div style="display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;">
+            <span class="badge" style="background-color: #f0fdf4; color: var(--paid); border: 1px solid #bbf7d0; font-size: 14px; font-weight: 600; padding: 7px 14px; border-radius: 4px; display: inline-flex; align-items: center; gap: 6px;">
+                <i class="bi bi-lock-fill"></i>
+                <span>{% if site_lang == 'hi' %}डेटाबेस में एन्क्रिप्टेड{% else %}Encrypted at rest{% endif %}</span>
             </span>
-            <a href="{% url 'billing:dashboard' %}" class="btn-desk-secondary" style="font-size: 14px; padding: 8px 16px; min-height: 42px;">
+            <a href="{% url 'billing:dashboard' %}" class="btn-desk-secondary" style="font-size: 15px; font-weight: 500; padding: 10px 20px; min-height: 44px; display: inline-flex; align-items: center; gap: 8px;">
                 <i class="bi bi-arrow-left"></i>
                 <span>{% if site_lang == 'hi' %}डैशबोर्ड पर वापस{% else %}Back to Dashboard{% endif %}</span>
             </a>
@@ -33,18 +35,19 @@
     </div>
 </div>
 
-<div class="dashboard-main-grid" style="display: grid; grid-template-columns: 1fr 340px; gap: 1.5rem; align-items: start;">
+<!-- 2-Column Settings Workspace (Form on Left, Active Credentials & QR on Right) -->
+<div class="settings-workspace" style="display: grid; grid-template-columns: 1fr 380px; gap: 2rem; align-items: start;">
 
     <!-- Left Column: Settings Form -->
-    <div class="dashboard-primary-col" style="min-width: 0;">
+    <div style="min-width: 0;">
         <form method="post" id="paymentSettingsForm">
             {% csrf_token %}
 
             {% if form.errors %}
-            <div class="alert alert-danger" style="margin-bottom: 1.25rem;">
-                <div>
+            <div class="alert alert-danger" style="margin-bottom: 1.5rem; background-color: #fef2f2; border: 1px solid #fecaca; border-radius: 6px; padding: 16px 20px; color: #991b1b;">
+                <div style="font-size: 15px;">
                     <strong><i class="bi bi-exclamation-triangle-fill"></i> {% if site_lang == 'hi' %}कृपया त्रुटियों को सुधारें:{% else %}Please correct the following errors:{% endif %}</strong>
-                    <ul style="margin: 0.35rem 0 0 1.25rem; font-size: 0.85rem;">
+                    <ul style="margin: 0.5rem 0 0 1.25rem; font-size: 14px;">
                         {% for field in form %}
                             {% for error in field.errors %}
                                 <li>{{ field.label }}: {{ error }}</li>
@@ -58,218 +61,236 @@
             </div>
             {% endif %}
 
-            <!-- Section 1: Bank & UPI Credentials -->
-            <div class="step-card" style="margin-bottom: 1.5rem;">
+            <!-- Section 1: Bank & UPI Credentials Card -->
+            <div class="step-card" style="margin-bottom: 1.75rem;">
                 <div class="step-header">
                     <div class="step-title">
-                        <i class="bi bi-bank" style="color: #9f1d1d;"></i>
+                        <i class="bi bi-bank" style="color: var(--maroon);"></i>
                         <span>{% if site_lang == 'hi' %}बैंक खाता व यूपीआई विवरण (Payment Accounts){% else %}Bank Account &amp; UPI Configuration{% endif %}</span>
                     </div>
                     <span class="step-subtitle">{% if site_lang == 'hi' %}बिलों व पीडीएफ रसीदों पर मुद्रित होता है{% else %}Printed on invoices &amp; statement portal{% endif %}</span>
                 </div>
 
-                <div class="form-grid">
-                    <div class="form-group">
-                        <label class="form-label" for="{{ form.bank_name.id_for_label }}">
-                            <i class="bi bi-building"></i> {{ form.bank_name.label }}
-                        </label>
-                        {{ form.bank_name }}
+                <div class="step-body">
+                    <div class="form-grid-inner">
+                        <div class="form-group">
+                            <label class="form-label" for="{{ form.bank_name.id_for_label }}">
+                                <i class="bi bi-building"></i>
+                                <span>{{ form.bank_name.label }}</span>
+                            </label>
+                            {{ form.bank_name }}
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label" for="{{ form.account_holder_name.id_for_label }}">
+                                <i class="bi bi-person-badge"></i>
+                                <span>{{ form.account_holder_name.label }}</span>
+                            </label>
+                            {{ form.account_holder_name }}
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label" for="{{ form.account_number.id_for_label }}">
+                                <i class="bi bi-shield-lock" style="color: var(--paid);"></i>
+                                <span>{{ form.account_number.label }}</span>
+                                <span class="sub" style="color: var(--paid); font-weight: 600;">
+                                    {% if site_lang == 'hi' %}(एन्क्रिप्टेड){% else %}(Encrypted){% endif %}
+                                </span>
+                            </label>
+                            {{ form.account_number }}
+                            <div style="font-size: 13px; color: var(--muted); margin-top: 4px; line-height: 1.4;">
+                                {% if site_lang == 'hi' %}
+                                    बैंक खाता संख्या डेटाबेस डिस्क पर सुरक्षित एन्क्रिप्टेड साइफरटेक्स्ट (Fernet/AES) के रूप में सहेजी जाती है।
+                                {% else %}
+                                    Account number is transparently encrypted at rest in the database using Fernet/AES.
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label" for="{{ form.ifsc_code.id_for_label }}">
+                                <i class="bi bi-upc-scan"></i>
+                                <span>{{ form.ifsc_code.label }}</span>
+                            </label>
+                            {{ form.ifsc_code }}
+                            <div style="font-size: 13px; color: var(--muted); margin-top: 4px;">
+                                {% if site_lang == 'hi' %}11 अक्षरों का मानक बैंक कोड (उदा. SBIN0001234){% else %}Standard 11-character bank code (e.g. SBIN0001234){% endif %}
+                            </div>
+                        </div>
                     </div>
 
-                    <div class="form-group">
-                        <label class="form-label" for="{{ form.account_holder_name.id_for_label }}">
-                            <i class="bi bi-person-badge"></i> {{ form.account_holder_name.label }}
-                        </label>
-                        {{ form.account_holder_name }}
-                    </div>
-
-                    <div class="form-group">
-                        <label class="form-label" for="{{ form.account_number.id_for_label }}">
-                            <i class="bi bi-shield-lock" style="color: #15803d;"></i> {{ form.account_number.label }}
-                            <span class="sub" style="color: #15803d; font-weight: 600;">
-                                {% if site_lang == 'hi' %}(एन्क्रिप्टेड){% else %}(Encrypted){% endif %}
-                            </span>
-                        </label>
-                        {{ form.account_number }}
-                        <small style="font-size: 12px; color: #57534e;">
-                            {% if site_lang == 'hi' %}
-                                बैंक खाता संख्या डेटाबेस डिस्क पर सुरक्षित एन्क्रिप्टेड साइफरटेक्स्ट के रूप में सहेजी जाती है।
-                            {% else %}
-                                Account number is transparently encrypted at rest in the database using Fernet/AES.
-                            {% endif %}
-                        </small>
-                    </div>
-
-                    <div class="form-group">
-                        <label class="form-label" for="{{ form.ifsc_code.id_for_label }}">
-                            <i class="bi bi-upc-scan"></i> {{ form.ifsc_code.label }}
-                        </label>
-                        {{ form.ifsc_code }}
-                        <small style="font-size: 12px; color: #57534e;">
-                            {% if site_lang == 'hi' %}11 अक्षरों का मानक बैंक कोड (उदा. SBIN0001234){% else %}Standard 11-character bank code (e.g. SBIN0001234){% endif %}
-                        </small>
-                    </div>
-
-                    <div class="form-group full-width" style="background-color: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 4px; padding: 1rem;">
-                        <label class="form-label" for="{{ form.upi_id.id_for_label }}" style="color: #166534; font-size: 14px; font-weight: 600;">
-                            <i class="bi bi-qr-code-scan"></i> {{ form.upi_id.label }}
+                    <!-- Highlighted UPI ID Card (Ample internal padding, zero border collision) -->
+                    <div class="form-group full-width" style="background-color: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 6px; padding: 22px 24px; display: flex; flex-direction: column; gap: 8px;">
+                        <label class="form-label" for="{{ form.upi_id.id_for_label }}" style="color: #166534; font-size: 16px; font-weight: 700; margin: 0;">
+                            <i class="bi bi-qr-code-scan" style="color: #166534;"></i>
+                            <span>{{ form.upi_id.label }}</span>
                         </label>
                         {{ form.upi_id }}
-                        <div style="font-size: 12px; color: #166534; margin-top: 0.35rem; line-height: 1.4;">
-                            <i class="bi bi-info-circle-fill"></i>
-                            {% if site_lang == 'hi' %}
-                                इसी यूपीआई आईडी से बिल पीडीएफ और ग्राहक पोर्टल पर तुरंत बिना किसी बैंक शुल्क के 0% कमीशन क्यूआर कोड जनरेट होता है।
-                            {% else %}
-                                This UPI ID powers dynamic zero-fee UPI QR codes and deep-links on all invoices and the customer portal.
-                            {% endif %}
+                        <div style="font-size: 13.5px; color: #166534; margin-top: 4px; line-height: 1.5; display: flex; align-items: flex-start; gap: 6px;">
+                            <i class="bi bi-info-circle-fill" style="margin-top: 2px; flex-shrink: 0;"></i>
+                            <span>
+                                {% if site_lang == 'hi' %}
+                                    इसी यूपीआई आईडी से बिल पीडीएफ और ग्राहक पोर्टल पर तुरंत बिना किसी बैंक शुल्क के 0% कमीशन क्यूआर कोड व डीप-लिंक जनरेट होते हैं।
+                                {% else %}
+                                    This UPI ID powers dynamic zero-fee UPI QR codes and deep-links on all invoices and the customer portal.
+                                {% endif %}
+                            </span>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Section 2: Newspaper Masthead & Letterhead Info -->
-            <div class="step-card" style="margin-bottom: 1.5rem;">
+            <!-- Section 2: Newspaper Masthead & Letterhead Info Card -->
+            <div class="step-card" style="margin-bottom: 2rem;">
                 <div class="step-header">
                     <div class="step-title">
-                        <i class="bi bi-newspaper" style="color: #1c1917;"></i>
+                        <i class="bi bi-newspaper" style="color: var(--ink);"></i>
                         <span>{% if site_lang == 'hi' %}समाचार पत्र व पत्रशीर्ष विवरण (Letterhead Info){% else %}Newspaper &amp; Letterhead Information{% endif %}</span>
                     </div>
                     <span class="step-subtitle">{% if site_lang == 'hi' %}बिल शीर्ष पर मुद्रित जानकारी{% else %}Printed on bill header{% endif %}</span>
                 </div>
 
-                <div class="form-grid">
-                    <div class="form-group">
-                        <label class="form-label" for="{{ form.newspaper_name.id_for_label }}">
-                            <i class="bi bi-card-heading"></i> {{ form.newspaper_name.label }}
-                        </label>
-                        {{ form.newspaper_name }}
-                    </div>
+                <div class="step-body">
+                    <div class="form-grid-inner">
+                        <div class="form-group">
+                            <label class="form-label" for="{{ form.newspaper_name.id_for_label }}">
+                                <i class="bi bi-card-heading"></i>
+                                <span>{{ form.newspaper_name.label }}</span>
+                            </label>
+                            {{ form.newspaper_name }}
+                        </div>
 
-                    <div class="form-group">
-                        <label class="form-label" for="{{ form.tagline.id_for_label }}">
-                            <i class="bi bi-chat-quote"></i> {{ form.tagline.label }}
-                        </label>
-                        {{ form.tagline }}
-                    </div>
+                        <div class="form-group">
+                            <label class="form-label" for="{{ form.tagline.id_for_label }}">
+                                <i class="bi bi-chat-quote"></i>
+                                <span>{{ form.tagline.label }}</span>
+                            </label>
+                            {{ form.tagline }}
+                        </div>
 
-                    <div class="form-group">
-                        <label class="form-label" for="{{ form.registration_no.id_for_label }}">
-                            <i class="bi bi-journal-text"></i> {{ form.registration_no.label }}
-                        </label>
-                        {{ form.registration_no }}
-                    </div>
+                        <div class="form-group">
+                            <label class="form-label" for="{{ form.registration_no.id_for_label }}">
+                                <i class="bi bi-journal-text"></i>
+                                <span>{{ form.registration_no.label }}</span>
+                            </label>
+                            {{ form.registration_no }}
+                        </div>
 
-                    <div class="form-group">
-                        <label class="form-label" for="{{ form.phone_number.id_for_label }}">
-                            <i class="bi bi-telephone"></i> {{ form.phone_number.label }}
-                        </label>
-                        {{ form.phone_number }}
-                    </div>
+                        <div class="form-group">
+                            <label class="form-label" for="{{ form.phone_number.id_for_label }}">
+                                <i class="bi bi-telephone"></i>
+                                <span>{{ form.phone_number.label }}</span>
+                            </label>
+                            {{ form.phone_number }}
+                        </div>
 
-                    <div class="form-group">
-                        <label class="form-label" for="{{ form.email.id_for_label }}">
-                            <i class="bi bi-envelope"></i> {{ form.email.label }}
-                        </label>
-                        {{ form.email }}
-                    </div>
+                        <div class="form-group">
+                            <label class="form-label" for="{{ form.email.id_for_label }}">
+                                <i class="bi bi-envelope"></i>
+                                <span>{{ form.email.label }}</span>
+                            </label>
+                            {{ form.email }}
+                        </div>
 
-                    <div class="form-group full-width">
-                        <label class="form-label" for="{{ form.office_address.id_for_label }}">
-                            <i class="bi bi-geo-alt"></i> {{ form.office_address.label }}
-                        </label>
-                        {{ form.office_address }}
+                        <div class="form-group full-width">
+                            <label class="form-label" for="{{ form.office_address.id_for_label }}">
+                                <i class="bi bi-geo-alt"></i>
+                                <span>{{ form.office_address.label }}</span>
+                            </label>
+                            {{ form.office_address }}
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Submit Action -->
-            <div style="display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap; margin-bottom: 2rem;">
-                <button type="submit" class="btn-desk-primary min-h-[44px] px-6 text-sm font-medium">
+            <!-- Submit Action Row -->
+            <div style="display: flex; gap: 1rem; align-items: center; flex-wrap: wrap; margin-bottom: 2.5rem;">
+                <button type="submit" class="btn-desk-primary" style="min-height: 48px; padding: 12px 28px; font-size: 16px; font-weight: 600; border-radius: 6px; display: inline-flex; align-items: center; gap: 8px;">
                     <i class="bi bi-check2-circle"></i>
                     <span>{% if site_lang == 'hi' %}विवरण सुरक्षित रूप से सहेजें{% else %}Save Bank &amp; UPI Settings{% endif %}</span>
                 </button>
-                <a href="{% url 'billing:dashboard' %}" class="btn-desk-secondary min-h-[44px] px-4 text-sm font-medium">
-                    {% if site_lang == 'hi' %}रद्द करें{% else %}Cancel{% endif %}
+                <a href="{% url 'billing:dashboard' %}" class="btn-desk-secondary" style="min-height: 48px; padding: 12px 24px; font-size: 16px; font-weight: 500; border-radius: 6px; display: inline-flex; align-items: center; gap: 8px;">
+                    <span>{% if site_lang == 'hi' %}रद्द करें{% else %}Cancel{% endif %}</span>
                 </a>
             </div>
         </form>
     </div>
 
     <!-- Right Column: Live Credential Status & Instant Test QR Scanner -->
-    <div class="dashboard-sidebar-col" style="min-width: 0;">
+    <div style="min-width: 0;">
 
         <!-- 1. Active Verified Credentials Card -->
-        <div class="desk-panel" style="background-color: #ffffff; border: 1px solid #e7e2d9; border-radius: 4px; margin-bottom: 1.5rem; overflow: hidden;">
-            <div class="desk-panel-header" style="padding: 12px 16px; border-bottom: 1px solid #e7e2d9;">
+        <div class="desk-panel" style="background-color: #ffffff; border: 1px solid var(--rule); border-radius: 6px; box-shadow: var(--shadow-border); margin-bottom: 1.75rem; overflow: hidden;">
+            <div class="desk-panel-header" style="padding: 16px 22px; border-bottom: 1px solid var(--rule); background-color: var(--paper);">
                 <div>
-                    <h2 class="desk-panel-title" style="font-size: 0.95rem; font-family: 'Noto Serif Devanagari', serif; font-weight: 600; color: #1c1917; margin: 0; display: flex; align-items: center; gap: 0.4rem;">
-                        <i class="bi bi-patch-check-fill" style="color: #15803d;"></i>
+                    <h2 class="desk-panel-title" style="font-size: 1.1rem; font-family: var(--font-masthead); font-weight: 700; color: var(--ink); margin: 0; display: flex; align-items: center; gap: 0.5rem;">
+                        <i class="bi bi-patch-check-fill" style="color: var(--paid);"></i>
                         <span>{% if site_lang == 'hi' %}सक्रिय भुगतान विवरण{% else %}Currently Active Credentials{% endif %}</span>
                     </h2>
-                    <p style="font-size: 12px; color: #57534e; margin: 0.15rem 0 0 0;">
+                    <p style="font-size: 13.5px; color: var(--muted); margin: 3px 0 0 0;">
                         {% if site_lang == 'hi' %}लाइव बिलों व पीडीएफ पर उपयोग हो रहा है{% else %}Live in production on all bills &amp; PDFs{% endif %}
                     </p>
                 </div>
             </div>
 
-            <div style="padding: 14px 16px; display: flex; flex-direction: column; gap: 0.75rem; font-size: 14px;">
-                <div style="display: flex; justify-content: space-between; border-bottom: 1px solid #e7e2d9; padding-bottom: 0.4rem;">
-                    <span style="color: #57534e;">{% if site_lang == 'hi' %}बैंक:{% else %}Bank:{% endif %}</span>
-                    <strong style="color: #1c1917;">{{ payment_info.bank_name }}</strong>
+            <div style="padding: 20px 22px; display: flex; flex-direction: column; gap: 14px; font-size: 15px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--rule); padding-bottom: 10px;">
+                    <span style="color: var(--muted);">{% if site_lang == 'hi' %}बैंक:{% else %}Bank:{% endif %}</span>
+                    <strong style="color: var(--ink); font-size: 15.5px;">{{ payment_info.bank_name }}</strong>
                 </div>
 
-                <div style="display: flex; justify-content: space-between; border-bottom: 1px solid #e7e2d9; padding-bottom: 0.4rem;">
-                    <span style="color: #57534e;">{% if site_lang == 'hi' %}खाताधारक:{% else %}Account Holder:{% endif %}</span>
-                    <strong style="color: #1c1917;">{{ payment_info.account_holder_name }}</strong>
+                <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--rule); padding-bottom: 10px;">
+                    <span style="color: var(--muted);">{% if site_lang == 'hi' %}खाताधारक:{% else %}Account Holder:{% endif %}</span>
+                    <strong style="color: var(--ink); font-size: 15.5px;">{{ payment_info.account_holder_name }}</strong>
                 </div>
 
-                <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e7e2d9; padding-bottom: 0.4rem;">
-                    <span style="color: #57534e;">{% if site_lang == 'hi' %}खाता संख्या:{% else %}Account No:{% endif %}</span>
-                    <div style="display: flex; align-items: center; gap: 0.4rem;">
-                        <span id="active_acc_display" style="font-family: monospace; font-weight: 600; color: #1c1917;">
+                <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--rule); padding-bottom: 10px;">
+                    <span style="color: var(--muted);">{% if site_lang == 'hi' %}खाता संख्या:{% else %}Account No:{% endif %}</span>
+                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                        <span id="active_acc_display" style="font-family: monospace; font-weight: 700; font-size: 16px; color: var(--ink);">
                             {{ payment_info.masked_account_number }}
                         </span>
-                        <button type="button" id="btn_toggle_acc" class="btn-desk-secondary" style="padding: 2px 6px; font-size: 12px; min-height: 36px; min-width: 40px;" aria-label="{% if site_lang == 'hi' %}खाता संख्या दिखाएं{% else %}Show account number{% endif %}" aria-pressed="false" title="{% if site_lang == 'hi' %}खाता संख्या दिखाएं{% else %}Show account number{% endif %}">
+                        <button type="button" id="btn_toggle_acc" class="btn-desk-secondary" style="padding: 4px 8px; font-size: 13px; min-height: 36px; min-width: 38px; border-radius: 4px;" aria-label="{% if site_lang == 'hi' %}खाता संख्या दिखाएं{% else %}Show account number{% endif %}" aria-pressed="false" title="{% if site_lang == 'hi' %}खाता संख्या दिखाएं{% else %}Show account number{% endif %}">
                             <i class="bi bi-eye"></i>
                         </button>
                     </div>
                 </div>
 
-                <div style="display: flex; justify-content: space-between; border-bottom: 1px solid #e7e2d9; padding-bottom: 0.4rem;">
-                    <span style="color: #57534e;">{% if site_lang == 'hi' %}आईएफएससी (IFSC):{% else %}IFSC Code:{% endif %}</span>
-                    <strong style="font-family: monospace; color: #1c1917;">{{ payment_info.ifsc_code }}</strong>
+                <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--rule); padding-bottom: 10px;">
+                    <span style="color: var(--muted);">{% if site_lang == 'hi' %}आईएफएससी (IFSC):{% else %}IFSC Code:{% endif %}</span>
+                    <strong style="font-family: monospace; font-size: 15.5px; color: var(--ink);">{{ payment_info.ifsc_code }}</strong>
                 </div>
 
-                <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 0.2rem;">
-                    <span style="color: #57534e;">{% if site_lang == 'hi' %}यूपीआई आईडी:{% else %}UPI ID:{% endif %}</span>
-                    <div style="display: flex; align-items: center; gap: 0.35rem;">
-                        <strong id="active_upi_text" style="color: #9f1d1d;">{{ payment_info.upi_id }}</strong>
-                        <button type="button" class="btn-desk-secondary" data-copy-value="{{ payment_info.upi_id }}" style="padding: 2px 6px; font-size: 12px; min-height: 36px; min-width: 40px; color: #9f1d1d;" aria-label="{% if site_lang == 'hi' %}यूपीआई आईडी कॉपी करें{% else %}Copy UPI ID{% endif %}" title="{% if site_lang == 'hi' %}यूपीआई आईडी कॉपी करें{% else %}Copy UPI ID{% endif %}">
+                <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 4px;">
+                    <span style="color: var(--muted);">{% if site_lang == 'hi' %}यूपीआई आईडी:{% else %}UPI ID:{% endif %}</span>
+                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                        <strong id="active_upi_text" style="color: var(--maroon); font-size: 16px; font-family: monospace;">{{ payment_info.upi_id }}</strong>
+                        <button type="button" class="btn-desk-secondary" data-copy-value="{{ payment_info.upi_id }}" style="padding: 4px 8px; font-size: 13px; min-height: 36px; min-width: 38px; color: var(--maroon); border-radius: 4px;" aria-label="{% if site_lang == 'hi' %}यूपीआई आईडी कॉपी करें{% else %}Copy UPI ID{% endif %}" title="{% if site_lang == 'hi' %}यूपीआई आईडी कॉपी करें{% else %}Copy UPI ID{% endif %}">
                             <i class="bi bi-copy"></i>
                         </button>
                     </div>
                 </div>
-                <div id="settings-copy-feedback" class="text-muted" aria-live="polite" style="min-height: 20px; text-align: right;"></div>
+                <div id="settings-copy-feedback" class="text-muted" aria-live="polite" style="min-height: 20px; font-size: 13px; text-align: right; color: var(--paid);"></div>
             </div>
         </div>
 
         <!-- 2. Live Test UPI QR Code Scanner -->
         {% if test_qr_base64 %}
-        <div class="desk-panel" style="background-color: #ffffff; border: 1px solid #e7e2d9; border-radius: 4px; margin-bottom: 1.5rem; text-align: center; overflow: hidden;">
-            <div class="desk-panel-header" style="justify-content: center; padding: 12px 16px; border-bottom: 1px solid #e7e2d9;">
-                <h3 class="desk-panel-title" style="font-size: 0.95rem; font-family: 'Noto Serif Devanagari', serif; font-weight: 600; color: #1c1917; margin: 0; display: flex; align-items: center; gap: 0.4rem;">
-                    <i class="bi bi-qr-code-scan" style="color: #9f1d1d;"></i>
+        <div class="desk-panel" style="background-color: #ffffff; border: 1px solid var(--rule); border-radius: 6px; box-shadow: var(--shadow-border); margin-bottom: 1.75rem; text-align: center; overflow: hidden;">
+            <div class="desk-panel-header" style="justify-content: center; padding: 16px 22px; border-bottom: 1px solid var(--rule); background-color: var(--paper);">
+                <h3 class="desk-panel-title" style="font-size: 1.05rem; font-family: var(--font-masthead); font-weight: 700; color: var(--ink); margin: 0; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
+                    <i class="bi bi-qr-code-scan" style="color: var(--maroon);"></i>
                     <span>{% if site_lang == 'hi' %}लाइव यूपीआई क्यूआर कोड परीक्षण{% else %}Live UPI QR Code Test{% endif %}</span>
                 </h3>
             </div>
-            <div style="padding: 16px; display: flex; flex-direction: column; align-items: center;">
-                <img src="{{ test_qr_base64 }}" alt="Test UPI QR" style="width: 150px; height: 150px; border: 1px solid #e7e2d9; border-radius: 4px; padding: 4px; background: #fff;">
-                <div style="font-size: 14px; font-weight: 600; color: #1c1917; margin-top: 0.5rem;" class="tabular-nums">
+            <div style="padding: 24px; display: flex; flex-direction: column; align-items: center; gap: 10px;">
+                <img src="{{ test_qr_base64 }}" alt="Test UPI QR" style="width: 160px; height: 160px; border: 1px solid var(--rule); border-radius: 6px; padding: 6px; background: #ffffff;">
+                <div style="font-size: 15px; font-weight: 700; color: var(--ink); margin-top: 4px; font-family: monospace;" class="tabular-nums">
                     {{ payment_info.upi_id }}
                 </div>
-                <p style="font-size: 12px; color: #57534e; margin-top: 0.25rem; line-height: 1.4; padding: 0 0.5rem;">
+                <p style="font-size: 13px; color: var(--muted); margin: 0; line-height: 1.45; padding: 0 0.5rem;">
                     {% if site_lang == 'hi' %}
-                        अपने मोबाइल में PhonePe, Google Pay या Paytm खोलकर स्कैन करें ताकि पुष्टि हो सके कि बैंक व नाम सही आ रहा है।
+                        अपने मोबाइल में PhonePe, Google Pay या Paytm खोलकर स्कैन करें ताकि पुष्टि हो सके कि खाता व नाम सही आ रहा है।
                     {% else %}
                         Open GPay, PhonePe, or Paytm on your phone and scan to verify the payee name and UPI ID.
                     {% endif %}
@@ -279,16 +300,16 @@
         {% endif %}
 
         <!-- 3. Security & Data Protection Assurance -->
-        <div class="desk-panel" style="background-color: #faf8f4; border: 1px solid #e7e2d9; border-radius: 4px; padding: 14px 16px;">
-            <div style="display: flex; gap: 0.75rem; align-items: flex-start;">
-                <i class="bi bi-shield-check" style="font-size: 1.35rem; color: #15803d; flex-shrink: 0; margin-top: 2px;"></i>
-                <div style="font-size: 13px; line-height: 1.45; color: #1c1917;">
-                    <strong style="color: #15803d; display: block; margin-bottom: 0.2rem;">
+        <div class="desk-panel" style="background-color: #faf8f4; border: 1px solid var(--rule); border-radius: 6px; padding: 18px 22px;">
+            <div style="display: flex; gap: 0.85rem; align-items: flex-start;">
+                <i class="bi bi-shield-check" style="font-size: 1.5rem; color: var(--paid); flex-shrink: 0; margin-top: 2px;"></i>
+                <div style="font-size: 14px; line-height: 1.5; color: var(--ink);">
+                    <strong style="color: var(--paid); display: block; margin-bottom: 4px; font-size: 15px;">
                         {% if site_lang == 'hi' %}बैंक डेटा सुरक्षा गारंटी (Security at Rest){% else %}Data Protection &amp; Compliance{% endif %}
                     </strong>
-                    <div style="color: #57534e;">
+                    <div style="color: var(--muted); font-size: 13.5px;">
                         {% if site_lang == 'hi' %}
-                            बैंक खाता संख्या को डेटाबेस में सहेजते समय Fernet (AES-128-CBC + HMAC-SHA256) सिमेट्रिक एन्क्रिप्शन से सुरक्षित किया जाता है। बैकअप या डेटाबेस की किसी भी सीधी चोरी की स्थिति में यह अपठनीय रहता है।
+                            बैंक खाता संख्या को डेटाबेस में सहेजते समय Fernet (AES-128-CBC + HMAC-SHA256) सिमेट्रिक एन्क्रिप्शन से सुरक्षित किया जाता है। बैकअप या डेटाबेस की किसी भी स्थिति में यह पूर्णतः सुरक्षित व अपठनीय रहता है।
                         {% else %}
                             Bank account numbers are encrypted at rest using Fernet (authenticated AES-128-CBC with HMAC-SHA256). Plaintext accounts are never stored in raw database dumps.
                         {% endif %}
