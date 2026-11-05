@@ -846,3 +846,35 @@ class VishwaguruBillingTests(TestCase):
         self.assertNotContains(res, 'Gross Ad Charges:')
         self.assertNotContains(res, 'DIGITALLY VERIFIED')
 
+    def test_pdf_rni_no_duplication_and_settlement(self):
+        """Test RNI registration number has zero duplicate prefix and settled bills show receipt seal."""
+        self.payment_info.registration_no = 'RNI Reg. No. MP-HIN/2018/12345'
+        self.payment_info.save()
+
+        bill = Bill.objects.create(
+            bill_number='VG-2026-9003',
+            client_name='Test Settled Client',
+            placement_type=PlacementType.FRONT_FULL,
+            base_amount=Decimal('0.00'),
+            previous_due=Decimal('3500.00'),
+            amount_paid=Decimal('3500.00'),
+            payment_status=PaymentStatus.PAID,
+            edition_date='2026-11-03'
+        )
+        url = reverse('billing:bill_pdf', args=[bill.pk]) + '?lang=en&sign=0'
+        res = self.client.get(url)
+        self.assertEqual(res.status_code, 200)
+
+        # Ensure no duplicate RNI prefix
+        self.assertNotContains(res, 'RNI Reg. No.: RNI Reg. No.')
+        self.assertContains(res, 'MP-HIN/2018/12345')
+
+        # Ensure Amount in Words is spelled out
+        self.assertContains(res, 'Three Thousand Five Hundred')
+        self.assertNotContains(res, 'Rupees 3500 Only')
+
+        # Ensure settled receipt seal
+        self.assertContains(res, 'Payment Settled')
+        self.assertContains(res, 'Zero Balance Outstanding')
+
+
