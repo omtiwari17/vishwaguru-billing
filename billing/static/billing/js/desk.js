@@ -8,6 +8,7 @@
         initKeyboardShortcuts();
         initClipboardHelpers();
         initHtmxProgressIndicators();
+        initDropdownDismissal();
     });
 
     // 1. Global Keyboard Shortcuts (Linear-grade desk productivity)
@@ -102,6 +103,39 @@
                 }
             }
         });
+    }
+
+
+    // 4. Dropdown Menu Outside-Click & Single-Open Dismissal
+    function initDropdownDismissal() {
+        // Close on clicking anywhere outside
+        document.addEventListener('click', function (e) {
+            document.querySelectorAll('details.desk-menu-dropdown[open]').forEach(function (d) {
+                if (!d.contains(e.target)) {
+                    d.removeAttribute('open');
+                }
+            });
+        });
+
+        // Close on Escape key
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape') {
+                document.querySelectorAll('details.desk-menu-dropdown[open]').forEach(function (d) {
+                    d.removeAttribute('open');
+                });
+            }
+        });
+
+        // When one menu opens, close any other open menu
+        document.addEventListener('toggle', function (e) {
+            if (e.target && e.target.matches && e.target.matches('details.desk-menu-dropdown[open]')) {
+                document.querySelectorAll('details.desk-menu-dropdown[open]').forEach(function (d) {
+                    if (d !== e.target) {
+                        d.removeAttribute('open');
+                    }
+                });
+            }
+        }, true);
     }
 
 })();

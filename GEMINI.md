@@ -457,6 +457,22 @@
     - Reordered mobile layout: Mobile Header (`Recent bills` title, count, full-width search bar, side-by-side `+ New bill` & `View all` buttons) placed directly *above* the Segmented Status Filter Tabs Bar.
     - Scoped `.bills-desk-panel` to unboxed/transparent on mobile and boxed on desktop (`@media (min-width: 768px)`), eliminating boxed border collisions.
     - Filter tabs set to smooth horizontal touch-scrolling (`overflow-x: auto; white-space: nowrap; -webkit-overflow-scrolling: touch;`), eliminating wrapping and text overlaps.
+  - **Mobile Actions & Three-Dot Dropdown Overhaul (`partials/bills_table.html` & `desk.js`)**:
+    - **Mistakes Identified & Eliminated**:
+      1. Replaced literal ASCII `&hellip;` character with vector Bootstrap Icon `<i class="bi bi-three-dots-vertical"></i>` inside a clean `.btn-desk-sm` trigger button.
+      2. Removed fragile full-card stretched link (`a.absolute.inset-0`) that caused accidental navigation when tapping near the three-dot button or menu.
+      3. Fixed dropdown menu positioning: `.desk-menu-box` anchored to `right: 0; top: calc(100% + 4px);` with `0 4px 16px rgba(0, 0, 0, 0.1)` elevation, 1px `#e7e2d9` border, and smooth fade-in animation.
+      4. Restored missing WhatsApp action: Menu now includes all 4 options (View Invoice, Download PDF, WhatsApp Receipt / Reminder, Client Statement Portal).
+      5. Added auto-dismiss in `desk.js`: Dropdowns automatically close on click-outside, Escape key, or when opening another menu.
+    - **Direct 1-Click Action Buttons on Mobile Cards**:
+      - Brought "the other buttons" (`[ View ]`, `[ PDF ]`, `[ WhatsApp Remind / Receipt ]`, `[ Portal ]`) directly onto the bottom of every mobile bill card in a dedicated action row.
+      - Staff no longer need to open the three-dot menu for common tasks, giving instant 1-tap access with $\ge 40	ext{px}$ touch targets.
+  - **Staff Login Screen Overhaul (`login.html`)**:
+    - **Eliminated Logo Duplication**: Removed the redundant secondary logo from inside the login card, letting the official masthead logo in the top navbar stand out cleanly.
+    - **Security Medallion & Dignified Typography**: Added a central maroon security seal (`bi bi-shield-lock-fill`) and switched title and labels to clean Mukta typography with balanced hierarchy.
+    - **Interactive Password Visibility Toggle**: Integrated a 1-click password show/hide eye toggle button (`bi bi-eye` / `bi bi-eye-slash`) directly in the password input.
+    - **Mobile Touch Comfort**: Applied fluid padding `clamp(22px, 5vw, 36px)` and 48px input/button heights, ensuring comfortable typing and zero horizontal overflow on small mobile screens.
+    - **Verified Authentication**: End-to-end login flow verified via CDP script; automated unit test suite passing 28/28 (100% OK).
   - **Automated Verification**:
     - CDP Headless Chrome mobile inspection verified across `390x844` and `427x952` with zero horizontal overflow (`scrollWidth == innerWidth`).
     - Desktop inspection verified at `1280x900` with 2-column layouts and responsive metrics intact.

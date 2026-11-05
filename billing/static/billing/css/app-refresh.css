@@ -389,3 +389,119 @@
         gap: 2rem;
     }
 }
+
+
+/* --- Three-Dot Menu & Overflow Dropdown Styles --- */
+.desk-menu-dropdown {
+    position: relative;
+    display: inline-block;
+}
+
+summary.desk-menu-trigger {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    min-height: 36px;
+    min-width: 36px;
+    padding: 0;
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    background-color: #ffffff;
+    color: var(--muted);
+    cursor: pointer;
+    list-style: none;
+    user-select: none;
+    outline: none;
+    transition: background-color 150ms ease, border-color 150ms ease, color 150ms ease;
+    -webkit-tap-highlight-color: transparent;
+}
+
+summary.desk-menu-trigger::-webkit-details-marker {
+    display: none;
+}
+
+summary.desk-menu-trigger::marker {
+    display: none;
+}
+
+@media (hover: hover) {
+    summary.desk-menu-trigger:hover {
+        background-color: var(--paper);
+        border-color: #d6cfc4;
+        color: var(--ink);
+    }
+}
+
+summary.desk-menu-trigger:active,
+details.desk-menu-dropdown[open] > summary.desk-menu-trigger {
+    background-color: #f5f3ef;
+    border-color: #a8a29e;
+    color: var(--ink);
+}
+
+.desk-menu-box {
+    position: absolute;
+    right: 0;
+    top: calc(100% + 4px);
+    min-width: 190px;
+    max-width: 240px;
+    background-color: #ffffff;
+    border: 1px solid var(--rule);
+    border-radius: 6px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+    z-index: 100;
+    padding: 4px 0;
+    overflow: hidden;
+    animation: deskMenuFadeIn 120ms ease-out forwards;
+}
+
+@keyframes deskMenuFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-4px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.desk-menu-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    min-height: 44px;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--ink);
+    text-decoration: none;
+    background-color: transparent;
+    border-bottom: 1px solid #f5f3ef;
+    transition: background-color 150ms ease, color 150ms ease;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.desk-menu-item:last-child {
+    border-bottom: none;
+}
+
+@media (hover: hover) {
+    .desk-menu-item:hover {
+        background-color: #f7f5f0;
+        color: var(--maroon);
+    }
+}
+
+.desk-menu-item:active {
+    background-color: #eeeae3;
+}
+
+.desk-menu-item i {
+    font-size: 16px;
+    width: 18px;
+    text-align: center;
+    flex-shrink: 0;
+}

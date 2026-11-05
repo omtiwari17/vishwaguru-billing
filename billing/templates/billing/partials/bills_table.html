@@ -114,143 +114,42 @@
 <div class="block md:hidden flex flex-col gap-3" style="font-family: 'Mukta', sans-serif;">
     {% if recent_bills %}
         {% for b in recent_bills %}
-            {% if b.balance_amount == 0 %}
-            <!-- 2A. PAID BILL CARD: Stretched link to detail, no action row, visibly shorter -->
-            <div class="bg-white border border-rule rounded p-4 flex flex-col gap-1.5 relative hover:bg-paper transition-colors" style="border: 1px solid #e7e2d9; border-radius: 4px; padding: 16px; background-color: #ffffff;">
-                <!-- Clickable stretched link over whole card -->
-                <a href="{% url 'billing:bill_detail' b.pk %}" class="absolute inset-0 z-0" aria-label="{% if site_lang == 'hi' %}बिल {{ b.bill_number }} विवरण{% else %}Bill {{ b.bill_number }} details{% endif %}" style="position: absolute; inset: 0; z-index: 0;"></a>
-
-                <!-- Line 1: invoice no + date on left, status dot + '...' menu on top-right -->
-                <div class="flex items-center justify-between gap-2 relative z-10">
-                    <div class="flex items-center gap-1.5 text-xs text-muted tabular-nums pointer-events-none" style="color: #57534e; font-size: 12px;">
-                        <span class="font-medium text-ink" style="color: #1c1917;">{{ b.bill_number }}</span>
-                        <span>&bull;</span>
-                        <span>{{ b.created_at|date:"d M" }}</span>
-                    </div>
-                    <div class="flex items-center gap-2">
-                        {% include 'billing/partials/status_dot.html' with status=b.payment_status %}
-                        <details class="relative">
-                            <summary class="min-h-[36px] min-w-[36px] w-9 h-9 flex items-center justify-center border border-rule bg-white hover:bg-paper rounded cursor-pointer list-none select-none text-ink font-bold text-sm" style="border: 1px solid #d6cfc4; border-radius: 4px; min-height: 36px; min-width: 36px; cursor: pointer; list-style: none;">
-                                &hellip;
-                            </summary>
-                            <div class="absolute right-0 top-full mt-1 w-48 bg-white border border-rule rounded z-50 divide-y divide-rule py-1" style="background-color: #ffffff; border: 1px solid #d6cfc4; border-radius: 4px; z-index: 50; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
-                                <a href="{% url 'billing:bill_detail' b.pk %}" class="min-h-[44px] px-4 py-2.5 flex items-center gap-2 text-sm text-ink hover:bg-paper hover:text-maroon transition-colors" style="text-decoration: none; color: #1c1917; min-height: 44px;">
-                                    <i class="bi bi-eye"></i>
-                                    <span>{% if site_lang == 'hi' %}बिल विवरण देखें{% else %}View invoice{% endif %}</span>
-                                </a>
-                                <a href="{% url 'billing:bill_pdf' b.pk %}?download=1&lang={{ b.bill_language }}" class="min-h-[44px] px-4 py-2.5 flex items-center gap-2 text-sm text-ink hover:bg-paper hover:text-maroon transition-colors" style="text-decoration: none; color: #1c1917; min-height: 44px;">
-                                    <i class="bi bi-file-earmark-pdf"></i>
-                                    <span>{% if site_lang == 'hi' %}पीडीएफ डाउनलोड{% else %}Download PDF{% endif %}</span>
-                                </a>
-                                {% if b.client %}
-                                <a href="{% url 'billing:customer_portal' b.client.access_token %}" target="_blank" class="min-h-[44px] px-4 py-2.5 flex items-center gap-2 text-sm text-ink hover:bg-paper hover:text-maroon transition-colors" style="text-decoration: none; color: #1c1917; min-height: 44px;">
-                                    <i class="bi bi-box-arrow-up-right"></i>
-                                    <span>{% if site_lang == 'hi' %}ग्राहक खाता पोर्टल{% else %}Client statement{% endif %}</span>
-                                </a>
-                                {% endif %}
-                            </div>
-                        </details>
-                    </div>
-                </div>
-
-                <!-- Line 2: client name (16px, weight 500) on left, total amount (16px, weight 600, tabular-nums) on right -->
-                <div class="flex items-baseline justify-between gap-2 mt-0.5 pointer-events-none">
-                    <div class="text-[15px] sm:text-base font-medium text-ink truncate leading-snug" style="font-size: 16px; font-weight: 500; color: #1c1917;">
-                        {{ b.client_name|client_primary_name }}
-                    </div>
-                    <div class="text-[15px] sm:text-base font-semibold text-ink tabular-nums shrink-0 ml-2" style="font-size: 16px; font-weight: 600; color: #1c1917;">
-                        {{ b.total_amount|indian_currency }}
-                    </div>
-                </div>
-
-                <!-- Line 3: Secondary English client name (if available) -->
-                {% if b.client_name|client_secondary_name %}
-                <div class="text-xs text-muted truncate leading-tight pointer-events-none" style="color: #57534e; font-size: 12px;">
-                    {{ b.client_name|client_secondary_name }}
-                </div>
-                {% endif %}
-
-                <!-- Line 4: Placement (single language on mobile, single line, truncate) -->
-                <div class="text-xs text-muted truncate leading-tight pointer-events-none" style="color: #57534e; font-size: 12px;">
-                    {% if site_lang == 'hi' %}
-                        {{ b.placement_hindi|default:b.get_placement_type_display }} &bull; {{ b.edition_hindi|default:b.edition_name }}{% if b.page_number %} &bull; {{ b.page_number|format_page:site_lang }}{% endif %}
-                    {% else %}
-                        {{ b.get_placement_type_display }} &bull; {{ b.get_edition_name_display }}{% if b.page_number %} &bull; {{ b.page_number|format_page:site_lang }}{% endif %}
-                    {% endif %}
-                </div>
-            </div>
-            {% else %}
-            <!-- 2B. UNPAID / PARTIAL BILL CARD: Line 1-4, Divider, Wide WhatsApp Reminder + '...' Menu -->
-            <div class="bg-white border border-rule rounded p-4 flex flex-col gap-1.5" style="border: 1px solid #e7e2d9; border-radius: 4px; padding: 16px; background-color: #ffffff;">
-                <!-- Line 1: invoice no + date (small, muted) on left, status dot + text on right -->
-                <div class="flex items-center justify-between gap-2">
-                    <div class="flex items-center gap-1.5 text-xs text-muted tabular-nums" style="color: #57534e; font-size: 12px;">
-                        <a href="{% url 'billing:bill_detail' b.pk %}" class="font-medium text-ink hover:underline" style="color: #1c1917; text-decoration: none;">
-                            {{ b.bill_number }}
-                        </a>
-                        <span>&bull;</span>
-                        <span>{{ b.created_at|date:"d M" }}</span>
-                    </div>
-                    <div>
-                        {% include 'billing/partials/status_dot.html' with status=b.payment_status %}
-                    </div>
-                </div>
-
-                <!-- Line 2: client name (16px, weight 500) on left, total amount (16px, weight 600, tabular-nums) on right -->
-                <div class="flex items-baseline justify-between gap-2 mt-0.5">
-                    <div class="text-[15px] sm:text-base font-medium text-ink truncate leading-snug" style="font-size: 16px; font-weight: 500; color: #1c1917;">
-                        {{ b.client_name|client_primary_name }}
-                    </div>
-                    <div class="text-[15px] sm:text-base font-semibold text-ink tabular-nums shrink-0 ml-2" style="font-size: 16px; font-weight: 600; color: #1c1917;">
-                        {{ b.total_amount|indian_currency }}
-                    </div>
-                </div>
-
-                <!-- Line 3: English client name in small muted text; balance due on right in maroon -->
-                <div class="flex items-baseline justify-between gap-2">
-                    <div class="text-xs text-muted truncate leading-tight" style="color: #57534e; font-size: 12px;">
-                        {{ b.client_name|client_secondary_name }}
-                    </div>
-                    <div class="text-xs font-semibold tabular-nums shrink-0 ml-2" style="color: #9f1d1d; font-size: 12px;">
-                        {% if site_lang == 'hi' %}बकाया {{ b.balance_amount|indian_currency }}{% else %}Due {{ b.balance_amount|indian_currency }}{% endif %}
-                    </div>
-                </div>
-
-                <!-- Line 4: Placement (single language on mobile, single line, truncate) -->
-                <div class="text-xs text-muted truncate leading-tight mt-0.5" style="color: #57534e; font-size: 12px;">
-                    {% if site_lang == 'hi' %}
-                        {{ b.placement_hindi|default:b.get_placement_type_display }} &bull; {{ b.edition_hindi|default:b.edition_name }}{% if b.page_number %} &bull; {{ b.page_number|format_page:site_lang }}{% endif %}
-                    {% else %}
-                        {{ b.get_placement_type_display }} &bull; {{ b.get_edition_name_display }}{% if b.page_number %} &bull; {{ b.page_number|format_page:site_lang }}{% endif %}
-                    {% endif %}
-                </div>
-
-                <!-- Divider -->
-                <div class="border-t border-rule mt-1.5 pt-1.5" style="border-top: 1px solid #e7e2d9;"></div>
-
-                <!-- Actions Row: Wide Outline WhatsApp Reminder Button + '...' Menu -->
-                <div class="flex items-center gap-2">
-                    <a href="{{ b.whatsapp_share_url }}" target="_blank" class="flex-1 min-h-[44px] px-3.5 py-2 inline-flex items-center justify-center gap-2 text-xs font-medium rounded border border-rule text-ink hover:bg-paper" style="border: 1px solid #d6cfc4; border-radius: 4px; min-height: 44px; text-decoration: none; color: #1c1917; background-color: #ffffff;">
-                        <i class="bi bi-whatsapp" style="color: #15803d; font-size: 15px;"></i>
-                        <span>{% if site_lang == 'hi' %}व्हाट्सऐप तगादा{% else %}WhatsApp reminder{% endif %}</span>
+        <!-- Responsive Mobile Bill Card -->
+        <div class="bg-white border border-rule rounded p-4 flex flex-col gap-2 relative" style="border: 1px solid var(--rule); border-radius: 6px; padding: 14px 16px; background-color: #ffffff;">
+            <!-- Line 1: invoice no + date on left, status dot + 3-dot menu on right -->
+            <div class="flex items-center justify-between gap-2">
+                <div class="flex items-center gap-1.5 text-xs text-muted tabular-nums" style="color: var(--muted); font-size: 13px;">
+                    <a href="{% url 'billing:bill_detail' b.pk %}" class="font-semibold text-ink hover:text-maroon hover:underline" style="color: var(--ink); text-decoration: none; font-size: 13.5px;">
+                        {{ b.bill_number }}
                     </a>
+                    <span>&bull;</span>
+                    <span>{{ b.created_at|date:"d M" }}</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    {% include 'billing/partials/status_dot.html' with status=b.payment_status %}
 
-                    <!-- Always show '...' menu (View, PDF, Portal) with 44px tap target -->
-                    <details class="relative shrink-0">
-                        <summary class="min-h-[44px] min-w-[44px] w-11 h-11 flex items-center justify-center border border-rule bg-white hover:bg-paper rounded cursor-pointer list-none select-none text-ink font-bold text-base" style="border: 1px solid #d6cfc4; border-radius: 4px; min-height: 44px; min-width: 44px; cursor: pointer; list-style: none;">
-                            &hellip;
+                    <!-- Refined Three-Dot Overflow Menu -->
+                    <details class="desk-menu-dropdown relative">
+                        <summary class="desk-menu-trigger btn-desk-sm" aria-label="{% if site_lang == 'hi' %}अधिक विकल्प{% else %}More options{% endif %}" title="{% if site_lang == 'hi' %}अधिक विकल्प{% else %}More options{% endif %}">
+                            <i class="bi bi-three-dots-vertical" style="font-size: 14px; color: var(--muted);"></i>
                         </summary>
-                        <div class="absolute right-0 bottom-full mb-1 w-48 bg-white border border-rule rounded z-50 divide-y divide-rule py-1" style="background-color: #ffffff; border: 1px solid #d6cfc4; border-radius: 4px; z-index: 50; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
-                            <a href="{% url 'billing:bill_detail' b.pk %}" class="min-h-[44px] px-4 py-2.5 flex items-center gap-2 text-sm text-ink hover:bg-paper hover:text-maroon transition-colors" style="text-decoration: none; color: #1c1917; min-height: 44px;">
+                        <div class="desk-menu-box" role="menu">
+                            <a href="{% url 'billing:bill_detail' b.pk %}" class="desk-menu-item" role="menuitem">
                                 <i class="bi bi-eye"></i>
                                 <span>{% if site_lang == 'hi' %}बिल विवरण देखें{% else %}View invoice{% endif %}</span>
                             </a>
-                            <a href="{% url 'billing:bill_pdf' b.pk %}?download=1&lang={{ b.bill_language }}" class="min-h-[44px] px-4 py-2.5 flex items-center gap-2 text-sm text-ink hover:bg-paper hover:text-maroon transition-colors" style="text-decoration: none; color: #1c1917; min-height: 44px;">
-                                <i class="bi bi-file-earmark-pdf"></i>
+                            <a href="{% url 'billing:bill_pdf' b.pk %}?download=1&lang={{ b.bill_language }}" class="desk-menu-item" role="menuitem">
+                                <i class="bi bi-file-earmark-pdf" style="color: var(--maroon);"></i>
                                 <span>{% if site_lang == 'hi' %}पीडीएफ डाउनलोड{% else %}Download PDF{% endif %}</span>
                             </a>
+                            {% if b.whatsapp_share_url %}
+                            <a href="{{ b.whatsapp_share_url }}" target="_blank" class="desk-menu-item" role="menuitem">
+                                <i class="bi bi-whatsapp" style="color: var(--paid);"></i>
+                                <span>{% if site_lang == 'hi' %}{% if b.balance_amount > 0 %}व्हाट्सऐप तगादा{% else %}व्हाट्सऐप रसीद{% endif %}{% else %}{% if b.balance_amount > 0 %}WhatsApp reminder{% else %}WhatsApp receipt{% endif %}{% endif %}</span>
+                            </a>
+                            {% endif %}
                             {% if b.client %}
-                            <a href="{% url 'billing:customer_portal' b.client.access_token %}" target="_blank" class="min-h-[44px] px-4 py-2.5 flex items-center gap-2 text-sm text-ink hover:bg-paper hover:text-maroon transition-colors" style="text-decoration: none; color: #1c1917; min-height: 44px;">
+                            <a href="{% url 'billing:customer_portal' b.client.access_token %}" target="_blank" class="desk-menu-item" role="menuitem">
                                 <i class="bi bi-box-arrow-up-right"></i>
                                 <span>{% if site_lang == 'hi' %}ग्राहक खाता पोर्टल{% else %}Client statement{% endif %}</span>
                             </a>
@@ -259,17 +158,92 @@
                     </details>
                 </div>
             </div>
-            {% endif %}
+
+            <!-- Line 2: client name on left, total amount on right -->
+            <div class="flex items-baseline justify-between gap-2 mt-0.5">
+                <a href="{% url 'billing:bill_detail' b.pk %}" class="text-base font-semibold text-ink hover:text-maroon truncate leading-snug" style="font-size: 16px; font-weight: 600; color: var(--ink); text-decoration: none;">
+                    {{ b.client_name|client_primary_name }}
+                </a>
+                <div class="text-base font-bold text-ink tabular-nums shrink-0 ml-2" style="font-size: 16.5px; font-weight: 700; color: var(--ink);">
+                    {{ b.total_amount|indian_currency }}
+                </div>
+            </div>
+
+            <!-- Line 3: Secondary English client name on left; balance due on right -->
+            <div class="flex items-baseline justify-between gap-2">
+                <div class="text-xs text-muted truncate leading-tight" style="color: var(--muted); font-size: 13px;">
+                    {% if b.client_name|client_secondary_name %}
+                        {{ b.client_name|client_secondary_name }}
+                    {% elif b.client_phone %}
+                        <span class="tabular-nums">{{ b.client_phone }}</span>
+                    {% endif %}
+                </div>
+                {% if b.balance_amount > 0 %}
+                <div class="text-xs font-bold tabular-nums shrink-0 ml-2" style="color: var(--maroon); font-size: 13px;">
+                    {% if site_lang == 'hi' %}बकाया {{ b.balance_amount|indian_currency }}{% else %}Due {{ b.balance_amount|indian_currency }}{% endif %}
+                </div>
+                {% else %}
+                <div class="text-xs font-medium tabular-nums shrink-0 ml-2" style="color: var(--paid); font-size: 12.5px;">
+                    {% if site_lang == 'hi' %}पूर्ण चुकता{% else %}Paid in full{% endif %}
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Line 4: Placement & edition & page -->
+            <div class="text-xs text-muted truncate leading-tight" style="color: var(--muted); font-size: 13px;">
+                {% if site_lang == 'hi' %}
+                    {{ b.placement_hindi|default:b.get_placement_type_display }} &bull; {{ b.edition_hindi|default:b.edition_name }}{% if b.page_number %} &bull; {{ b.page_number|format_page:site_lang }}{% endif %}
+                {% else %}
+                    {{ b.get_placement_type_display }} &bull; {{ b.get_edition_name_display }}{% if b.page_number %} &bull; {{ b.page_number|format_page:site_lang }}{% endif %}
+                {% endif %}
+            </div>
+
+            <!-- Line 5: DIRECT ACTION BUTTONS (The real, tactile, 1-click buttons!) -->
+            <div class="flex items-center gap-2 pt-2.5 mt-1 border-t border-rule" style="border-top: 1px solid var(--rule); padding-top: 10px; margin-top: 4px;">
+                {% if b.balance_amount > 0 and b.whatsapp_share_url %}
+                <!-- Unpaid: Big green WhatsApp reminder button -->
+                <a href="{{ b.whatsapp_share_url }}" target="_blank" class="btn-desk-sm btn-whatsapp flex-1 justify-center" style="min-height: 40px; font-size: 13.5px; font-weight: 600;">
+                    <i class="bi bi-whatsapp" style="font-size: 15px;"></i>
+                    <span>{% if site_lang == 'hi' %}तगादा{% else %}Remind{% endif %}</span>
+                </a>
+                {% elif b.whatsapp_share_url %}
+                <!-- Paid: WhatsApp receipt button -->
+                <a href="{{ b.whatsapp_share_url }}" target="_blank" class="btn-desk-sm btn-whatsapp" style="min-height: 40px; font-size: 13.5px; padding: 6px 12px;" title="{% if site_lang == 'hi' %}व्हाट्सऐप रसीद भेजें{% else %}Share receipt on WhatsApp{% endif %}">
+                    <i class="bi bi-whatsapp" style="font-size: 14px;"></i>
+                    <span>{% if site_lang == 'hi' %}रसीद{% else %}Receipt{% endif %}</span>
+                </a>
+                {% endif %}
+
+                <!-- View Details button -->
+                <a href="{% url 'billing:bill_detail' b.pk %}" class="btn-desk-sm flex-1 justify-center" style="min-height: 40px; font-size: 13.5px;" title="{% if site_lang == 'hi' %}बिल विवरण देखें{% else %}View invoice{% endif %}">
+                    <i class="bi bi-eye"></i>
+                    <span>{% if site_lang == 'hi' %}विवरण{% else %}View{% endif %}</span>
+                </a>
+
+                <!-- PDF button -->
+                <a href="{% url 'billing:bill_pdf' b.pk %}?download=1&lang={{ b.bill_language }}" class="btn-desk-sm btn-pdf" style="min-height: 40px; font-size: 13.5px; padding: 6px 12px;" title="{% if site_lang == 'hi' %}पीडीएफ डाउनलोड करें{% else %}Download PDF{% endif %}">
+                    <i class="bi bi-file-earmark-pdf"></i>
+                    <span>PDF</span>
+                </a>
+
+                <!-- Portal link -->
+                {% if b.client %}
+                <a href="{% url 'billing:customer_portal' b.client.access_token %}" target="_blank" class="btn-desk-sm" style="min-height: 40px; font-size: 13.5px; padding: 6px 10px;" title="{% if site_lang == 'hi' %}ग्राहक खाता पोर्टल{% else %}Customer statement portal{% endif %}">
+                    <i class="bi bi-box-arrow-up-right"></i>
+                </a>
+                {% endif %}
+            </div>
+        </div>
         {% endfor %}
 
         <!-- 'View all' as small text link at the bottom of the list -->
         <div class="pt-1 pb-2 text-center">
-            <a href="{% url 'billing:bill_search' %}" class="text-xs text-muted hover:text-maroon underline inline-block py-1" style="color: #57534e; text-decoration: underline;">
+            <a href="{% url 'billing:bill_search' %}" class="text-xs text-muted hover:text-maroon underline inline-block py-1" style="color: var(--muted); text-decoration: underline;">
                 {% if site_lang == 'hi' %}सभी बिल देखें &rarr;{% else %}View all bills &rarr;{% endif %}
             </a>
         </div>
     {% else %}
-        <div class="p-8 text-center text-muted text-sm" style="color: #57534e;">
+        <div class="p-8 text-center text-muted text-sm" style="color: var(--muted);">
             {% if site_lang == 'hi' %}कोई बिल नहीं मिला।{% else %}No matching bills found.{% endif %}
         </div>
     {% endif %}
