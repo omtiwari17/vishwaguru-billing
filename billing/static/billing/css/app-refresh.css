@@ -16,14 +16,28 @@
 }
 
 .app-shell .office-container {
-    max-width: 1240px;
+    max-width: 1680px;
     margin: 0 auto;
-    padding-inline: 16px;
+    padding-inline: 20px;
 }
 
 @media (min-width: 768px) {
     .app-shell .office-container {
-        padding-inline: 24px;
+        padding-inline: 28px;
+    }
+}
+
+@media (min-width: 1280px) {
+    .app-shell .office-container {
+        padding-inline: 36px;
+        max-width: 1720px;
+    }
+}
+
+@media (min-width: 1536px) {
+    .app-shell .office-container {
+        padding-inline: 44px;
+        max-width: 1800px;
     }
 }
 
@@ -88,19 +102,19 @@
 .btn-desk-sm {
     display: inline-flex;
     align-items: center;
-    gap: 5px;
-    padding: 4px 10px;
-    min-height: 32px;
+    gap: 6px;
+    padding: 6px 13px;
+    min-height: 36px;
     background-color: #ffffff;
     color: #44403c;
     font-family: var(--font-ui);
-    font-size: 13px;
+    font-size: 14px;
     font-weight: 500;
     border: 1px solid var(--rule);
     border-radius: 4px;
     cursor: pointer;
     text-decoration: none;
-    line-height: 1.2;
+    line-height: 1.25;
     transition-property: transform, background-color, border-color, box-shadow, color;
     transition-duration: 150ms;
     transition-timing-function: cubic-bezier(0, 0, 0.2, 1);

@@ -1,29 +1,29 @@
 {% load billing_tags %}
 
 <!-- 1. Desktop & Tablet View (md+: Dense Clerk Table) -->
-<div class="hidden md:block overflow-x-auto" style="-webkit-overflow-scrolling: touch;">
+<div tabindex="0" role="region" aria-label="Recent advertisement invoices" class="hidden md:block table-wrapper">
     <table class="w-full text-left border-collapse" style="width: 100%; border-collapse: collapse; font-family: 'Mukta', sans-serif;">
         <thead>
             <tr class="border-b border-rule bg-paper" style="border-bottom: 1px solid #e7e2d9; background-color: #faf8f4;">
-                <th class="py-3 px-3.5 font-medium text-muted" style="padding: 12px 14px 12px 20px; color: #57534e; font-size: 13px;">
+                <th class="py-3.5 px-4 font-semibold text-muted" style="padding: 14px 18px 14px 24px; color: #57534e; font-size: 14px;">
                     {% if site_lang == 'hi' %}बिल क्र.{% else %}Invoice no{% endif %}
                 </th>
-                <th class="py-3 px-3.5 font-medium text-muted" style="padding: 12px 14px; color: #57534e; font-size: 13px;">
+                <th class="py-3.5 px-4 font-semibold text-muted" style="padding: 14px 18px; color: #57534e; font-size: 14px;">
                     {% if site_lang == 'hi' %}विज्ञापनदाता{% else %}Client{% endif %}
                 </th>
-                <th class="py-3 px-3.5 font-medium text-muted" style="padding: 12px 14px; color: #57534e; font-size: 13px;">
+                <th class="py-3.5 px-4 font-semibold text-muted" style="padding: 14px 18px; color: #57534e; font-size: 14px;">
                     {% if site_lang == 'hi' %}प्रकाशन व आकार{% else %}Placement &amp; page{% endif %}
                 </th>
-                <th class="py-3 px-3.5 font-medium text-muted text-right" style="padding: 12px 14px; color: #57534e; font-size: 13px; text-align: right;">
+                <th class="py-3.5 px-4 font-semibold text-muted text-right" style="padding: 14px 18px; color: #57534e; font-size: 14px; text-align: right;">
                     {% if site_lang == 'hi' %}कुल राशि{% else %}Amount{% endif %}
                 </th>
-                <th class="py-3 px-3.5 font-medium text-muted text-right" style="padding: 12px 14px; color: #57534e; font-size: 13px; text-align: right;">
+                <th class="py-3.5 px-4 font-semibold text-muted text-right" style="padding: 14px 18px; color: #57534e; font-size: 14px; text-align: right;">
                     {% if site_lang == 'hi' %}बकाया{% else %}Balance due{% endif %}
                 </th>
-                <th class="py-3 px-3.5 font-medium text-muted" style="padding: 12px 14px; color: #57534e; font-size: 13px;">
+                <th class="py-3.5 px-4 font-semibold text-muted" style="padding: 14px 18px; color: #57534e; font-size: 14px;">
                     {% if site_lang == 'hi' %}स्थिति{% else %}Status{% endif %}
                 </th>
-                <th class="py-3 px-3.5 font-medium text-muted text-right" style="padding: 12px 20px 12px 14px; color: #57534e; font-size: 13px; text-align: right;">
+                <th class="py-3.5 px-4 font-semibold text-muted text-right" style="padding: 14px 24px 14px 18px; color: #57534e; font-size: 14px; text-align: right;">
                     {% if site_lang == 'hi' %}क्रियाएं{% else %}Actions{% endif %}
                 </th>
             </tr>
@@ -32,51 +32,51 @@
             {% if recent_bills %}
                 {% for b in recent_bills %}
                 <tr class="hover:bg-paper transition-colors" style="border-bottom: 1px solid #e7e2d9;">
-                    <td class="py-3 px-3.5 whitespace-nowrap" style="padding: 12px 14px 12px 20px;">
-                        <a href="{% url 'billing:bill_detail' b.pk %}" class="font-semibold text-ink hover:underline tabular-nums" style="color: #1c1917; font-size: 15px; text-decoration: none;">
+                    <td class="py-4 px-4 whitespace-nowrap" style="padding: 15px 18px 15px 24px;">
+                        <a href="{% url 'billing:bill_detail' b.pk %}" class="font-semibold text-ink hover:underline tabular-nums" style="color: #1c1917; font-size: 16px; text-decoration: none;">
                             {{ b.bill_number }}
                         </a>
-                        <div class="text-muted tabular-nums" style="color: #57534e; font-size: 13px; margin-top: 2px;">
+                        <div class="text-muted tabular-nums" style="color: #57534e; font-size: 14px; margin-top: 3px;">
                             {{ b.created_at|date:"d M Y" }}
                         </div>
                     </td>
-                    <td class="py-3 px-3.5" style="padding: 12px 14px;">
-                        <div class="font-medium text-ink" style="color: #1c1917; font-size: 15px;">
+                    <td class="py-4 px-4" style="padding: 15px 18px;">
+                        <div class="font-medium text-ink" style="color: #1c1917; font-size: 16px;">
                             {{ b.client_name }}
                         </div>
                         {% if b.client_phone %}
-                        <div class="text-muted tabular-nums" style="color: #57534e; font-size: 13px; margin-top: 2px;">
+                        <div class="text-muted tabular-nums" style="color: #57534e; font-size: 14px; margin-top: 3px;">
                             {{ b.client_phone }}
                         </div>
                         {% endif %}
                     </td>
-                    <td class="py-3 px-3.5" style="padding: 12px 14px;">
-                        <div class="text-ink" style="color: #1c1917; font-size: 14px;">
+                    <td class="py-4 px-4" style="padding: 15px 18px;">
+                        <div class="text-ink" style="color: #1c1917; font-size: 15px;">
                             {{ b.get_placement_type_display }}
                             {% if b.placement_hindi and b.placement_hindi != b.get_placement_type_display %}
                                 <span class="text-muted" style="color: #57534e;">({{ b.placement_hindi }})</span>
                             {% endif %}
                         </div>
-                        <div class="text-muted" style="color: #57534e; font-size: 13px; margin-top: 2px;">
+                        <div class="text-muted" style="color: #57534e; font-size: 14px; margin-top: 3px;">
                             {% if site_lang == 'hi' %}{{ b.edition_hindi }}{% else %}{{ b.get_edition_name_display }}{% endif %}
                             {% if b.page_number %}&bull; {{ b.page_number|format_page:site_lang }}{% endif %}
                         </div>
                     </td>
-                    <td class="py-3 px-3.5 text-right whitespace-nowrap font-semibold text-ink tabular-nums" style="padding: 12px 14px; text-align: right; color: #1c1917; font-size: 15px;">
+                    <td class="py-4 px-4 text-right whitespace-nowrap font-semibold text-ink tabular-nums" style="padding: 15px 18px; text-align: right; color: #1c1917; font-size: 17px;">
                         {{ b.total_amount|indian_currency }}
                     </td>
-                    <td class="py-3 px-3.5 text-right whitespace-nowrap tabular-nums" style="padding: 12px 14px; text-align: right; font-size: 15px;">
+                    <td class="py-4 px-4 text-right whitespace-nowrap tabular-nums" style="padding: 15px 18px; text-align: right; font-size: 17px;">
                         {% if b.balance_amount > 0 %}
                             <span class="font-semibold" style="color: #9f1d1d;">{{ b.balance_amount|indian_currency }}</span>
                         {% else %}
                             <span style="color: #15803d; font-weight: 500;">&mdash;</span>
                         {% endif %}
                     </td>
-                    <td class="py-3 px-3.5 whitespace-nowrap" style="padding: 12px 14px;">
+                    <td class="py-4 px-4 whitespace-nowrap" style="padding: 15px 18px;">
                         {% include 'billing/partials/status_dot.html' with status=b.payment_status %}
                     </td>
-                    <td class="py-3 px-3.5 text-right whitespace-nowrap" style="padding: 12px 20px 12px 14px; text-align: right;">
-                        <div class="inline-flex items-center gap-1.5" style="display: inline-flex; gap: 6px;">
+                    <td class="py-4 px-4 text-right whitespace-nowrap" style="padding: 15px 24px 15px 18px; text-align: right;">
+                        <div class="inline-flex items-center gap-2" style="display: inline-flex; gap: 8px;">
                             <a href="{% url 'billing:bill_detail' b.pk %}" class="btn-desk-sm" title="{% if site_lang == 'hi' %}विवरण देखें{% else %}View invoice{% endif %}">
                                 <i class="bi bi-eye"></i>
                                 <span>{% if site_lang == 'hi' %}देखें{% else %}View{% endif %}</span>

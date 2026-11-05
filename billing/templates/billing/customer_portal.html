@@ -33,26 +33,12 @@
     </style>
 
     <!-- Newspaper Office Theme Stylesheet -->
-    <link rel="stylesheet" href="{% static 'billing/css/style.css' %}">
-    <link rel="stylesheet" href="{% static 'billing/css/app-refresh.css' %}?v=20261103-5">
-    <style>
-        .portal-shell { font-size: 18px !important; line-height: 1.55 !important; }
-        .portal-shell .portal-container { max-width: 820px !important; }
-        .portal-shell button, .portal-shell a.btn, .portal-shell .badge { font-size: 16px !important; }
-        .portal-shell small, .portal-shell .text-xs:not(.bi), .portal-shell .text-sm:not(.bi),
-        .portal-shell [class*="text-[10px]"], .portal-shell [class*="text-[11px]"], .portal-shell [class*="text-[12px]"],
-        .portal-shell [style*="font-size: 10px"], .portal-shell [style*="font-size: 11px"],
-        .portal-shell [style*="font-size: 12px"], .portal-shell [style*="font-size: 13px"],
-        .portal-shell [style*="font-size: 14px"], .portal-shell [style*="font-size: 15px"] { font-size: 16px !important; line-height: 1.45; }
-        .portal-shell main > .bg-white.border.rounded { padding: 20px !important; }
-        .portal-shell table th, .portal-shell table td { padding: 12px 14px !important; }
-        @media (max-width: 767px) {
-            .portal-shell { font-size: 17px !important; }
-            .portal-shell .portal-container { width: calc(100% - 28px) !important; padding-inline: 0 !important; }
-            .portal-shell main > .bg-white.border.rounded { padding: 16px !important; }
-            .portal-shell table th, .portal-shell table td { padding: 10px 10px !important; }
-        }
-    </style>
+    <link rel="stylesheet" href="{% static 'billing/css/style.css' %}?v=20261105-wide-3">
+    <link rel="stylesheet" href="{% static 'billing/css/app-refresh.css' %}?v=20261105-wide-3">
+
+    <!-- HTMX and Modern Desk JS -->
+    <script src="{% static 'billing/js/htmx.min.js' %}"></script>
+    <script src="{% static 'billing/js/desk.js' %}?v=20261105-wide-3"></script>
 
     <!-- Explicit Layout and Container Fallback Rules -->
     <style>

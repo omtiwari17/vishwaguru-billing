@@ -341,14 +341,13 @@
   - **Bills Table Actions (`partials/bills_table.html`)**: Replaced raw 11px text links with structured 32px `.btn-desk-sm` buttons (`View`, `PDF`, `WhatsApp`, `Portal`) with crisp `#d6cfc4` borders.
   - **Bill Detail Pane (`partials/bill_detail_pane.html`)**: Scaled action buttons to 44px min-height with crisp `#d6cfc4` borders, scaled balance due to 24px bold maroon, and scaled payment inputs to 42px min-height.
   - **Search & Forms (`bill_search.html`, `bill_form.html`, `payment_submissions_list.html`)**: Standardized all form controls, chips, and filter selects to 42px height and 14px/15px typography.
-  - **Automated Test Suite Verified**: All 27 automated unit tests passed (100% OK). Dev server running cleanly on port 8080.
-  - **Authoritative Design Manual Updated (`UI_UX_REDESIGN.md`)**: Replaced initial audit with the comprehensive, production-accurate specification and implementation record covering typography tokens, button scale hierarchy, strict vector icons, security auth-gating, responsive breakpoints, and full A4 PDF architecture.
+  - **Automated Test Suite Verified**: All 27 automated unit tests passed (100% OK).
 * **Dashboard Unslop & Editorial Polish Pass Complete (`unslop` pass)**:
   - **KPI Metrics Strip (`partials/stats_strip.html`)**: Replaced uppercase tracked labels with clean broadsheet sentence-case (`Today's billed`, `This month`, `Collected`, `Balance due`). Removed all inline style overrides; defined `.dashboard-kpi-strip` and `.dashboard-kpi` on strict 4px grid (padding 16px/24px, min-height 104px/112px).
   - **Payment Status Distribution Bar (`dashboard.html`)**: Introduced a calm 6px segmented proportional collection health bar (`.status-bar`) showing Paid (green), Partial (amber), and Unpaid (maroon) percentages computed cleanly in `views.py`.
   - **Recent Bills Table (`partials/bills_table.html`)**: Converted table headers (`th`) from uppercase tracked styling to sentence case. Removed redundant inline styles; quieted the row actions into clean, non-competing buttons.
   - **Clean Copy & Strict 4px Grid**: Removed trailing ellipses from search placeholders (`Search bills` / `बिल खोजें`). Standardized desktop search to 260px $\times$ 40px and primary action to `+ New bill` (Hindi: `+ नया बिल`).
-  - **Automated Test Suite Verified**: All 27 automated unit tests passed (100% OK). Dev server running cleanly on port 8080.
+  - **Automated Test Suite Verified**: All 27 automated unit tests passed (100% OK).
 * **UI Craft Elevation Pass with `better-ui` & `styleseed`**:
   - **Eliminated Destructive Font-Size & Border Overrides**: Removed blunt inline `!important` font and border overrides from `base.html` and cleaned `app-refresh.css` to restore natural typographic hierarchy and authentic broadsheet density.
   - **Concentric Geometry & Elevation (`better-ui`)**: Integrated `--shadow-border` (`0px 0px 0px 1px rgba(28, 25, 23, 0.08), 0px 1px 2px -1px rgba(28, 25, 23, 0.06), 0px 2px 4px 0px rgba(28, 25, 23, 0.04)`) across panels and cards with concentric 6px outer radius and 4px inner button radius.
@@ -357,6 +356,29 @@
   - **Screen 2: Dashboard (`dashboard.html`, `stats_strip.html`, `bills_table.html`)**: Clean masthead tabs, 4-cell broadsheet KPI strip with hairline dividers and tabular numbers, recent bills table with sentence-case headers and `.desk-action-pill` buttons (`View`, `PDF`, `WhatsApp`, `Portal`), proportional collection bar, and overdue accounts panel.
   - **Screen 3: Bill Detail (`bill_detail.html`, `bill_detail_pane.html`)**: Breadcrumb with speedometer icon, 28px Noto Serif Devanagari invoice heading with status pill, 2-column broadsheet ledger (Client & Publication on left, Financial summary box on right), authoritative action toolbar with strictly vector Bootstrap icons (ZERO Unicode emojis), refined settlement banner, and tabular payment history.
   - **Automated Test Suite Verified**: All 27 automated unit tests passed (100% OK).
+* **Full-Site HTMX, Modern CSS & Vanilla JS Architecture Integration**:
+  - **Live HTMX Segmented Status Filters (`dashboard.html` & `views.py`)**: Added an interactive segmented tab track (`All`, `Unpaid`, `Partial`, `Paid`) with live `hx-get` filtering and out-of-band updates, avoiding full-page reloads.
+  - **Modern CSS & Specular Craft (`style.css`)**:
+    - Segmented track with nested radius geometry ($R_{track} = 6	ext{px}$, $p = 3	ext{px}$, $R_{tab} = 4	ext{px}$).
+    - Active status tab specular highlight (`box-shadow: 0 1px 2px rgba(0,0,0,0.05), inset 0 1px 0 rgba(255,255,255,0.9)`).
+    - 2.5px indeterminate shimmer loading bar (`.desk-shimmer-bar`) on in-flight HTMX queries.
+    - Accessible `.table-wrapper` with keyboard scrollability (`tabindex="0"`, `role="region"`), sticky `thead th`, and CSS `content-visibility: auto` rendering containment for high INP responsiveness.
+  - **Modern Vanilla JS Engine (`billing/static/billing/js/desk.js`)**:
+    - **Global Keyboard Shortcuts**: Press `/` or `⌘K`/`Ctrl+K` to focus search with select-all; `Esc` to clear and blur; `N` to navigate directly to new bill creation.
+    - **Modern Clipboard Helper**: Supports `[data-copy]` and `[data-copy-value]` attributes across settings and statement portals with instant visual checkmark confirmation.
+    - **HTMX Progress Handlers**: Automatically triggers the shimmer loading bar during live search typing and tab swaps.
+  - **Automated Test Suite Verified**: All 27 automated unit tests passed (100% OK).
+* **Widescreen Desktop Layout & Broadsheet Typography Scale Upgrade**:
+  - **Eliminated Excessive Left/Right Margins**: Replaced the narrow `1180px` / `1240px` container limits in `style.css` and `app-refresh.css` with a broad responsive container (`max-width: 1680px` up to `1800px` on widescreen 1536px+, with fluid 20px–44px inner padding). Fully resolves the dead 350px+ gutters on 1080p and widescreen monitors.
+  - **Elevated Typographic Scale Across Whole Site**:
+    - Root font scale: `16px` on mobile, `17px` on desktop (1024px+), `18px` on wide screens (1440px+).
+    - KPI cards: labels 14px–15px, numbers 36px bold tabular-nums, subtext 14px, cell padding 22px–28px.
+    - Data tables (`bills_table.html`, `bill_search.html`): headers 14px font-semibold (padding 14px 18px), cell primary text 16px, secondary muted text 14px, amounts 17px–18px bold tabular numbers (padding 15px 18px).
+    - Controls & Actions: search bar 320px width x 44px height, primary buttons 44px–46px height, micro action pills (`View`, `PDF`, `WhatsApp`, `Portal`) 36px height with 14px typography.
+    - Masthead & Nav: logo 40px–44px, nav tabs 46px height with 16px typography, language toggle 14px.
+  - **Removed Hardcoded Inline Constraints**: Cleaned restrictive inline `font-size: 13px;` from `bills_table.html` and `bill_search.html`, and removed the `max-width: 920px;` double wrapper from `bill_detail.html`.
+  - **Cache Busting**: Bumped asset cache-busting query strings to `?v=20261105-wide-3` across `base.html` and `customer_portal.html`.
+  - **Automated Test Suite Verified**: All 27 automated unit tests passed (100% OK). Dev server running cleanly on port 8000/8080.
 
 ---
 

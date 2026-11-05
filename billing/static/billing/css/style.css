@@ -49,6 +49,18 @@ html {
     width: 100%;
 }
 
+@media (min-width: 1024px) {
+    html {
+        font-size: 17px;
+    }
+}
+
+@media (min-width: 1440px) {
+    html {
+        font-size: 18px;
+    }
+}
+
 body {
     font-family: var(--font-ui);
     font-weight: 400;
@@ -90,31 +102,31 @@ body {
    - Hindi text at least the same size as English
 */
 .desk-table td, table tbody td, table td {
-    font-size: 15px;
+    font-size: 16px;
 }
 
 .desk-input, input:not([type="checkbox"]):not([type="radio"]), select, textarea, .form-control, .form-select {
-    font-size: 15px;
+    font-size: 16px;
 }
 
 .desk-table th, table thead th, table th {
-    font-size: 13px;
-    letter-spacing: normal;
+    font-size: 14px;
+    letter-spacing: 0.02em;
 }
 
 label, .desk-label, .form-label {
-    font-size: 14px;
+    font-size: 15px;
     font-weight: 500;
 }
 
 .text-muted, .masthead-sub, .secondary-text {
-    font-size: 13px;
+    font-size: 14px;
     color: var(--muted);
 }
 
-/* Floor at 12px: nothing smaller than 12px anywhere */
+/* Floor at 13px on desktop: nothing smaller than 13px anywhere */
 small, sub, sup, .text-xs, [class*="text-[10px]"], [class*="text-[11px]"] {
-    font-size: 12px;
+    font-size: 13px;
 }
 
 /* Details & Accordion arrows inherit parent text color */
@@ -136,14 +148,34 @@ h1, h2, h3, .masthead-title, .page-title {
     font-feature-settings: "tnum";
 }
 
-/* Base Container */
+/* Base Container - Wide Broadsheet Desktop with Generous Padding */
 .office-container {
     width: 100%;
-    max-width: 1180px;
+    max-width: 1680px;
     margin: 0 auto;
-    padding: 0 16px;
+    padding: 0 20px;
     min-width: 0;
     box-sizing: border-box;
+}
+
+@media (min-width: 768px) {
+    .office-container {
+        padding: 0 28px;
+    }
+}
+
+@media (min-width: 1280px) {
+    .office-container {
+        padding: 0 36px;
+        max-width: 1720px;
+    }
+}
+
+@media (min-width: 1536px) {
+    .office-container {
+        padding: 0 44px;
+        max-width: 1800px;
+    }
 }
 
 /* Customer Portal Container (720px centered) */
@@ -254,16 +286,16 @@ h1, h2, h3, .masthead-title, .page-title {
 .office-tab {
     display: inline-flex;
     align-items: center;
-    gap: 6px;
-    padding: 8px 12px;
-    font-size: 0.9rem;
+    gap: 8px;
+    padding: 10px 16px;
+    font-size: 1rem;
     font-weight: 500;
     color: var(--muted);
     text-decoration: none;
     border-bottom: 2px solid transparent;
     white-space: nowrap;
     flex-shrink: 0;
-    min-height: 44px;
+    min-height: 46px;
     transition: color 0.1s ease;
 }
 .office-tab:hover {
@@ -329,20 +361,24 @@ button:disabled, input:disabled, select:disabled, textarea:disabled {
     color: #ffffff;
     border: 1px solid #7f1d1d;
     border-radius: 4px;
-    padding: 8px 18px;
-    min-height: 42px;
-    font-size: 15px;
+    padding: 10px 22px;
+    min-height: 46px;
+    font-size: 16px;
     font-weight: 600;
     font-family: var(--font-ui);
     cursor: pointer;
     text-decoration: none;
     display: inline-flex;
     align-items: center;
-    gap: 6px;
+    gap: 8px;
     box-shadow: none;
+    transition: background-color 150ms ease, transform 100ms ease;
 }
 .btn-desk-primary:hover {
     background-color: var(--maroon-hover);
+}
+.btn-desk-primary:active {
+    transform: scale(0.98);
 }
 
 .btn-desk-secondary {
@@ -350,8 +386,34 @@ button:disabled, input:disabled, select:disabled, textarea:disabled {
     color: var(--ink);
     border: 1px solid #d6cfc4;
     border-radius: 4px;
-    padding: 8px 16px;
-    min-height: 42px;
+    padding: 10px 20px;
+    min-height: 46px;
+    font-size: 15px;
+    font-weight: 500;
+    font-family: var(--font-ui);
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    box-shadow: none;
+    transition: background-color 150ms ease, border-color 150ms ease, transform 100ms ease;
+}
+.btn-desk-secondary:hover {
+    background-color: var(--paper);
+    border-color: #a8a29e;
+}
+.btn-desk-secondary:active {
+    transform: scale(0.98);
+}
+
+.btn-desk-sm {
+    background-color: #ffffff;
+    color: var(--ink);
+    border: 1px solid #d6cfc4;
+    border-radius: 4px;
+    padding: 6px 13px;
+    min-height: 36px;
     font-size: 14px;
     font-weight: 500;
     font-family: var(--font-ui);
@@ -361,28 +423,11 @@ button:disabled, input:disabled, select:disabled, textarea:disabled {
     align-items: center;
     gap: 6px;
     box-shadow: none;
+    line-height: 1.25;
+    transition: background-color 150ms ease, border-color 150ms ease, transform 100ms ease;
 }
-.btn-desk-secondary:hover {
-    background-color: var(--paper);
-    border-color: #a8a29e;
-}
-.btn-desk-sm {
-    background-color: #ffffff;
-    color: var(--ink);
-    border: 1px solid #d6cfc4;
-    border-radius: 4px;
-    padding: 5px 11px;
-    min-height: 32px;
-    font-size: 13px;
-    font-weight: 500;
-    font-family: var(--font-ui);
-    cursor: pointer;
-    text-decoration: none;
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    box-shadow: none;
-    line-height: 1.2;
+.btn-desk-sm:active {
+    transform: scale(0.97);
 }
 .btn-desk-sm:hover {
     background-color: var(--paper);
@@ -524,65 +569,48 @@ button:disabled, input:disabled, select:disabled, textarea:disabled {
 
 
 .dashboard-kpi-label {
-
-    font-size: 13px;
-
+    font-size: 14px;
     font-weight: 500;
-
     color: var(--muted);
-
     line-height: 1.25;
-
     margin: 0;
-
     letter-spacing: normal;
-
 }
-
-
-
-.dashboard-kpi-value {
-
-    font-size: 24px;
-
-    font-weight: 600;
-
-    line-height: 1.1;
-
-    color: var(--ink);
-
-    margin: 6px 0;
-
-    font-variant-numeric: tabular-nums;
-
-}
-
-
 
 @media (min-width: 768px) {
-
-    .dashboard-kpi-value {
-
-        font-size: 30px;
-
+    .dashboard-kpi-label {
+        font-size: 15px;
     }
-
 }
 
+.dashboard-kpi-value {
+    font-size: 26px;
+    font-weight: 700;
+    line-height: 1.1;
+    color: var(--ink);
+    margin: 8px 0;
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: "tnum";
+}
 
+@media (min-width: 768px) {
+    .dashboard-kpi-value {
+        font-size: 36px;
+    }
+}
 
 .dashboard-kpi-sub {
-
     font-size: 13px;
-
     color: var(--muted);
-
     font-variant-numeric: tabular-nums;
-
-    line-height: 1.25;
-
+    line-height: 1.3;
     margin: 0;
+}
 
+@media (min-width: 768px) {
+    .dashboard-kpi-sub {
+        font-size: 14px;
+    }
 }
 
 
@@ -695,7 +723,7 @@ button:disabled, input:disabled, select:disabled, textarea:disabled {
 .desk-table {
     width: 100%;
     border-collapse: collapse;
-    font-size: 15px;
+    font-size: 16px;
     font-family: var(--font-ui);
     text-align: left;
 }
@@ -704,16 +732,16 @@ button:disabled, input:disabled, select:disabled, textarea:disabled {
     background-color: var(--paper);
     color: var(--muted);
     font-weight: 600;
-    font-size: 13px;
+    font-size: 14px;
     text-transform: uppercase;
     letter-spacing: 0.04em;
-    padding: 11px 14px;
+    padding: 14px 18px;
     border-bottom: 1px solid var(--rule);
     white-space: nowrap;
 }
 
 .desk-table td {
-    padding: 12px 14px;
+    padding: 15px 18px;
     border-bottom: 1px solid var(--rule);
     vertical-align: middle;
     color: var(--ink);
@@ -727,8 +755,8 @@ button:disabled, input:disabled, select:disabled, textarea:disabled {
 .status-dot-wrap {
     display: inline-flex;
     align-items: center;
-    gap: 6px;
-    font-size: 13px;
+    gap: 8px;
+    font-size: 14px;
     font-weight: 500;
 }
 .status-dot {
@@ -757,17 +785,18 @@ button:disabled, input:disabled, select:disabled, textarea:disabled {
 }
 .page-heading h1 {
     margin: 0;
-    font-size: clamp(1.3rem, 2vw, 1.65rem);
+    font-size: clamp(1.5rem, 2.2vw, 2.1rem);
+    letter-spacing: -0.01em;
 }
 .page-heading p {
-    margin: 4px 0 0;
+    margin: 5px 0 0;
     color: var(--muted);
-    font-size: 14px;
+    font-size: 16px;
 }
 .page-heading-date {
     flex: 0 0 auto;
     color: var(--muted);
-    font-size: 14px;
+    font-size: 15px;
 }
 
 /* Footer */
@@ -1539,4 +1568,106 @@ textarea.form-control {
         transition-duration: 0.01ms !important;
         transform: none !important;
     }
+}
+
+/* Modern Desk Segmented Filter Track (Nested Radius Math: Track 6px, padding 3px, Inner 4px) */
+.desk-segmented-track {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background-color: #f0ebe1;
+    border: 1px solid var(--rule);
+    border-radius: 6px;
+    padding: 3px;
+    user-select: none;
+}
+
+.desk-segment-tab {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 6px 13px;
+    min-height: 36px;
+    font-family: var(--font-ui);
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--muted);
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: 4px;
+    cursor: pointer;
+    text-decoration: none;
+    line-height: 1.25;
+    transition: all 150ms ease-out;
+}
+
+.desk-segment-tab:hover {
+    color: var(--ink);
+    background-color: rgba(255, 255, 255, 0.6);
+}
+
+.desk-segment-tab.active {
+    color: var(--ink);
+    font-weight: 600;
+    background-color: #ffffff;
+    border-color: rgba(0, 0, 0, 0.06);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+.desk-segment-count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-family: ui-monospace, monospace;
+    padding: 2px 7px;
+    border-radius: 9999px;
+    background: rgba(0, 0, 0, 0.05);
+    color: inherit;
+    line-height: 1;
+}
+
+/* Keyboard Shortcut Badges */
+kbd, .desk-kbd {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-size: 11px;
+    line-height: 1;
+    padding: 2.5px 5px;
+    color: var(--muted);
+    background: #f5f3ef;
+    border: 1px solid #d6cfc4;
+    border-radius: 3px;
+    box-shadow: 0 1px 0 #d6cfc4;
+}
+
+/* HTMX Loading Indeterminate Shimmer Bar */
+.desk-shimmer-bar {
+    height: 2.5px;
+    width: 100%;
+    background: linear-gradient(90deg, transparent 0%, var(--maroon) 50%, transparent 100%);
+    background-size: 200% 100%;
+    animation: desk-shimmer 1.2s infinite linear;
+}
+
+@keyframes desk-shimmer {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
+
+/* Accessible Table Wrapper with Sticky Headers & Performance Containment */
+.table-wrapper {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    content-visibility: auto;
+    contain-intrinsic-size: auto 450px;
+}
+
+.desk-table thead th {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    background-color: #faf8f4;
 }

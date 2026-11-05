@@ -129,17 +129,24 @@ def dashboard(request):
     ).select_related('client', 'bill').order_by('-submitted_at')
     pending_submissions_count = pending_submissions.count()
 
-    # 6. Recent Bills (latest 10 or search query)
+    # 6. Recent Bills (latest 10 or search query & status filter)
     query = request.GET.get('q', '').strip()
+    status_filter = request.GET.get('status', 'ALL').strip().upper()
+    bills_qs = Bill.objects.select_related('client', 'created_by')
+
     if query:
-        recent_bills = Bill.objects.select_related('client', 'created_by').filter(
+        bills_qs = bills_qs.filter(
             Q(client_name__icontains=query) |
             Q(client_phone__icontains=query) |
             Q(bill_number__icontains=query) |
             Q(ad_title__icontains=query)
-        ).order_by('-created_at')[:20]
-    else:
-        recent_bills = Bill.objects.select_related('client', 'created_by').order_by('-created_at')[:10]
+        )
+
+    if status_filter in ['PAID', 'PARTIAL', 'UNPAID']:
+        bills_qs = bills_qs.filter(payment_status__iexact=status_filter)
+
+    limit = 20 if (query or status_filter != 'ALL') else 10
+    recent_bills = bills_qs.order_by('-created_at')[:limit]
 
     # 7. Top Clients with Outstanding Balance (for quick 1-click WhatsApp reminders)
     clients_with_due = Client.objects.all()
@@ -188,8 +195,10 @@ def dashboard(request):
         'edition_stats': edition_stats,
         'payment_info': payment_info,
         'title': 'डैशबोर्ड | विश्वगुरु विज्ञापन बिलिंग' if site_lang == 'hi' else 'Dashboard | Vishwaguru Billing',
+        'query': query,
+        'status_filter': status_filter,
     }
-    if request.headers.get('HX-Request') and 'q' in request.GET:
+    if request.headers.get('HX-Request') and ('q' in request.GET or 'status' in request.GET):
         return render(request, 'billing/partials/bills_table.html', context)
     return render(request, 'billing/dashboard.html', context)
 

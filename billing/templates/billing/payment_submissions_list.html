@@ -14,20 +14,20 @@
                 <i class="bi bi-shield-check" style="color: #9f1d1d;"></i>
                 <span>{% if site_lang == 'hi' %}ग्राहक यूपीआई भुगतान सत्यापन{% else %}Customer UPI Payment Submissions{% endif %}</span>
             </h1>
-            <p style="margin: 0.25rem 0 0 0; font-size: 13px; color: #57534e;">
+            <p style="margin: 0.25rem 0 0 0; font-size: 14px; color: #57534e;">
                 {% if site_lang == 'hi' %}ग्राहकों द्वारा पोर्टल से जमा किए गए यूटीआर (UTR) संदर्भों की जांच व सत्यापन{% else %}Verify and confirm payments submitted by clients on the public portal{% endif %}
             </p>
         </div>
 
         <!-- Status Filter Tabs -->
         <div style="display: inline-flex; border: 1px solid #e7e2d9; border-radius: 4px; overflow: hidden; background-color: #faf8f4;">
-            <a href="?status=pending" class="office-tab {% if status_filter == 'pending' or not status_filter %}active{% endif %}" {% if status_filter == 'pending' or not status_filter %}aria-current="page"{% endif %} style="min-height: 38px; padding: 6px 14px; font-size: 13px; text-decoration: none;">
+            <a href="?status=pending" class="office-tab {% if status_filter == 'pending' or not status_filter %}active{% endif %}" {% if status_filter == 'pending' or not status_filter %}aria-current="page"{% endif %} style="min-height: 38px; padding: 6px 14px; font-size: 14px; text-decoration: none;">
                 {% if site_lang == 'hi' %}लंबित{% else %}Pending{% endif %} <span class="queue-count">{{ submission_counts.pending_count }}</span>
             </a>
-            <a href="?status=verified" class="office-tab {% if status_filter == 'verified' %}active{% endif %}" {% if status_filter == 'verified' %}aria-current="page"{% endif %} style="min-height: 38px; padding: 6px 14px; font-size: 13px; text-decoration: none; border-left: 1px solid #e7e2d9;">
+            <a href="?status=verified" class="office-tab {% if status_filter == 'verified' %}active{% endif %}" {% if status_filter == 'verified' %}aria-current="page"{% endif %} style="min-height: 38px; padding: 6px 14px; font-size: 14px; text-decoration: none; border-left: 1px solid #e7e2d9;">
                 {% if site_lang == 'hi' %}सत्यापित{% else %}Verified{% endif %} <span class="queue-count">{{ submission_counts.verified_count }}</span>
             </a>
-            <a href="?status=rejected" class="office-tab {% if status_filter == 'rejected' %}active{% endif %}" {% if status_filter == 'rejected' %}aria-current="page"{% endif %} style="min-height: 38px; padding: 6px 14px; font-size: 13px; text-decoration: none; border-left: 1px solid #e7e2d9;">
+            <a href="?status=rejected" class="office-tab {% if status_filter == 'rejected' %}active{% endif %}" {% if status_filter == 'rejected' %}aria-current="page"{% endif %} style="min-height: 38px; padding: 6px 14px; font-size: 14px; text-decoration: none; border-left: 1px solid #e7e2d9;">
                 {% if site_lang == 'hi' %}अस्वीकृत{% else %}Rejected{% endif %} <span class="queue-count">{{ submission_counts.rejected_count }}</span>
             </a>
         </div>
@@ -56,7 +56,7 @@
                     </td>
                     <td>
                         <div style="font-weight: 500; color: #1c1917;">{{ sub.client.name }}</div>
-                        <div style="font-size: 12px; margin-top: 2px;">
+                        <div style="font-size: 13px; margin-top: 2px;">
                             <a href="{{ sub.client.get_portal_url }}" target="_blank" style="color: #9f1d1d; text-decoration: none;">
                                 {% if site_lang == 'hi' %}पोर्टल देखें{% else %}View Portal{% endif %} <i class="bi bi-box-arrow-up-right text-[10px]"></i>
                             </a>
@@ -66,7 +66,7 @@
                         {{ sub.amount|indian_currency }}
                     </td>
                     <td>
-                        <code style="font-family: monospace; font-size: 13px; font-weight: 600; background-color: #faf8f4; border: 1px solid #e7e2d9; padding: 2px 6px; border-radius: 4px; color: #1c1917;">
+                        <code style="font-family: monospace; font-size: 14px; font-weight: 600; background-color: #faf8f4; border: 1px solid #e7e2d9; padding: 2px 6px; border-radius: 4px; color: #1c1917;">
                             {{ sub.utr_number }}
                         </code>
                     </td>
@@ -76,27 +76,27 @@
                                 {{ sub.bill.bill_number }}
                             </a>
                         {% else %}
-                            <span class="text-muted" style="color: #57534e; font-size: 12px;">{% if site_lang == 'hi' %}समस्त बकाया{% else %}All Dues{% endif %}</span>
+                            <span class="text-muted" style="color: #57534e; font-size: 13px;">{% if site_lang == 'hi' %}समस्त बकाया{% else %}All Dues{% endif %}</span>
                         {% endif %}
                     </td>
-                    <td style="color: #57534e; font-size: 13px; max-width: 180px;">
+                    <td style="color: #57534e; font-size: 14px; max-width: 180px;">
                         {{ sub.notes|default:"&mdash;" }}
                     </td>
                     <td>
                         {% if sub.status == 'pending' %}
                             <div class="status-dot-wrap">
                                 <span class="status-dot status-dot-partial"></span>
-                                <span style="color: #b45309; font-size: 13px; font-weight: 500;">{% if site_lang == 'hi' %}लंबित{% else %}Pending{% endif %}</span>
+                                <span style="color: #b45309; font-size: 14px; font-weight: 500;">{% if site_lang == 'hi' %}लंबित{% else %}Pending{% endif %}</span>
                             </div>
                         {% elif sub.status == 'verified' %}
                             <div class="status-dot-wrap">
                                 <span class="status-dot status-dot-paid"></span>
-                                <span style="color: #15803d; font-size: 13px; font-weight: 500;">{% if site_lang == 'hi' %}सत्यापित{% else %}Verified{% endif %}</span>
+                                <span style="color: #15803d; font-size: 14px; font-weight: 500;">{% if site_lang == 'hi' %}सत्यापित{% else %}Verified{% endif %}</span>
                             </div>
                         {% else %}
                             <div class="status-dot-wrap">
                                 <span class="status-dot status-dot-unpaid"></span>
-                                <span style="color: #9f1d1d; font-size: 13px; font-weight: 500;">{% if site_lang == 'hi' %}अस्वीकृत{% else %}Rejected{% endif %}</span>
+                                <span style="color: #9f1d1d; font-size: 14px; font-weight: 500;">{% if site_lang == 'hi' %}अस्वीकृत{% else %}Rejected{% endif %}</span>
                             </div>
                         {% endif %}
                     </td>
@@ -107,7 +107,7 @@
                                     {% csrf_token %}
                                     <input type="hidden" name="action" value="verify">
                                     <input type="hidden" name="next" value="{{ request.get_full_path }}">
-                                    <button type="submit" class="btn-desk-primary" style="padding: 6px 14px; font-size: 13px; font-weight: 600; min-height: 36px;">
+                                    <button type="submit" class="btn-desk-primary" style="padding: 6px 14px; font-size: 14px; font-weight: 600; min-height: 36px;">
                                         <i class="bi bi-check-lg"></i>
                                         <span>{% if site_lang == 'hi' %}सत्यापित करें{% else %}Verify{% endif %}</span>
                                     </button>
@@ -116,13 +116,13 @@
                                     {% csrf_token %}
                                     <input type="hidden" name="action" value="reject">
                                     <input type="hidden" name="next" value="{{ request.get_full_path }}">
-                                    <button type="submit" class="btn-desk-secondary" style="padding: 6px 12px; font-size: 13px; min-height: 36px; color: #9f1d1d; border-color: #fca5a5;" aria-label="{% if site_lang == 'hi' %}भुगतान संदर्भ अस्वीकार करें{% else %}Reject payment submission{% endif %}" title="{% if site_lang == 'hi' %}अस्वीकार करें{% else %}Reject{% endif %}" onclick="return confirm('{% if site_lang == 'hi' %}क्या आप इस भुगतान संदर्भ को अस्वीकार करना चाहते हैं?{% else %}Reject this payment submission?{% endif %}')">
+                                    <button type="submit" class="btn-desk-secondary" style="padding: 6px 12px; font-size: 14px; min-height: 36px; color: #9f1d1d; border-color: #fca5a5;" aria-label="{% if site_lang == 'hi' %}भुगतान संदर्भ अस्वीकार करें{% else %}Reject payment submission{% endif %}" title="{% if site_lang == 'hi' %}अस्वीकार करें{% else %}Reject{% endif %}" onclick="return confirm('{% if site_lang == 'hi' %}क्या आप इस भुगतान संदर्भ को अस्वीकार करना चाहते हैं?{% else %}Reject this payment submission?{% endif %}')">
                                         <i class="bi bi-x-lg"></i>
                                     </button>
                                 </form>
                             </div>
                         {% else %}
-                            <span class="text-muted tabular-nums" style="font-size: 12px; color: #57534e;">
+                            <span class="text-muted tabular-nums" style="font-size: 13px; color: #57534e;">
                                 {{ sub.verified_by.username|default:"Staff" }} &bull; {{ sub.verified_at|date:"d M H:i" }}
                             </span>
                         {% endif %}

@@ -23,38 +23,93 @@
 
 <!-- 3. Primary Dense Bills Table (Recent Invoices) -->
 <div class="bills-desk-panel">
+    <!-- Active HTMX Request Shimmer Loading Bar -->
+    <div class="desk-shimmer-bar" style="opacity: 0; transition: opacity 150ms ease;"></div>
+
     <!-- Panel Header: Desktop Header Row (md+) -->
-    <div class="hidden md:flex desk-panel-header items-center justify-between gap-4 border-b border-rule bg-white">
+    <div class="hidden md:flex desk-panel-header items-center justify-between gap-4 border-b border-rule bg-white" style="padding: 16px 24px;">
         <div class="flex items-center gap-3">
-            <h2 class="desk-panel-title">
+            <h2 class="desk-panel-title" style="font-size: 20px;">
                 {% if site_lang == 'hi' %}हाल के विज्ञापन बिल{% else %}Recent bills{% endif %}
             </h2>
-            <span class="text-sm text-muted tabular-nums">
+            <span class="text-muted tabular-nums" style="font-size: 14px;">
                 ({{ total_count }} {% if site_lang == 'hi' %}कुल बिल{% else %}{{ total_count|bill_noun:site_lang }} total{% endif %})
             </span>
         </div>
 
         <div class="flex items-center gap-3">
-            <div class="relative" style="width: 260px;">
+            <!-- Search Bar with Keyboard Shortcut Badge -->
+            <div class="relative" style="width: 320px;">
                 <input 
                     type="search" 
                     name="q" 
+                    id="dashboard-search-input"
                     aria-label="{% if site_lang == 'hi' %}बिल खोजें{% else %}Search bills{% endif %}"
-                    placeholder="{% if site_lang == 'hi' %}बिल खोजें{% else %}Search bills{% endif %}"
+                    placeholder="{% if site_lang == 'hi' %}बिल खोजें... (/){% else %}Search bills... (/){% endif %}"
                     hx-get="{% url 'billing:dashboard' %}" 
-                    hx-trigger="keyup changed delay:250ms, search" 
+                    hx-trigger="keyup changed delay:200ms, search" 
                     hx-target="#bills-table-container"
-                    class="desk-input"
-                    style="min-height: 40px; font-size: 14px;"
+                    class="desk-input w-full pr-8"
+                    style="min-height: 44px; font-size: 15px;"
                 >
+                <div class="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2">
+                    <kbd class="desk-kbd hidden sm:inline-flex" title="Press / to focus search">/</kbd>
+                </div>
             </div>
-            <a href="{% url 'billing:bill_create' %}" class="btn-desk-primary" style="min-height: 40px; font-size: 14px; padding: 8px 16px;">
+            <a href="{% url 'billing:bill_create' %}" class="btn-desk-primary" style="min-height: 44px; font-size: 15px; padding: 10px 20px;">
                 <i class="bi bi-plus-lg"></i>
                 <span>{% if site_lang == 'hi' %}नया बिल{% else %}New bill{% endif %}</span>
+                <kbd class="desk-kbd hidden lg:inline-flex" style="background: rgba(255,255,255,0.22); border-color: rgba(255,255,255,0.3); color: #ffffff;" title="Press N to create a new bill">N</kbd>
             </a>
-            <a href="{% url 'billing:bill_search' %}" class="btn-desk-secondary" style="min-height: 40px; font-size: 14px; padding: 8px 14px;">
+            <a href="{% url 'billing:bill_search' %}" class="btn-desk-secondary" style="min-height: 44px; font-size: 15px; padding: 10px 18px;">
                 <span>{% if site_lang == 'hi' %}सभी देखें &rarr;{% else %}View all &rarr;{% endif %}</span>
             </a>
+        </div>
+    </div>
+
+    <!-- Segmented Status Filter Tabs Bar (Pure HTMX, zero page reload) -->
+    <div class="px-4 py-2.5 bg-paper border-b border-rule flex items-center justify-between gap-3 flex-wrap">
+        <div class="desk-segmented-track" role="tablist">
+            <button type="button"
+                    hx-get="{% url 'billing:dashboard' %}?status=ALL"
+                    hx-target="#bills-table-container"
+                    class="desk-segment-tab {% if not status_filter or status_filter == 'ALL' %}active{% endif %}"
+                    role="tab">
+                <span>{% if site_lang == 'hi' %}समस्त{% else %}All{% endif %}</span>
+                <span class="desk-segment-count">{{ total_count }}</span>
+            </button>
+            <button type="button"
+                    hx-get="{% url 'billing:dashboard' %}?status=UNPAID"
+                    hx-target="#bills-table-container"
+                    class="desk-segment-tab {% if status_filter == 'UNPAID' %}active{% endif %}"
+                    role="tab">
+                <span class="status-dot status-dot-unpaid"></span>
+                <span>{% if site_lang == 'hi' %}अदत्त{% else %}Unpaid{% endif %}</span>
+                <span class="desk-segment-count text-maroon font-semibold">{{ status_summary.Unpaid.count }}</span>
+            </button>
+            <button type="button"
+                    hx-get="{% url 'billing:dashboard' %}?status=PARTIAL"
+                    hx-target="#bills-table-container"
+                    class="desk-segment-tab {% if status_filter == 'PARTIAL' %}active{% endif %}"
+                    role="tab">
+                <span class="status-dot status-dot-partial"></span>
+                <span>{% if site_lang == 'hi' %}आंशिक{% else %}Partial{% endif %}</span>
+                <span class="desk-segment-count text-amber-600 font-semibold">{{ status_summary.Partial.count }}</span>
+            </button>
+            <button type="button"
+                    hx-get="{% url 'billing:dashboard' %}?status=PAID"
+                    hx-target="#bills-table-container"
+                    class="desk-segment-tab {% if status_filter == 'PAID' %}active{% endif %}"
+                    role="tab">
+                <span class="status-dot status-dot-paid"></span>
+                <span>{% if site_lang == 'hi' %}पूर्ण चुकता{% else %}Paid{% endif %}</span>
+                <span class="desk-segment-count text-paid font-semibold">{{ status_summary.Paid.count }}</span>
+            </button>
+        </div>
+
+        <div class="text-xs text-muted tabular-nums hidden sm:flex items-center gap-1.5">
+            <i class="bi bi-shield-check text-paid"></i>
+            <span>{% if site_lang == 'hi' %}लाइव बिलिंग लेजर{% else %}Live billing ledger{% endif %}</span>
         </div>
     </div>
 
@@ -100,12 +155,12 @@
 
     <!-- Panel A: Payment Status Overview -->
     <div class="desk-panel" style="margin-bottom: 0;">
-        <div class="desk-panel-header" style="padding: 14px 18px;">
-            <h3 class="desk-panel-title">
+        <div class="desk-panel-header" style="padding: 16px 22px;">
+            <h3 class="desk-panel-title" style="font-size: 19px;">
                 {% if site_lang == 'hi' %}भुगतान स्थिति{% else %}Payment status{% endif %}
             </h3>
         </div>
-        <div class="desk-panel-body" style="padding: 16px 18px;">
+        <div class="desk-panel-body" style="padding: 20px 22px;">
             <!-- Proportional Status Bar -->
             {% if total_count > 0 %}
             <div class="status-bar" title="{% if site_lang == 'hi' %}पूर्ण: {{ status_summary.Paid.pct }}% | आंशिक: {{ status_summary.Partial.pct }}% | अदत्त: {{ status_summary.Unpaid.pct }}%{% else %}Paid: {{ status_summary.Paid.pct }}% | Partial: {{ status_summary.Partial.pct }}% | Unpaid: {{ status_summary.Unpaid.pct }}%{% endif %}">
@@ -160,12 +215,12 @@
 
     <!-- Panel B: Overdue Accounts (Top 5 Debtors) -->
     <div class="desk-panel" style="margin-bottom: 0;">
-        <div class="desk-panel-header" style="padding: 14px 18px;">
-            <h3 class="desk-panel-title">
+        <div class="desk-panel-header" style="padding: 16px 22px;">
+            <h3 class="desk-panel-title" style="font-size: 19px;">
                 {% if site_lang == 'hi' %}बकायादार ग्राहक{% else %}Overdue accounts{% endif %}
             </h3>
         </div>
-        <div class="desk-panel-body" style="padding: 14px 18px;">
+        <div class="desk-panel-body" style="padding: 18px 22px;">
             {% if top_debtors %}
             <div class="flex flex-col divide-y divide-rule">
                 {% for d in top_debtors %}

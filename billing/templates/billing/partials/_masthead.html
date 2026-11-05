@@ -14,9 +14,9 @@
             </div>
             {% endif %}
 
-            <div class="flex items-center gap-3 text-xs shrink-0">
+            <div class="flex items-center gap-3.5 text-sm shrink-0">
                 <!-- Plain Clerk Language Switcher -->
-                <div class="inline-flex items-center gap-1.5 text-xs text-muted" style="font-family: 'Mukta', sans-serif;">
+                <div class="inline-flex items-center gap-2 text-sm text-muted" style="font-family: 'Mukta', sans-serif;">
                     {% if variant == 'staff' %}
                     <a href="{% url 'billing:set_language' 'en' %}" class="hover:text-ink {% if site_lang != 'hi' and lang != 'hi' %}font-semibold text-maroon underline underline-offset-2{% endif %}" style="text-decoration: none; {% if site_lang != 'hi' and lang != 'hi' %}color: #9f1d1d; font-weight: 600; text-decoration: underline;{% else %}color: #57534e;{% endif %}">
                         EN
@@ -38,12 +38,12 @@
 
                 {% if variant == 'staff' and user.is_authenticated and request.resolver_match.url_name != 'login' %}
                 <!-- Staff Desktop user & logout (hidden on mobile, moved to bottom on mobile) -->
-                <div class="hidden md:flex items-center gap-2 pl-3 border-l border-rule text-muted" style="border-left: 1px solid #e7e2d9; padding-left: 12px;">
+                <div class="hidden md:flex items-center gap-2.5 pl-3.5 border-l border-rule text-sm text-muted" style="border-left: 1px solid #e7e2d9; padding-left: 12px;">
                     <span class="font-medium text-ink">{{ user.username }}</span>
                     <span>&bull;</span>
                     <form action="{% url 'logout' %}" method="post" class="inline">
                         {% csrf_token %}
-                        <button type="submit" class="text-xs text-muted hover:text-maroon underline cursor-pointer bg-transparent border-0 p-0" style="background: none; border: none; padding: 0; color: #57534e; cursor: pointer;">
+                        <button type="submit" class="text-sm text-muted hover:text-maroon underline cursor-pointer bg-transparent border-0 p-0" style="background: none; border: none; padding: 0; color: #57534e; cursor: pointer;">
                             {% if site_lang == 'hi' or lang == 'hi' %}लॉगआउट{% else %}Logout{% endif %}
                         </button>
                     </form>
