@@ -1,6 +1,12 @@
 import decimal
 from decimal import Decimal
 from django import template
+from billing.translator import (
+    translate_text,
+    split_bilingual,
+    format_custom_size_bilingual,
+    is_devanagari,
+)
 
 register = template.Library()
 
@@ -118,19 +124,38 @@ def client_secondary_name(name):
     return ""
 
 
+@register.filter(name='bilingual_display')
 @register.filter(name='client_display_name')
-def client_display_name(name, lang='en'):
+def client_display_name(text, lang='en'):
     """
-    Extracts appropriate client name based on language:
-    EN: returns secondary English name if found, else original name.
-    HI: returns primary Hindi/Devanagari name if found, else original name.
+    Returns the appropriate language text from a bilingual or single-language string:
+    - If composite like 'पटेल ऑटोमोबाइल्स (Patel Automobiles)':
+      HI -> 'पटेल ऑटोमोबाइल्स'
+      EN -> 'Patel Automobiles'
+    - If single-language (e.g. only English 'Shri Ram Jewellers' or only Hindi 'श्री राम ज्वेलर्स'):
+      Translates dynamically to the requested target language using translator!
     """
-    if not name:
+    if not text:
         return ""
+    hi_part, en_part = split_bilingual(text)
     if lang == 'hi':
-        return client_primary_name(name)
-    sec = client_secondary_name(name)
-    return sec if sec else client_primary_name(name)
+        if hi_part:
+            return hi_part
+        return translate_text(en_part, 'en', 'hi')
+    else:  # en
+        if en_part:
+            return en_part
+        return translate_text(hi_part, 'hi', 'en')
+
+
+@register.filter(name='format_custom_size')
+def format_custom_size(value, lang='en'):
+    """
+    Format custom ad dimensions:
+    EN: '10x12 cm'
+    HI: '10x12 सेमी'
+    """
+    return format_custom_size_bilingual(value, lang=lang)
 
 
 @register.filter(name='format_page')

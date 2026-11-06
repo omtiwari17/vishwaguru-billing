@@ -1,6 +1,7 @@
 // Vishwaguru Ad Billing - Live POS Interactivity & Sticky Receipt Synchronization
 
 document.addEventListener('DOMContentLoaded', function () {
+    window.siteLang = window.siteLang || document.documentElement.lang || 'en';
     // Form elements
     const baseInput = document.getElementById('id_base_amount');
     const discountInput = document.getElementById('id_discount_amount');
@@ -271,6 +272,114 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
+    // Helper: Parse composite "हिन्दी (English)" string according to active site language
+    function parseBilingualString(str) {
+        if (!str) return { primary: '', secondary: '' };
+        const m = str.match(/^(.*?)\s*\((.*?)\)$/);
+        if (m) {
+            const p1 = m[1].trim();
+            const p2 = m[2].trim();
+            const p1IsHi = /[\u0900-\u097F]/.test(p1);
+            if (window.siteLang === 'hi') {
+                return p1IsHi ? { primary: p1, secondary: p2 } : { primary: p2, secondary: p1 };
+            } else {
+                return p1IsHi ? { primary: p2, secondary: p1 } : { primary: p1, secondary: p2 };
+            }
+        }
+        return { primary: str.trim(), secondary: '' };
+    }
+
+    // 10. Live Real-Time Auto-Translation Counterparts
+    function setupLiveTranslation(sourceInputId, transInputId, btnSyncId, lblId) {
+        const sourceInput = document.getElementById(sourceInputId);
+        const transInput = document.getElementById(transInputId);
+        const btnSync = document.getElementById(btnSyncId);
+        const lbl = document.getElementById(lblId);
+
+        if (!sourceInput || !transInput) return null;
+
+        let debounceTimer = null;
+        let isManuallyEdited = false;
+
+        transInput.addEventListener('input', function () {
+            isManuallyEdited = true;
+        });
+
+        function performTranslation(force) {
+            const text = sourceInput.value.trim();
+            if (!text) {
+                if (!isManuallyEdited || force) {
+                    transInput.value = '';
+                }
+                return;
+            }
+
+            if (isManuallyEdited && !force && transInput.value.trim() !== '') {
+                return;
+            }
+
+            if (btnSync) {
+                btnSync.innerHTML = '<i class="bi bi-hourglass-split"></i>';
+                btnSync.disabled = true;
+            }
+
+            fetch('/bills/api/translate/?text=' + encodeURIComponent(text))
+                .then(res => res.json())
+                .then(data => {
+                    if (data && data.translated) {
+                        transInput.value = data.translated;
+                        isManuallyEdited = false;
+                        if (lbl) {
+                            if (data.detected_script === 'hi') {
+                                lbl.innerHTML = '<i class="bi bi-translate"></i> ' + (window.siteLang === 'hi' ? 'अंग्रेजी अनुवाद:' : 'English Trans:');
+                            } else {
+                                lbl.innerHTML = '<i class="bi bi-translate"></i> ' + (window.siteLang === 'hi' ? 'हिन्दी अनुवाद:' : 'Hindi Trans:');
+                            }
+                        }
+                    }
+                })
+                .catch(err => {
+                    console.error('Translation error:', err);
+                })
+                .finally(() => {
+                    if (btnSync) {
+                        btnSync.innerHTML = '<i class="bi bi-arrow-repeat"></i>';
+                        btnSync.disabled = false;
+                    }
+                });
+        }
+
+        sourceInput.addEventListener('input', function () {
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(() => {
+                performTranslation(false);
+            }, 450);
+        });
+
+        sourceInput.addEventListener('blur', function () {
+            clearTimeout(debounceTimer);
+            if (!transInput.value.trim()) {
+                performTranslation(false);
+            }
+        });
+
+        if (btnSync) {
+            btnSync.addEventListener('click', function () {
+                performTranslation(true);
+            });
+        }
+
+        return {
+            trigger: function (force) {
+                performTranslation(force === undefined ? true : force);
+            }
+        };
+    }
+
+    const nameTransCtrl = setupLiveTranslation('id_client_name', 'id_client_name_trans', 'btn_sync_client_name', 'lbl_client_name_trans');
+    const addrTransCtrl = setupLiveTranslation('id_client_address', 'id_client_address_trans', 'btn_sync_client_address', 'lbl_client_address_trans');
+    const adTitleTransCtrl = setupLiveTranslation('id_ad_title', 'id_ad_title_trans', 'btn_sync_ad_title', 'lbl_ad_title_trans');
+
     // 10. Client Autocomplete & Recall Past Clients
     let searchDebounceTimer = null;
     let detectedPendingDue = 0;
@@ -316,10 +425,31 @@ document.addEventListener('DOMContentLoaded', function () {
                             `;
 
                             item.addEventListener('click', function () {
-                                // Auto-fill remembered client fields
-                                clientNameInput.value = c.name;
+                                // Auto-fill remembered client fields with intelligent bilingual splitting
+                                const parsedName = parseBilingualString(c.name);
+                                clientNameInput.value = parsedName.primary;
+                                const clientNameTrans = document.getElementById('id_client_name_trans');
+                                if (clientNameTrans) {
+                                    clientNameTrans.value = parsedName.secondary;
+                                    if (!parsedName.secondary) {
+                                        nameTransCtrl?.trigger(true);
+                                    }
+                                }
+
                                 if (clientPhoneInput) clientPhoneInput.value = c.phone || '';
-                                if (clientAddressInput) clientAddressInput.value = c.address || '';
+
+                                const parsedAddr = parseBilingualString(c.address || '');
+                                if (clientAddressInput) {
+                                    clientAddressInput.value = parsedAddr.primary;
+                                    const clientAddrTrans = document.getElementById('id_client_address_trans');
+                                    if (clientAddrTrans) {
+                                        clientAddrTrans.value = parsedAddr.secondary;
+                                        if (!parsedAddr.secondary && parsedAddr.primary) {
+                                            addrTransCtrl?.trigger(true);
+                                        }
+                                    }
+                                }
+
                                 if (clientGstinInput) clientGstinInput.value = c.gstin || '';
 
                                 // Sync client name to receipt

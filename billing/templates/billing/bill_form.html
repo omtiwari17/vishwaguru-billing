@@ -93,6 +93,16 @@
                             {{ form.client_name }}
                             <!-- Client suggestions popup -->
                             <div id="client_suggestions_box" class="client-suggestions-dropdown" style="display: none;"></div>
+                            <!-- Live Auto-Translation Counterpart Preview/Edit -->
+                            <div class="trans-companion-row" style="margin-top: 6px; display: flex; align-items: center; gap: 8px;">
+                                <span id="lbl_client_name_trans" style="font-size: 11px; font-family: monospace; text-transform: uppercase; letter-spacing: 0.5px; color: var(--muted); white-space: nowrap;">
+                                    <i class="bi bi-translate"></i> {% if site_lang == 'hi' %}अंग्रेजी अनुवाद:{% else %}हिन्दी अनुवाद:{% endif %}
+                                </span>
+                                <input type="text" name="client_name_trans" id="id_client_name_trans" class="form-control" style="font-size: 13px; padding: 4px 8px; height: 32px; background: #faf8f4; border-style: dashed;" placeholder="{% if site_lang == 'hi' %}स्वतः अंग्रेजी अनुवाद...{% else %}Auto-translates to Hindi...{% endif %}" autocomplete="off" />
+                                <button type="button" id="btn_sync_client_name" class="btn-desk-sm" style="padding: 3px 8px; font-size: 12px; height: 32px; min-height: 32px;" title="Translate / अनुवाद">
+                                    <i class="bi bi-arrow-repeat"></i>
+                                </button>
+                            </div>
                         </div>
 
                         <div class="form-group">
@@ -110,6 +120,16 @@
                                 <span>{% if site_lang == 'hi' %}दुकान / कार्यालय का पता व शहर (वैकल्पिक){% else %}Address / City (Optional){% endif %}</span>
                             </label>
                             {{ form.client_address }}
+                            <!-- Live Auto-Translation Counterpart Preview/Edit -->
+                            <div class="trans-companion-row" style="margin-top: 6px; display: flex; align-items: center; gap: 8px;">
+                                <span id="lbl_client_address_trans" style="font-size: 11px; font-family: monospace; text-transform: uppercase; letter-spacing: 0.5px; color: var(--muted); white-space: nowrap;">
+                                    <i class="bi bi-translate"></i> {% if site_lang == 'hi' %}अंग्रेजी अनुवाद:{% else %}हिन्दी अनुवाद:{% endif %}
+                                </span>
+                                <input type="text" name="client_address_trans" id="id_client_address_trans" class="form-control" style="font-size: 13px; padding: 4px 8px; height: 32px; background: #faf8f4; border-style: dashed;" placeholder="{% if site_lang == 'hi' %}पते का स्वतः अनुवाद...{% else %}Auto-translated address...{% endif %}" autocomplete="off" />
+                                <button type="button" id="btn_sync_client_address" class="btn-desk-sm" style="padding: 3px 8px; font-size: 12px; height: 32px; min-height: 32px;" title="Translate / अनुवाद">
+                                    <i class="bi bi-arrow-repeat"></i>
+                                </button>
+                            </div>
                         </div>
 
                         <div class="form-group">
@@ -238,6 +258,16 @@
                                 <span>{% if site_lang == 'hi' %}विज्ञापन शीर्षक / विषय (वैकल्पिक){% else %}Ad Title / Description (Optional){% endif %}</span>
                             </label>
                             {{ form.ad_title }}
+                            <!-- Live Auto-Translation Counterpart Preview/Edit -->
+                            <div class="trans-companion-row" style="margin-top: 6px; display: flex; align-items: center; gap: 8px;">
+                                <span id="lbl_ad_title_trans" style="font-size: 11px; font-family: monospace; text-transform: uppercase; letter-spacing: 0.5px; color: var(--muted); white-space: nowrap;">
+                                    <i class="bi bi-translate"></i> {% if site_lang == 'hi' %}अंग्रेजी अनुवाद:{% else %}हिन्दी अनुवाद:{% endif %}
+                                </span>
+                                <input type="text" name="ad_title_trans" id="id_ad_title_trans" class="form-control" style="font-size: 13px; padding: 4px 8px; height: 32px; background: #faf8f4; border-style: dashed;" placeholder="{% if site_lang == 'hi' %}शीर्षक का स्वतः अनुवाद...{% else %}Auto-translated ad title...{% endif %}" autocomplete="off" />
+                                <button type="button" id="btn_sync_ad_title" class="btn-desk-sm" style="padding: 3px 8px; font-size: 12px; height: 32px; min-height: 32px;" title="Translate / अनुवाद">
+                                    <i class="bi bi-arrow-repeat"></i>
+                                </button>
+                            </div>
                         </div>
 
                         <div class="form-group full-width">

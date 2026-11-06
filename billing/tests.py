@@ -877,4 +877,135 @@ class VishwaguruBillingTests(TestCase):
         self.assertContains(res, 'Payment Settled')
         self.assertContains(res, 'Zero Balance Outstanding')
 
+    def test_translation_engine_and_script_detection(self):
+        """Test translator script detection, glossary lookup, and split/make bilingual routines."""
+        from billing.translator import (
+            detect_script,
+            is_devanagari,
+            translate_text,
+            split_bilingual,
+            make_bilingual,
+            format_custom_size_bilingual,
+        )
 
+        # 1. Script detection
+        self.assertTrue(is_devanagari('पटेल'))
+        self.assertFalse(is_devanagari('Patel'))
+        self.assertEqual(detect_script('पटेल ऑटोमोबाइल्स'), 'hi')
+        self.assertEqual(detect_script('Patel Automobiles'), 'en')
+
+        # 2. Glossary lookup & offline resolution
+        self.assertEqual(translate_text('Automobiles', 'en', 'hi'), 'ऑटोमोबाइल्स')
+        self.assertEqual(translate_text('Mega Sale', 'en', 'hi'), 'महासेल')
+        self.assertEqual(translate_text('महासेल', 'hi', 'en'), 'Mega Sale')
+
+        # 3. split_bilingual
+        hi, en = split_bilingual('पटेल ऑटोमोबाइल्स (Patel Automobiles)')
+        self.assertEqual(hi, 'पटेल ऑटोमोबाइल्स')
+        self.assertEqual(en, 'Patel Automobiles')
+
+        # 4. make_bilingual
+        comp = make_bilingual('Sharma Traders', custom_hi='शर्मा ट्रेडर्स')
+        self.assertEqual(comp, 'शर्मा ट्रेडर्स (Sharma Traders)')
+
+        # 5. format_custom_size_bilingual
+        self.assertEqual(format_custom_size_bilingual('10x12 cm', lang='hi'), '10x12 सेमी')
+        self.assertEqual(format_custom_size_bilingual('10x12 सेमी', lang='en'), '10x12 cm')
+
+    def test_api_translate_endpoint(self):
+        """Test the live translation API endpoint for form suggestions."""
+        # Unauthenticated redirects
+        self.client.logout()
+        res_anon = self.client.get(reverse('billing:api_translate'), {'text': 'Traders'})
+        self.assertEqual(res_anon.status_code, 302)
+
+        # Authenticated returns JSON
+        self.client.login(username='staff_test', password='password123')
+        res_auth = self.client.get(reverse('billing:api_translate'), {'text': 'Traders'})
+        self.assertEqual(res_auth.status_code, 200)
+        data = res_auth.json()
+        self.assertEqual(data['original'], 'Traders')
+        self.assertEqual(data['detected_script'], 'en')
+        self.assertEqual(data['translated'], 'ट्रेडर्स')
+
+    def test_bill_creation_with_companion_translations_and_bilingual_pdf(self):
+        """Test creating a bill with companion translation fields and verifying pure language PDFs."""
+        url = reverse('billing:bill_create')
+        data = {
+            'client_name': 'Sharma Traders',
+            'client_name_trans': 'शर्मा ट्रेडर्स',
+            'client_phone': '9893011111',
+            'client_address': 'Sarafa Bazar, Indore',
+            'client_address_trans': 'सराफा बाजार, इंदौर',
+            'ad_title': 'Diwali Mega Sale',
+            'ad_title_trans': 'दीपावली महासेल',
+            'placement_type': PlacementType.INSIDE_HALF,
+            'edition_name': EditionChoice.INDORE,
+            'edition_date': '2026-11-06',
+            'bill_language': 'en',
+            'page_number': 'Page 4',
+            'base_amount': '4000.00',
+            'discount_amount': '0.00',
+            'payment_status': PaymentStatus.PAID,
+            'amount_paid': '4000.00',
+            'payment_method': 'Cash',
+        }
+        res = self.client.post(url, data, follow=True)
+        self.assertEqual(res.status_code, 200)
+
+        bill = Bill.objects.filter(bill_number__startswith='VG-').order_by('-id').first()
+        self.assertIsNotNone(bill)
+        # Verify standardized composite storage
+        self.assertEqual(bill.client_name, 'शर्मा ट्रेडर्स (Sharma Traders)')
+        self.assertEqual(bill.client_address, 'सराफा बाजार, इंदौर (Sarafa Bazar, Indore)')
+        self.assertEqual(bill.ad_title, 'दीपावली महासेल (Diwali Mega Sale)')
+
+        # Verify English PDF rendering: Pure English
+        res_en = self.client.get(reverse('billing:bill_pdf', args=[bill.pk]) + '?lang=en&sign=0')
+        self.assertEqual(res_en.status_code, 200)
+        self.assertContains(res_en, 'Sharma Traders')
+        self.assertContains(res_en, 'Sarafa Bazar, Indore')
+        self.assertContains(res_en, 'Diwali Mega Sale')
+        self.assertNotContains(res_en, 'शर्मा ट्रेडर्स')
+
+        # Verify Hindi PDF rendering: Pure Hindi
+        res_hi = self.client.get(reverse('billing:bill_pdf', args=[bill.pk]) + '?lang=hi&sign=0')
+        self.assertEqual(res_hi.status_code, 200)
+        self.assertContains(res_hi, 'शर्मा ट्रेडर्स')
+        self.assertContains(res_hi, 'सराफा बाजार, इंदौर')
+        self.assertContains(res_hi, 'दीपावली महासेल')
+        self.assertNotContains(res_hi, 'Sharma Traders')
+
+    def test_offline_translation_with_network_disabled(self):
+        """Test accurate offline translation and transliteration when internet is disconnected."""
+        import urllib.request
+        from unittest.mock import patch
+        from billing import translator
+
+        # Mock network failure to enforce 100% offline execution
+        with patch('urllib.request.urlopen', side_effect=Exception("Simulated Offline: No Internet")):
+            # Clear in-memory cache to ensure fresh offline computation
+            translator._TRANSLATION_CACHE.clear()
+
+            # 1. English to Hindi business & client translations offline
+            self.assertEqual(translator.translate_text('Sharma Traders', 'en', 'hi'), 'शर्मा ट्रेडर्स')
+            self.assertEqual(translator.translate_text('Patel Automobiles', 'en', 'hi'), 'पटेल ऑटोमोबाइल्स')
+            self.assertEqual(translator.translate_text('Agrawal Sweets', 'en', 'hi'), 'अग्रवाल मिष्ठान्न')
+            self.assertEqual(translator.translate_text('12, Sarafa Bazar, Indore', 'en', 'hi'), '12, सराफा बाजार, इंदौर')
+            self.assertEqual(translator.translate_text('Mega Sale', 'en', 'hi'), 'महासेल')
+            self.assertEqual(translator.translate_text('Grand Opening', 'en', 'hi'), 'भव्य शुभारंभ')
+            self.assertEqual(translator.translate_text('Public Notice', 'en', 'hi'), 'सार्वजनिक सूचना')
+
+            # 2. Hindi to English reverse translations offline
+            self.assertEqual(translator.translate_text('शर्मा ट्रेडर्स', 'hi', 'en'), 'Sharma Traders')
+            self.assertEqual(translator.translate_text('पटेल ऑटोमोबाइल्स', 'hi', 'en'), 'Patel Automobiles')
+            self.assertEqual(translator.translate_text('सराफा बाजार, इंदौर', 'hi', 'en'), 'Sarafa Bazar, Indore')
+            self.assertEqual(translator.translate_text('भव्य शुभारंभ', 'hi', 'en'), 'Grand Opening')
+
+            # 3. Unseen phonetic name transliteration offline
+            self.assertEqual(translator.translate_text('Pooja', 'en', 'hi'), 'पूजा')
+            self.assertEqual(translator.translate_text('Aman', 'en', 'hi'), 'अमन')
+
+            # 4. Dimension formatting offline
+            self.assertEqual(translator.format_custom_size_bilingual('10x12 cm', lang='hi'), '10x12 सेमी')
+            self.assertEqual(translator.format_custom_size_bilingual('10x12 सेमी', lang='en'), '10x12 cm')

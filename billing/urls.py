@@ -12,6 +12,7 @@ urlpatterns = [
     path('search/', views.bill_search, name='bill_search'),
     path('set-lang/<str:lang_code>/', views.set_site_language, name='set_language'),
     path('api/clients/search/', views.client_search_api, name='client_search_api'),
+    path('api/translate/', views.api_translate, name='api_translate'),
 
     # Customer Self-Service Statement Portal & Zero-Fee UPI Payment
     path('statement/<uuid:token>/', views.customer_portal, name='customer_portal'),

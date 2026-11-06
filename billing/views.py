@@ -31,6 +31,13 @@ from billing.forms import (
     PaymentInfoForm,
 
 )
+from billing.translator import (
+    translate_text,
+    detect_script,
+    is_devanagari,
+    make_bilingual,
+    split_bilingual,
+)
 from billing.utils import (
     generate_bill_number,
     generate_upi_qr_base64,
@@ -217,6 +224,36 @@ def bill_create(request):
             bill = form.save(commit=False)
             bill.created_by = request.user
             bill.bill_number = generate_bill_number()
+
+            # Process bilingual translation for client_name, client_address, ad_title
+            client_name_trans = request.POST.get('client_name_trans', '').strip()
+            client_address_trans = request.POST.get('client_address_trans', '').strip()
+            ad_title_trans = request.POST.get('ad_title_trans', '').strip()
+
+            def _combine_bilingual_field(raw_val: str, trans_val: str) -> str:
+                raw = (raw_val or '').strip()
+                trans = (trans_val or '').strip()
+                if not raw:
+                    return ''
+                if not trans:
+                    return make_bilingual(raw)
+                hi_raw, en_raw = split_bilingual(raw)
+                if hi_raw and en_raw:
+                    if is_devanagari(trans):
+                        return make_bilingual('', custom_hi=trans, custom_en=en_raw)
+                    else:
+                        return make_bilingual('', custom_hi=hi_raw, custom_en=trans)
+                if is_devanagari(raw):
+                    return make_bilingual('', custom_hi=raw, custom_en=trans)
+                else:
+                    return make_bilingual('', custom_hi=trans, custom_en=raw)
+
+            if 'client_name_trans' in request.POST:
+                bill.client_name = _combine_bilingual_field(bill.client_name, client_name_trans)
+            if 'client_address_trans' in request.POST:
+                bill.client_address = _combine_bilingual_field(bill.client_address, client_address_trans)
+            if 'ad_title_trans' in request.POST:
+                bill.ad_title = _combine_bilingual_field(bill.ad_title, ad_title_trans)
 
             # Automatically remember / update client master record & link to bill
             if bill.client_name:
@@ -654,6 +691,31 @@ def client_search_api(request):
         })
 
     return JsonResponse({'clients': data})
+
+
+@login_required
+def api_translate(request):
+    """
+    Lightweight API endpoint for live on-the-fly translation of bill form inputs
+    (client name, address, ad title) between Hindi and English.
+    """
+    text = (request.GET.get('text') or request.POST.get('text', '')).strip()
+    if not text:
+        return JsonResponse({'original': '', 'translated': '', 'detected_script': 'en'})
+
+    source_lang = request.GET.get('sl') or request.POST.get('sl', 'auto')
+    target_lang = request.GET.get('tl') or request.POST.get('tl', None)
+
+    translated = translate_text(text, source_lang=source_lang, target_lang=target_lang)
+    detected = detect_script(text)
+    suggested_target = 'en' if detected == 'hi' else 'hi'
+
+    return JsonResponse({
+        'original': text,
+        'translated': translated,
+        'detected_script': detected,
+        'target_lang': target_lang or suggested_target,
+    })
 
 
 def customer_portal(request, token):

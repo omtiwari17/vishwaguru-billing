@@ -97,7 +97,7 @@
                         {% if bill.client_address %}
                         <div style="display: inline-flex; align-items: center; gap: 6px;">
                             <i class="bi bi-geo-alt" style="color: var(--muted);"></i>
-                            <span>{{ bill.client_address }}</span>
+                            <span>{{ bill.client_address|client_display_name:site_lang }}</span>
                         </div>
                         {% endif %}
                     </div>
@@ -130,7 +130,7 @@
                             <span class="meta-label">{% if site_lang == 'hi' %}स्थान व पृष्ठ:{% else %}Placement &amp; page:{% endif %}</span>
                             <span class="meta-val">
                                 {% if site_lang == 'hi' %}{{ bill.placement_hindi }}{% else %}{{ bill.get_placement_type_display }}{% endif %}
-                                {% if bill.custom_size_text %} &bull; {{ bill.custom_size_text }}{% endif %}
+                                {% if bill.custom_size_text %} &bull; <span class="mono">{{ bill.custom_size_text|format_custom_size:site_lang }}</span>{% endif %}
                                 {% if bill.page_number %} &bull; <span class="tabular-nums">{{ bill.page_number|format_page:site_lang }}</span>{% endif %}
                             </span>
                         </div>
@@ -138,7 +138,7 @@
                         <div class="meta-row">
                             <span class="meta-label">{% if site_lang == 'hi' %}विज्ञापन शीर्षक:{% else %}Ad Title:{% endif %}</span>
                             <span style="font-size: 14.5px; color: var(--ink); font-style: italic;">
-                                "{{ bill.ad_title }}"
+                                "{{ bill.ad_title|bilingual_display:site_lang }}"
                             </span>
                         </div>
                         {% endif %}

@@ -927,7 +927,7 @@
                         {% if bill.custom_size_text %}
                         <div class="meta-row">
                             <span class="meta-label">{% if pdf_lang == 'hi' %}विशिष्ट माप:{% else %}Dimensions:{% endif %}</span>
-                            <span class="mono font-bold" style="color: #9f1d1d;">{{ bill.custom_size_text }}</span>
+                            <span class="mono font-bold" style="color: #9f1d1d;">{{ bill.custom_size_text|format_custom_size:pdf_lang }}</span>
                         </div>
                         {% endif %}
                         {% if bill.page_number %}
@@ -982,7 +982,7 @@
                     <td>
                         <div class="ad-item-title">
                             {% if bill.ad_title %}
-                                {{ bill.ad_title }}
+                                {{ bill.ad_title|bilingual_display:pdf_lang }}
                             {% elif pdf_lang == 'hi' %}
                                 समाचार पत्र में विज्ञापन प्रकाशन
                             {% else %}
@@ -1002,7 +1002,7 @@
                             {% if pdf_lang == 'hi' %}{{ bill.placement_hindi }}{% else %}{{ bill.get_placement_type_display }}{% endif %}
                         </span>
                         {% if bill.custom_size_text %}
-                            <br><span class="mono text-muted" style="font-size: 6.5pt;">({{ bill.custom_size_text }})</span>
+                            <br><span class="mono text-muted" style="font-size: 6.5pt;">({{ bill.custom_size_text|format_custom_size:pdf_lang }})</span>
                         {% endif %}
                     </td>
                     <td class="text-right tabular-nums">
@@ -1019,7 +1019,7 @@
                     <td>
                         <div class="ad-item-title">
                             {% if bill.ad_title %}
-                                {{ bill.ad_title }}
+                                {{ bill.ad_title|bilingual_display:pdf_lang }}
                             {% elif pdf_lang == 'hi' %}
                                 पूर्व शेष बकाया राशि (खाता बही समायोजन)
                             {% else %}
