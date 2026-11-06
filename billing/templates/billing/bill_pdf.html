@@ -51,16 +51,16 @@
         @media print {
             @page {
                 size: A4 portrait;
-                margin: 6mm 8mm;
+                margin: 4mm;
             }
             html, body {
-                height: 100% !important;
-                max-height: 100% !important;
+                height: auto !important;
+                min-height: 0 !important;
                 width: 100% !important;
                 margin: 0 !important;
                 padding: 0 !important;
                 background: #ffffff !important;
-                overflow: hidden !important;
+                overflow: visible !important;
             }
             .no-print { display: none !important; }
             .invoice-sheet-wrapper {
@@ -76,15 +76,93 @@
                 max-width: 100% !important;
                 border: 1.5px solid #1c1917 !important;
                 margin: 0 auto !important;
-                padding: 6mm 8mm !important;
+                padding: 3mm 5mm !important;
                 box-shadow: none !important;
                 break-inside: avoid !important;
                 page-break-inside: avoid !important;
                 box-sizing: border-box !important;
             }
-            .invoice-container * {
-                break-inside: auto;
-                page-break-inside: auto;
+            .masthead-logo {
+                height: 40px !important;
+            }
+            .masthead-sub {
+                font-size: 7.2pt !important;
+                line-height: 1.25 !important;
+            }
+            .newspaper-double-rule {
+                margin: 2px 0 3px 0 !important;
+            }
+            .meta-grid-table {
+                margin-bottom: 3px !important;
+            }
+            .meta-card {
+                padding: 3px 5px !important;
+            }
+            .meta-client-name {
+                font-size: 9.5pt !important;
+            }
+            .meta-row {
+                font-size: 7.5pt !important;
+                margin-bottom: 1px !important;
+            }
+            .ledger-table th {
+                padding: 4px 6px !important;
+                font-size: 7.8pt !important;
+            }
+            .ledger-table td {
+                padding: 4px 6px !important;
+                font-size: 7.8pt !important;
+            }
+            .blank-ledger-row td {
+                height: 16px !important;
+            }
+            .totals-split-table {
+                margin-bottom: 3px !important;
+            }
+            .words-container {
+                padding: 4px 6px !important;
+            }
+            .words-text {
+                font-size: 8.5pt !important;
+            }
+            .fin-calc-table td {
+                padding: 2px 6px !important;
+                font-size: 7.8pt !important;
+            }
+            .terms-box {
+                padding: 2.5px 5px !important;
+                font-size: 6.2pt !important;
+                margin-bottom: 2px !important;
+                line-height: 1.2 !important;
+            }
+            .payment-desk-table {
+                border-top: 1px solid #1c1917 !important;
+                padding-top: 1px !important;
+            }
+            .payment-desk-table td {
+                padding: 1px 3px !important;
+            }
+            .bank-details-box {
+                padding: 3px 5px !important;
+                font-size: 6.8pt !important;
+            }
+            .digital-auth-card {
+                padding: 3px 5px !important;
+            }
+            .settled-receipt-box {
+                padding: 2px 3px !important;
+            }
+            .payment-desk-table, .digital-auth-card, .bank-details-box, .settled-receipt-box {
+                break-inside: avoid !important;
+                page-break-inside: avoid !important;
+            }
+            .qr-img {
+                width: 56px !important;
+                height: 56px !important;
+            }
+            .sign-title {
+                margin-bottom: 12px !important;
+                font-size: 6.8pt !important;
             }
         }
 
@@ -1001,7 +1079,7 @@
                 {% endif %}
 
                 <!-- Authentic Accounting Ledger Ruled Lines to Fill Broadsheet Page -->
-                {% for _ in bill|ledger_blank_rows:11 %}
+                {% for _ in bill|ledger_blank_rows:2 %}
                 <tr class="item-row blank-ledger-row">
                     <td class="text-center">&nbsp;</td>
                     <td>&nbsp;</td>

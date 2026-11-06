@@ -192,7 +192,7 @@ def office_address_display(address, lang='en'):
 
 
 @register.filter(name='ledger_blank_rows')
-def ledger_blank_rows(bill, total_target=11):
+def ledger_blank_rows(bill, total_target=2):
     """
     Return range of blank rows to fill the particulars ledger grid,
     creating an authentic accounting ledger and filling the A4 page
