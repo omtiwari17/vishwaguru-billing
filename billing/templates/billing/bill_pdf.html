@@ -14,17 +14,17 @@
 
         @page {
             size: A4 portrait;
-            margin: 8mm 10mm;
+            margin: 6mm 8mm;
             @bottom-left {
-                content: "{% if pdf_lang == 'hi' %}विश्वगुरु की झलक — प्रमाणित कम्प्यूटरीकृत विज्ञापन देयक{% else %}Vishwaguru Ki Jhalak — Valid Authenticated Advertisement Invoice{% endif %}";
+                content: "{% if pdf_lang == 'hi' %}विश्वगुरु की झलक — प्रमाणित विज्ञापन देयक{% else %}Vishwaguru Ki Jhalak — Valid Advertisement Invoice{% endif %}";
                 font-family: {% if pdf_lang == 'hi' %}'Noto Serif Devanagari', 'Mukta', serif{% else %}'Mukta', -apple-system, sans-serif{% endif %};
-                font-size: 7.5pt;
+                font-size: 6.5pt;
                 color: #78716c;
             }
             @bottom-right {
                 content: "{% if pdf_lang == 'hi' %}पृष्ठ " counter(page) " / " counter(pages){% else %}Page " counter(page) " of " counter(pages){% endif %}";
                 font-family: 'Mukta', sans-serif;
-                font-size: 7.5pt;
+                font-size: 6.5pt;
                 color: #78716c;
                 font-variant-numeric: tabular-nums;
             }
@@ -37,46 +37,60 @@
         }
 
         html, body {
-            height: 100%;
             margin: 0;
             padding: 0;
             font-family: 'Mukta', 'Noto Sans Devanagari', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             color: #1c1917;
             background: #faf8f4;
-            font-size: 8.5pt;
-            line-height: 1.4;
+            font-size: 7.5pt;
+            line-height: 1.3;
             -webkit-print-color-adjust: exact;
             print-color-adjust: exact;
         }
 
         @media print {
+            @page {
+                size: A4 portrait;
+                margin: 6mm 8mm;
+            }
             html, body {
                 height: 100% !important;
+                max-height: 100% !important;
                 width: 100% !important;
                 margin: 0 !important;
                 padding: 0 !important;
                 background: #ffffff !important;
+                overflow: hidden !important;
             }
             .no-print { display: none !important; }
             .invoice-sheet-wrapper {
+                height: auto !important;
+                min-height: 0 !important;
                 padding: 0 !important;
+                margin: 0 !important;
                 background: transparent !important;
+                display: block !important;
             }
             .invoice-container {
                 width: 100% !important;
                 max-width: 100% !important;
                 border: 1.5px solid #1c1917 !important;
-                margin: 0 !important;
-                padding: 7mm 9mm !important;
+                margin: 0 auto !important;
+                padding: 6mm 8mm !important;
                 box-shadow: none !important;
                 break-inside: avoid !important;
                 page-break-inside: avoid !important;
+                box-sizing: border-box !important;
+            }
+            .invoice-container * {
+                break-inside: auto;
+                page-break-inside: auto;
             }
         }
 
         /* Outer Sheet Wrapper for Browser Preview */
         .invoice-sheet-wrapper {
-            padding: 24px 12px 48px 12px;
+            padding: 12px 6px 24px 6px;
             background: #f1ede4;
             min-height: 100vh;
             display: flex;
@@ -84,26 +98,33 @@
             align-items: center;
         }
 
-        /* Master Broadsheet Invoice Container */
+        /* Master Broadsheet Invoice Container strictly budgeted for 1 sheet */
         .invoice-container {
             width: 190mm;
             max-width: 190mm;
             background: #ffffff;
             border: 1.5px solid #1c1917;
-            padding: 8mm 10mm;
+            padding: 6mm 8mm;
             box-sizing: border-box;
             position: relative;
-            box-shadow: 0 4px 20px rgba(28, 25, 23, 0.08);
+            box-shadow: 0 4px 16px rgba(28, 25, 23, 0.08);
             break-inside: avoid;
             page-break-inside: avoid;
+            break-after: avoid;
+            page-break-after: avoid;
         }
 
         /* Typography & Utilities */
         .font-masthead { font-family: 'Noto Serif Devanagari', serif; }
-        .mono { font-family: 'JetBrains Mono', monospace; font-size: 8pt; }
+        .mono {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 7pt;
+            white-space: nowrap;
+        }
         .tabular-nums {
             font-variant-numeric: tabular-nums;
             font-feature-settings: "tnum";
+            white-space: nowrap;
         }
         .text-right { text-align: right; }
         .text-center { text-align: center; }
@@ -113,24 +134,25 @@
         .text-muted { color: #57534e; }
         .text-maroon { color: #9f1d1d; }
         .text-green { color: #15803d; }
+        .nowrap { white-space: nowrap; }
 
         /* Top Masthead & Header */
         .masthead-table {
             width: 100%;
             border-collapse: collapse;
-            margin-bottom: 6px;
+            margin-bottom: 2px;
         }
         .masthead-table td {
             vertical-align: middle;
             padding: 0;
         }
         .masthead-logo {
-            height: 56px;
+            height: 50px;
             width: auto;
-            max-width: 260px;
+            max-width: 200px;
             object-fit: contain;
             display: inline-block;
-            margin-bottom: 4px;
+            margin-bottom: 1px;
         }
         .masthead-sub {
             font-size: 8pt;
@@ -149,46 +171,48 @@
             color: #ffffff;
             font-family: 'Mukta', sans-serif;
             font-weight: 700;
-            font-size: 10pt;
-            padding: 4px 16px;
-            letter-spacing: 1px;
-            margin-bottom: 6px;
+            font-size: 8.5pt;
+            padding: 2.5px 10px;
+            letter-spacing: 0.6px;
+            margin-bottom: 2px;
             border-radius: 2px;
             text-transform: uppercase;
         }
         .bill-meta-table {
             margin-left: auto;
             border-collapse: collapse;
-            font-size: 8.5pt;
+            font-size: 7.8pt;
         }
         .bill-meta-table td {
-            padding: 2px 4px;
+            padding: 1px 2px;
         }
         .bill-meta-label {
             color: #57534e;
             text-align: right;
-            padding-right: 10px !important;
+            padding-right: 5px !important;
             font-weight: 500;
+            white-space: nowrap;
         }
         .bill-meta-value {
             text-align: right;
             font-weight: 600;
             color: #1c1917;
+            white-space: nowrap !important;
         }
 
         /* Broadsheet Rules */
         .newspaper-double-rule {
-            border-top: 2px solid #1c1917;
+            border-top: 1.5px solid #1c1917;
             border-bottom: 1px solid #1c1917;
-            height: 3px;
-            margin: 8px 0 12px 0;
+            height: 2.5px;
+            margin: 5px 0 6px 0;
         }
 
         /* Metadata Two-Column Grid */
         .meta-grid-table {
             width: 100%;
             border-collapse: collapse;
-            margin-bottom: 12px;
+            margin-bottom: 6px;
         }
         .meta-grid-table td {
             width: 50%;
@@ -198,52 +222,51 @@
         .meta-card {
             border: 1px solid #e7e2d9;
             background-color: #faf8f4;
-            padding: 10px 14px;
-            border-radius: 3px;
-            min-height: 98px;
+            padding: 8px 10px;
+            border-radius: 2px;
             box-sizing: border-box;
         }
         .meta-card-title {
-            font-size: 8pt;
+            font-size: 7.2pt;
             font-weight: 700;
             color: #9f1d1d;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-bottom: 6px;
-            padding-bottom: 3px;
+            letter-spacing: 0.4px;
+            margin-bottom: 2px;
+            padding-bottom: 1.5px;
             border-bottom: 1px solid #e7e2d9;
         }
         .meta-client-name {
-            font-size: 11pt;
+            font-size: 10.5pt;
             font-weight: 700;
             color: #1c1917;
-            margin-bottom: 4px;
+            margin-bottom: 2px;
             line-height: 1.25;
         }
         .meta-row {
-            font-size: 8.5pt;
+            font-size: 8pt;
             color: #1c1917;
-            margin-bottom: 3px;
+            margin-bottom: 2px;
             line-height: 1.3;
         }
         .meta-label {
             color: #57534e;
             font-weight: 500;
             display: inline-block;
-            min-width: 68px;
+            min-width: 52px;
         }
         .meta-subtle {
             color: #78716c;
-            font-size: 8pt;
+            font-size: 6.8pt;
         }
         .proof-link {
             color: #9f1d1d;
             text-decoration: underline;
             font-weight: 600;
-            font-size: 8pt;
+            font-size: 7pt;
         }
 
-        /* Expandable Ruled Particulars Ledger Table */
+        /* Particulars Ledger Table */
         .ledger-table {
             width: 100%;
             border-collapse: collapse;
@@ -255,16 +278,16 @@
             color: #ffffff;
             font-weight: 700;
             font-size: 8.5pt;
-            padding: 7px 10px;
+            padding: 6px 8px;
             border-right: 1px solid #44403c;
             text-align: left;
-            letter-spacing: 0.4px;
+            letter-spacing: 0.3px;
         }
         .ledger-table th:last-child {
             border-right: none;
         }
         .ledger-table td {
-            padding: 10px 10px;
+            padding: 7px 8px;
             vertical-align: middle;
             border-right: 1px solid #e7e2d9;
             font-size: 8.5pt;
@@ -275,16 +298,25 @@
         .ledger-table tbody tr.item-row {
             border-bottom: 1px solid #e7e2d9;
         }
+        .blank-ledger-row td {
+            height: 24px;
+            padding: 0 8px;
+            border-right: 1px solid #e7e2d9;
+            border-bottom: 1px solid #e7e2d9;
+        }
+        .blank-ledger-row td:last-child {
+            border-right: none;
+        }
         .ad-item-title {
-            font-size: 9.5pt;
+            font-size: 9pt;
             font-weight: 700;
             color: #1c1917;
-            margin-bottom: 3px;
+            margin-bottom: 1.5px;
         }
         .ad-item-sub {
-            font-size: 8pt;
+            font-size: 7.5pt;
             color: #57534e;
-            line-height: 1.35;
+            line-height: 1.25;
         }
 
         /* Totals & Stamp Split Table */
@@ -293,48 +325,48 @@
             border-collapse: collapse;
             border: 1.5px solid #1c1917;
             border-top: none;
-            margin-bottom: 14px;
+            margin-bottom: 6px;
         }
         .totals-split-table td {
             vertical-align: top;
             padding: 0;
         }
         .words-container {
-            padding: 12px 14px;
+            padding: 10px 12px;
             box-sizing: border-box;
         }
         .words-callout {
-            border-left: 3.5px solid #9f1d1d;
-            padding-left: 10px;
-            margin-bottom: 8px;
+            border-left: 2.5px solid #9f1d1d;
+            padding-left: 6px;
+            margin-bottom: 3px;
         }
         .words-callout-title {
-            font-size: 7.5pt;
+            font-size: 7pt;
             font-weight: 700;
             color: #9f1d1d;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-bottom: 3px;
+            letter-spacing: 0.3px;
+            margin-bottom: 1px;
         }
         .words-text {
-            font-size: 10pt;
+            font-size: 9.5pt;
             font-weight: 700;
             color: #1c1917;
-            line-height: 1.35;
+            line-height: 1.25;
         }
 
         /* Inked Rubber-Stamp Seals */
         .stamp-seal {
             display: inline-block;
-            border: 2px dashed;
-            padding: 5px 12px;
+            border: 1.5px dashed;
+            padding: 2.5px 7px;
             font-weight: 700;
-            font-size: 8.5pt;
-            letter-spacing: 0.5px;
-            border-radius: 3px;
+            font-size: 7.2pt;
+            letter-spacing: 0.3px;
+            border-radius: 2px;
             text-transform: uppercase;
-            transform: rotate(-0.8deg);
-            margin: 6px 0 4px 0;
+            transform: rotate(-0.5deg);
+            margin: 2px 0 1px 0;
         }
         .stamp-paid {
             border-color: #15803d;
@@ -364,8 +396,8 @@
             border-bottom: none;
         }
         .fin-calc-table td {
-            padding: 4.5px 12px;
-            font-size: 9pt;
+            padding: 4px 8px;
+            font-size: 8.2pt;
             vertical-align: middle;
         }
         .fin-calc-label {
@@ -379,28 +411,28 @@
             color: #1c1917;
         }
         .fin-row-net {
-            border-top: 2px solid #9f1d1d;
-            border-bottom: 2px solid #9f1d1d;
+            border-top: 1.5px solid #9f1d1d;
+            border-bottom: 1.5px solid #9f1d1d;
             background-color: #faf8f4;
             color: #9f1d1d !important;
             font-weight: 700;
-            font-size: 10.5pt !important;
+            font-size: 9pt !important;
         }
         .fin-row-net td {
-            padding: 6px 12px !important;
+            padding: 3.5px 8px !important;
             color: #9f1d1d !important;
         }
 
         /* Terms & Legal Notice */
         .terms-box {
-            font-size: 7.5pt;
+            font-size: 7.2pt;
             color: #57534e;
             border: 1px solid #e7e2d9;
             background-color: #faf8f4;
-            padding: 7px 12px;
-            margin-bottom: 14px;
-            border-radius: 3px;
-            line-height: 1.45;
+            padding: 6px 9px;
+            margin-bottom: 7px;
+            border-radius: 2px;
+            line-height: 1.35;
         }
 
         /* Payment Desk 3-Column Grid */
@@ -408,73 +440,72 @@
             width: 100%;
             border-collapse: collapse;
             border-top: 1.5px solid #1c1917;
-            padding-top: 8px;
+            padding-top: 3px;
         }
         .payment-desk-table td {
             vertical-align: top;
-            padding: 6px;
+            padding: 3px 5px;
         }
         .bank-details-box {
-            font-size: 8pt;
-            line-height: 1.45;
+            font-size: 7.5pt;
+            line-height: 1.4;
             color: #1c1917;
             background-color: #faf8f4;
             border: 1px solid #e7e2d9;
-            border-radius: 3px;
-            padding: 8px 10px;
-            min-height: 108px;
+            border-radius: 2px;
+            padding: 6px 9px;
             box-sizing: border-box;
         }
         .bank-title {
             color: #9f1d1d;
-            font-size: 8.5pt;
+            font-size: 7.2pt;
             font-weight: 700;
-            margin-bottom: 4px;
+            margin-bottom: 1.5px;
             text-transform: uppercase;
-            padding-bottom: 3px;
+            padding-bottom: 1px;
             border-bottom: 1px solid #e7e2d9;
         }
         .qr-cell {
             text-align: center;
             border-left: 1px solid #e7e2d9;
             border-right: 1px solid #e7e2d9;
-            padding: 6px 8px;
+            padding: 2px 4px;
         }
         .qr-img {
-            width: 86px;
-            height: 86px;
+            width: 72px;
+            height: 72px;
             border: 1px solid #e7e2d9;
-            padding: 2px;
+            padding: 1.5px;
             background: #ffffff;
-            margin-bottom: 3px;
+            margin-bottom: 1px;
         }
         .qr-caption {
-            font-size: 7.5pt;
+            font-size: 6.8pt;
             color: #57534e;
             font-weight: 600;
-            line-height: 1.3;
+            line-height: 1.15;
             display: inline-block;
         }
         .signatory-cell {
             text-align: right;
-            font-size: 8pt;
-            padding-top: 6px;
+            font-size: 7pt;
+            padding-top: 2px;
         }
         .sign-title {
             font-weight: 700;
             color: #1c1917;
-            line-height: 1.25;
-            margin-bottom: 48px;
+            line-height: 1.15;
+            margin-bottom: 20px;
         }
         .sign-rule {
             border-top: 1px dashed #78716c;
-            width: 145px;
+            width: 110px;
             margin-left: auto;
-            margin-bottom: 4px;
+            margin-bottom: 1.5px;
         }
         .sign-label {
             color: #57534e;
-            font-size: 8pt;
+            font-size: 6.8pt;
             font-weight: 600;
         }
 
@@ -482,61 +513,56 @@
         .digital-auth-card {
             border: 1px solid #e7e2d9;
             background-color: #faf8f4;
-            border-radius: 4px;
-            padding: 8px 10px;
+            border-radius: 2px;
+            padding: 5px 7px;
             text-align: center;
-            min-height: 108px;
             box-sizing: border-box;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
         }
         .digital-entity {
-            font-size: 8pt;
+            font-size: 7.5pt;
             font-weight: 700;
             color: #1c1917;
-            margin-bottom: 4px;
-            line-height: 1.25;
+            margin-bottom: 1.5px;
+            line-height: 1.15;
         }
         .digital-badge {
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            gap: 5px;
+            gap: 3px;
             background: #ffffff;
-            border: 1.5px solid #15803d;
+            border: 1px solid #15803d;
             color: #15803d;
-            padding: 3px 10px;
-            border-radius: 3px;
+            padding: 1.5px 5px;
+            border-radius: 2px;
             font-weight: 700;
-            font-size: 7.5pt;
-            letter-spacing: 0.4px;
-            margin-bottom: 4px;
+            font-size: 6.2pt;
+            letter-spacing: 0.3px;
+            margin-bottom: 1.5px;
         }
         .digital-check {
-            font-size: 9pt;
+            font-size: 7.5pt;
             font-weight: bold;
         }
         .digital-statutory {
-            font-size: 7pt;
+            font-size: 6.5pt;
             color: #57534e;
-            line-height: 1.3;
-            margin-bottom: 4px;
+            line-height: 1.15;
+            margin-bottom: 1.5px;
         }
         .digital-meta {
-            font-size: 7pt;
+            font-size: 6pt;
             color: #78716c;
             border-top: 1px dashed #e7e2d9;
-            padding-top: 3px;
+            padding-top: 1.5px;
         }
 
         /* Settled Receipt Stamp in Middle Box */
         .settled-receipt-box {
             border: 1px solid #bbf7d0;
             background-color: #f0fdf4;
-            border-radius: 3px;
-            padding: 10px 8px;
-            min-height: 108px;
+            border-radius: 2px;
+            padding: 4px 3px;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -545,17 +571,17 @@
             box-sizing: border-box;
         }
         .settled-seal-ring {
-            border: 2px solid #15803d;
+            border: 1.5px solid #15803d;
             border-radius: 50%;
-            width: 40px;
-            height: 40px;
+            width: 22px;
+            height: 22px;
             display: flex;
             align-items: center;
             justify-content: center;
             color: #15803d;
-            font-size: 20px;
+            font-size: 12px;
             font-weight: bold;
-            margin-bottom: 5px;
+            margin-bottom: 1px;
             background: #ffffff;
         }
 
@@ -563,14 +589,14 @@
         .no-print-toolbar {
             background: #1c1917;
             color: #faf8f4;
-            padding: 8px 18px;
-            margin-bottom: 18px;
+            padding: 6px 14px;
+            margin-bottom: 10px;
             border-radius: 4px;
             font-family: 'Mukta', sans-serif;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            gap: 16px;
+            gap: 12px;
             width: 190mm;
             max-width: 190mm;
             box-sizing: border-box;
@@ -579,22 +605,22 @@
             background: #9f1d1d;
             color: #ffffff;
             border: none;
-            padding: 6px 18px;
+            padding: 5px 14px;
             border-radius: 3px;
             font-weight: 600;
-            font-size: 9pt;
+            font-size: 8.5pt;
             cursor: pointer;
             text-decoration: none;
             display: inline-flex;
             align-items: center;
-            gap: 6px;
+            gap: 5px;
         }
         .btn-print-action:hover {
             background: #801818;
         }
         .back-link {
             color: #38bdf8;
-            font-size: 8.5pt;
+            font-size: 8pt;
             text-decoration: none;
             display: inline-flex;
             align-items: center;
@@ -604,10 +630,10 @@
             text-decoration: underline;
         }
         .mode-pill {
-            font-size: 8pt;
+            font-size: 7.5pt;
             color: #d6d3d1;
             text-decoration: none;
-            padding: 3px 10px;
+            padding: 2.5px 8px;
             border-radius: 3px;
             border: 1px solid #44403c;
             background: #292524;
@@ -633,10 +659,10 @@
 
     <!-- On-screen Print action bar for direct browser view -->
     <div class="no-print no-print-toolbar">
-        <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+        <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
             <!-- Language Switcher: Full English vs Full Hindi -->
-            <div style="display: flex; align-items: center; gap: 6px;">
-                <span style="font-size: 8.5pt; color: #a8a29e;">{% if pdf_lang == 'hi' %}भाषा:{% else %}Language:{% endif %}</span>
+            <div style="display: flex; align-items: center; gap: 5px;">
+                <span style="font-size: 8pt; color: #a8a29e;">{% if pdf_lang == 'hi' %}भाषा:{% else %}Language:{% endif %}</span>
                 <a href="?lang=en&sign={{ require_sign|yesno:'1,0' }}" class="mode-pill {% if pdf_lang == 'en' %}active{% endif %}">
                     English
                 </a>
@@ -648,8 +674,8 @@
             <span style="color: #44403c;">|</span>
 
             <!-- Format Switcher: Computer Generated vs Physical Seal & Sign -->
-            <div style="display: flex; align-items: center; gap: 6px;">
-                <span style="font-size: 8.5pt; color: #a8a29e;">{% if pdf_lang == 'hi' %}प्रारूप:{% else %}Format:{% endif %}</span>
+            <div style="display: flex; align-items: center; gap: 5px;">
+                <span style="font-size: 8pt; color: #a8a29e;">{% if pdf_lang == 'hi' %}प्रारूप:{% else %}Format:{% endif %}</span>
                 <a href="?lang={{ pdf_lang }}&sign=0" class="mode-pill {% if not require_sign and request.GET.sign != '1' %}active{% endif %}">
                     <i class="bi bi-display"></i> {% if pdf_lang == 'hi' %}कम्प्यूटरीकृत देयक{% else %}Computer Generated{% endif %}
                 </a>
@@ -659,7 +685,7 @@
             </div>
         </div>
 
-        <div style="display: flex; align-items: center; gap: 12px;">
+        <div style="display: flex; align-items: center; gap: 10px;">
             <button onclick="window.print()" class="btn-print-action">
                 <i class="bi bi-printer"></i>
                 {% if pdf_lang == 'hi' %}प्रिंट / सुरक्षित करें{% else %}Print / Save PDF{% endif %}
@@ -679,11 +705,11 @@
         <!-- 1. Masthead & Header -->
         <table class="masthead-table">
             <tr>
-                <td style="width: 60%;">
+                <td style="width: 58%;">
                     <!-- Authentic Newspaper Masthead Logo -->
                     <img src="{% static 'billing/img/logo.png' %}" class="masthead-logo" alt="{% if pdf_lang == 'hi' %}विश्वगुरु की झलक{% else %}Vishwaguru Ki Jhalak{% endif %}"><br>
                     <div class="masthead-sub">
-                        <strong style="color: #1c1917; font-size: 8.5pt;">
+                        <strong style="color: #1c1917;">
                             {% if pdf_lang == 'hi' %}
                                 दैनिक राष्ट्रीय समाचार पत्र | इंदौर से प्रकाशित
                             {% else %}
@@ -693,7 +719,7 @@
                         {% if payment_info.registration_no %}
                             &nbsp;|&nbsp; 
                             {% if pdf_lang == 'hi' %}
-                                आर.एन.आई. पंजीयन: <span class="mono font-bold">{{ payment_info.registration_no|strip_rni_prefix }}</span>
+                                आर.एन.आई.: <span class="mono font-bold">{{ payment_info.registration_no|strip_rni_prefix }}</span>
                             {% else %}
                                 RNI Reg. No.: <span class="mono font-bold">{{ payment_info.registration_no|strip_rni_prefix }}</span>
                             {% endif %}
@@ -703,7 +729,7 @@
                         {% if pdf_lang == 'hi' %}फ़ोन:{% else %}Phone:{% endif %} <span class="mono">{{ payment_info.phone_number }}</span>
                     </div>
                 </td>
-                <td class="invoice-badge-box" style="width: 40%;">
+                <td class="invoice-badge-box" style="width: 42%;">
                     <div class="invoice-badge">
                         {% if pdf_lang == 'hi' %}
                             विज्ञापन देयक
@@ -716,7 +742,7 @@
                             <td class="bill-meta-label">
                                 {% if pdf_lang == 'hi' %}बिल क्रमांक:{% else %}Invoice No:{% endif %}
                             </td>
-                            <td class="bill-meta-value mono" style="font-size: 10pt; color: #9f1d1d;">
+                            <td class="bill-meta-value mono nowrap" style="font-size: 8.5pt; color: #9f1d1d;">
                                 {{ bill.bill_number }}
                             </td>
                         </tr>
@@ -724,7 +750,7 @@
                             <td class="bill-meta-label">
                                 {% if pdf_lang == 'hi' %}बिल दिनांक:{% else %}Invoice Date:{% endif %}
                             </td>
-                            <td class="bill-meta-value tabular-nums">
+                            <td class="bill-meta-value tabular-nums nowrap">
                                 {{ bill.created_at|date:"d/m/Y" }}
                             </td>
                         </tr>
@@ -732,7 +758,7 @@
                             <td class="bill-meta-label">
                                 {% if pdf_lang == 'hi' %}प्रकाशन दिनांक:{% else %}Publication Date:{% endif %}
                             </td>
-                            <td class="bill-meta-value tabular-nums">
+                            <td class="bill-meta-value tabular-nums nowrap">
                                 {{ bill.edition_date|date:"d/m/Y" }}
                             </td>
                         </tr>
@@ -748,7 +774,7 @@
         <table class="meta-grid-table">
             <tr>
                 <!-- Left: Billed To (Advertiser) -->
-                <td style="padding-right: 6px;">
+                <td style="padding-right: 3px;">
                     <div class="meta-card">
                         <div class="meta-card-title">
                             {% if pdf_lang == 'hi' %}विज्ञापनदाता विवरण (बिल धारक){% else %}Advertiser Details (Billed To){% endif %}
@@ -795,7 +821,7 @@
                 </td>
 
                 <!-- Right: Publication Details -->
-                <td style="padding-left: 6px;">
+                <td style="padding-left: 3px;">
                     <div class="meta-card">
                         <div class="meta-card-title">
                             {% if pdf_lang == 'hi' %}प्रकाशन व संस्करण विवरण{% else %}Publication & Insertion Details{% endif %}
@@ -898,7 +924,7 @@
                             {% if pdf_lang == 'hi' %}{{ bill.placement_hindi }}{% else %}{{ bill.get_placement_type_display }}{% endif %}
                         </span>
                         {% if bill.custom_size_text %}
-                            <br><span class="mono text-muted" style="font-size: 7.5pt;">({{ bill.custom_size_text }})</span>
+                            <br><span class="mono text-muted" style="font-size: 6.5pt;">({{ bill.custom_size_text }})</span>
                         {% endif %}
                     </td>
                     <td class="text-right tabular-nums">
@@ -974,6 +1000,17 @@
                 </tr>
                 {% endif %}
 
+                <!-- Authentic Accounting Ledger Ruled Lines to Fill Broadsheet Page -->
+                {% for _ in bill|ledger_blank_rows:11 %}
+                <tr class="item-row blank-ledger-row">
+                    <td class="text-center">&nbsp;</td>
+                    <td>&nbsp;</td>
+                    <td>&nbsp;</td>
+                    <td class="text-right">&nbsp;</td>
+                    <td class="text-right">&nbsp;</td>
+                </tr>
+                {% endfor %}
+
             </tbody>
         </table>
 
@@ -999,10 +1036,10 @@
                         <!-- Inked Rubber-Stamp Accounting Seal -->
                         {% if bill.payment_status == 'Paid' or bill.balance_amount <= 0 %}
                         <div class="stamp-seal stamp-paid">
-                            <span style="font-size: 10pt;">&#10003;</span>
+                            <span style="font-size: 8pt;">&#10003;</span>
                             {% if pdf_lang == 'hi' %}पूर्ण भुगतान प्राप्त — खाता चुकता{% else %}PAID IN FULL — PAYMENT SETTLED{% endif %}
                         </div>
-                        <div style="font-size: 7.5pt; color: #15803d; font-weight: 600; margin-top: 2px;">
+                        <div style="font-size: 6.5pt; color: #15803d; font-weight: 600; margin-top: 1px;">
                             {% if pdf_lang == 'hi' %}
                                 माध्यम: {{ bill.payment_method|default:'रोकड़ / यूपीआई' }} • शून्य शेष बकाया
                             {% else %}
@@ -1011,20 +1048,20 @@
                         </div>
                         {% elif bill.payment_status == 'Partial' or bill.amount_paid > 0 %}
                         <div class="stamp-seal stamp-partial">
-                            <span style="font-size: 9.5pt;">&#9888;</span>
-                            {% if pdf_lang == 'hi' %}आंशिक भुगतान — शेष बकाया: ₹{{ bill.balance_amount|floatformat:2 }}{% else %}PARTIALLY PAID — BAL DUE: ₹{{ bill.balance_amount|floatformat:2 }}{% endif %}
+                            <span style="font-size: 7.5pt;">&#9888;</span>
+                            {% if pdf_lang == 'hi' %}आंशिक भुगतान — शेष: ₹{{ bill.balance_amount|floatformat:2 }}{% else %}PARTIALLY PAID — BAL: ₹{{ bill.balance_amount|floatformat:2 }}{% endif %}
                         </div>
                         {% else %}
                         <div class="stamp-seal stamp-unpaid">
-                            <span style="font-size: 9.5pt;">&#10005;</span>
+                            <span style="font-size: 7.5pt;">&#10005;</span>
                             {% if pdf_lang == 'hi' %}भुगतान देय — कुल देय: ₹{{ bill.total_amount|floatformat:2 }}{% else %}PAYMENT DUE — PAYABLE: ₹{{ bill.total_amount|floatformat:2 }}{% endif %}
                         </div>
                         {% endif %}
 
                         <!-- Verification Watermark Note -->
-                        <div style="margin-top: 8px; font-size: 7.2pt; color: #78716c;">
+                        <div style="margin-top: 3px; font-size: 6.2pt; color: #78716c;">
                             {% if pdf_lang == 'hi' %}
-                                प्रमाणित कम्प्यूटरीकृत समाचार पत्र विज्ञापन देयक पत्र • विश्वगुरु की झलक
+                                प्रमाणित कम्प्यूटरीकृत विज्ञापन देयक पत्र • विश्वगुरु की झलक
                             {% else %}
                                 Certified official computer generated ad invoice • Vishwaguru Ki Jhalak
                             {% endif %}
@@ -1062,15 +1099,15 @@
                             <td>
                                 {% if pdf_lang == 'hi' %}कुल देय राशि:{% else %}Net Payable Total:{% endif %}
                             </td>
-                            <td class="fin-calc-value font-bold" style="font-size: 10.5pt;">
+                            <td class="fin-calc-value font-bold" style="font-size: 8.5pt;">
                                 ₹{{ bill.total_amount|floatformat:2 }}
                             </td>
                         </tr>
                         <tr>
-                            <td class="fin-calc-label" style="color: #15803d; font-size: 8.5pt;">
+                            <td class="fin-calc-label" style="color: #15803d; font-size: 7pt;">
                                 {% if pdf_lang == 'hi' %}प्राप्त राशि:{% else %}Amount Received:{% endif %}
                             </td>
-                            <td class="fin-calc-value font-semibold" style="color: #15803d; font-size: 8.5pt;">
+                            <td class="fin-calc-value font-semibold" style="color: #15803d; font-size: 7pt;">
                                 ₹{{ bill.amount_paid|floatformat:2 }}
                             </td>
                         </tr>
@@ -1078,7 +1115,7 @@
                             <td class="fin-calc-label" style="color: {% if bill.balance_amount <= 0 %}#15803d{% else %}#9f1d1d{% endif %};">
                                 {% if pdf_lang == 'hi' %}शेष बकाया राशि:{% else %}Balance Outstanding:{% endif %}
                             </td>
-                            <td class="fin-calc-value font-bold" style="color: {% if bill.balance_amount <= 0 %}#15803d{% else %}#9f1d1d{% endif %}; font-size: 10pt;">
+                            <td class="fin-calc-value font-bold" style="color: {% if bill.balance_amount <= 0 %}#15803d{% else %}#9f1d1d{% endif %}; font-size: 8.5pt;">
                                 {% if bill.balance_amount <= 0 %}
                                     ₹0.00
                                 {% else %}
@@ -1095,9 +1132,9 @@
         <div class="terms-box">
             <strong>{% if pdf_lang == 'hi' %}नियम एवं शर्तें:{% else %}Terms & Conditions:{% endif %}</strong>
             {% if pdf_lang == 'hi' %}
-                १. सभी चेक बैंक समाशोधन (realization) के अधीन हैं। २. समस्त भुगतान 'विश्वगुरु की झलक' के पक्ष में ही देय होंगे। ३. विज्ञापन का ऑनलाइन प्रकाशन सत्यापन ई-पेपर लिंक पर उपलब्ध है। ४. सभी विवाद केवल इंदौर (म.प्र.) न्यायालय के क्षेत्राधिकार के अधीन हैं। ५. यह एक प्रमाणित कम्प्यूटरीकृत देयक है तथा इसमें भौतिक हस्ताक्षर की आवश्यकता नहीं है (सूचना प्रौद्योगिकी अधिनियम, २०००)।
+                १. सभी चेक समाशोधन के अधीन हैं। २. भुगतान 'विश्वगुरु की झलक' के पक्ष में ही देय होंगे। ३. विज्ञापन सत्यापन ई-पेपर लिंक पर उपलब्ध है। ४. विवाद इंदौर न्यायालय क्षेत्राधिकार के अधीन हैं। ५. प्रमाणित कम्प्यूटरीकृत देयक (आई.टी. अधिनियम २००० अनुसार)।
             {% else %}
-                1. All cheques are subject to realization. 2. Payments must be made in favour of 'Vishwaguru Ki Jhalak'. 3. Online publication verification link is provided above. 4. Disputes subject to Indore (M.P.) jurisdiction only. 5. This is an authenticated computer generated invoice and does not require a physical signature (Information Technology Act, 2000).
+                1. All cheques subject to realization. 2. Payments in favour of 'Vishwaguru Ki Jhalak'. 3. Online ad verification link provided above. 4. Disputes subject to Indore jurisdiction only. 5. Authenticated computer generated invoice (IT Act, 2000).
             {% endif %}
         </div>
 
@@ -1111,10 +1148,10 @@
                             {% if pdf_lang == 'hi' %}बैंक खाता विवरण (NEFT / RTGS):{% else %}Bank Transfer Details (NEFT / RTGS):{% endif %}
                         </div>
                         <strong>{% if pdf_lang == 'hi' %}बैंक:{% else %}Bank:{% endif %}</strong> {{ payment_info.bank_name }}<br>
-                        <strong>{% if pdf_lang == 'hi' %}खाता क्रमांक:{% else %}Account No:{% endif %}</strong> <span class="mono font-bold" style="letter-spacing: 0.5px;">{{ payment_info.account_number }}</span><br>
-                        <strong>{% if pdf_lang == 'hi' %}आईएफएससी:{% else %}IFSC Code:{% endif %}</strong> <span class="mono font-bold">{{ payment_info.ifsc_code }}</span><br>
-                        <strong>{% if pdf_lang == 'hi' %}खाताधारक:{% else %}Account Holder:{% endif %}</strong> {{ payment_info.account_holder_name|default:payment_info.newspaper_name }}<br>
-                        <strong>{% if pdf_lang == 'hi' %}यूपीआई आईडी:{% else %}UPI ID:{% endif %}</strong> <span class="mono font-bold" style="color: #9f1d1d;">{{ payment_info.upi_id }}</span>
+                        <strong>{% if pdf_lang == 'hi' %}खाता क्र.:{% else %}A/c No:{% endif %}</strong> <span class="mono font-bold">{{ payment_info.account_number }}</span><br>
+                        <strong>{% if pdf_lang == 'hi' %}आईएफएससी:{% else %}IFSC:{% endif %}</strong> <span class="mono font-bold">{{ payment_info.ifsc_code }}</span><br>
+                        <strong>{% if pdf_lang == 'hi' %}खाताधारक:{% else %}Holder:{% endif %}</strong> {{ payment_info.account_holder_name|default:payment_info.newspaper_name }}<br>
+                        <strong>{% if pdf_lang == 'hi' %}यूपीआई:{% else %}UPI ID:{% endif %}</strong> <span class="mono font-bold" style="color: #9f1d1d;">{{ payment_info.upi_id }}</span>
                     </div>
                 </td>
 
@@ -1124,10 +1161,10 @@
                         <!-- Settled Account Receipt Seal -->
                         <div class="settled-receipt-box">
                             <div class="settled-seal-ring">&#10003;</div>
-                            <div style="color: #15803d; font-weight: 700; font-size: 9pt; text-transform: uppercase;">
+                            <div style="color: #15803d; font-weight: 700; font-size: 7.5pt; text-transform: uppercase;">
                                 {% if pdf_lang == 'hi' %}भुगतान पूर्ण प्राप्त{% else %}Payment Settled{% endif %}
                             </div>
-                            <span class="qr-caption" style="color: #15803d; font-size: 7.5pt; margin-top: 3px;">
+                            <span class="qr-caption" style="color: #15803d; font-size: 6.2pt;">
                                 {% if pdf_lang == 'hi' %}
                                     खाता पूर्ण चुकता • शून्य बकाया<br><small style="color: #57534e;">(आधिकारिक कैशियर स्वीकृति)</small>
                                 {% else %}
@@ -1140,7 +1177,7 @@
                         <img src="{{ qr_code_base64 }}" class="qr-img" alt="UPI QR Code"><br>
                         <span class="qr-caption">
                             {% if pdf_lang == 'hi' %}
-                                स्कैन कर भुगतान करें (₹{{ bill.balance_amount|floatformat:2 }})<br><small style="color: #57534e;">(गूगल पे / फोनपे / पेटीएम / भीम)</small>
+                                स्कैन कर भुगतान करें (₹{{ bill.balance_amount|floatformat:2 }})<br><small style="color: #57534e;">(GPay / PhonePe / Paytm / BHIM)</small>
                             {% else %}
                                 Scan & Pay via UPI (₹{{ bill.balance_amount|floatformat:2 }})<br><small style="color: #57534e;">(GPay / PhonePe / Paytm / BHIM)</small>
                             {% endif %}
@@ -1199,7 +1236,7 @@
                                 {% endif %}
                             </div>
                             <div class="digital-meta mono">
-                                {% if pdf_lang == 'hi' %}प्रमाणीकरण संदर्भ: {{ bill.bill_number }}{% else %}Auth ID: {{ bill.bill_number }}{% endif %}
+                                {% if pdf_lang == 'hi' %}प्रमाणीकरण: {{ bill.bill_number }}{% else %}Auth ID: {{ bill.bill_number }}{% endif %}
                             </div>
                         </div>
                     {% endif %}

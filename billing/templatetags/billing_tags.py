@@ -189,3 +189,23 @@ def office_address_display(address, lang='en'):
     
     return addr_str
 
+
+
+@register.filter(name='ledger_blank_rows')
+def ledger_blank_rows(bill, total_target=11):
+    """
+    Return range of blank rows to fill the particulars ledger grid,
+    creating an authentic accounting ledger and filling the A4 page
+    harmoniously without leaving awkward empty space at the bottom.
+    """
+    try:
+        count = 1
+        if getattr(bill, 'discount_amount', 0) > 0:
+            count += 1
+        if getattr(bill, 'base_amount', 0) > 0 and getattr(bill, 'previous_due', 0) > 0:
+            count += 1
+    except Exception:
+        count = 1
+
+    needed = max(0, int(total_target) - count)
+    return range(needed)
