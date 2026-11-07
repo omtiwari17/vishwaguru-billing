@@ -74,17 +74,21 @@ NEWSPAPER_GLOSSARY = {
     # Business Categories & Store Types
     'jewellers': 'ज्वेलर्स', 'jewelers': 'ज्वेलर्स', 'jewellery': 'ज्वेलरी', 'jewelry': 'ज्वेलरी',
     'automobiles': 'ऑटोमोबाइल्स', 'automobile': 'ऑटोमोबाइल', 'auto': 'ऑटो', 'motors': 'मोटर्स', 'motor': 'मोटर',
+    'auto parts': 'ऑटो पार्ट्स', 'spare parts': 'स्पेयर पार्ट्स', 'tyres': 'टायर्स', 'tyre': 'टायर',
     'traders': 'ट्रेडर्स', 'trading': 'ट्रेडिंग', 'trader': 'ट्रेडर',
     'enterprises': 'एंटरप्राइजेज', 'enterprise': 'एंटरप्राइज',
     'textiles': 'टेक्सटाइल्स', 'textile': 'टेक्सटाइल', 'fabrics': 'फैब्रिक्स', 'fabric': 'फैब्रिक',
     'cloth': 'वस्त्र', 'clothes': 'वस्त्र', 'saree': 'साड़ी', 'sarees': 'साड़ियां', 'suiting': 'सूटिंग', 'shirting': 'शर्टिंग',
+    'vastra bhandar': 'वस्त्र भंडार', 'bhandar': 'भंडार', 'showroom': 'शोरूम',
+    'garments': 'गारमेंट्स', 'garment': 'गारमेंट', 'dresses': 'ड्रेसेस', 'footwear': 'फुटवेयर', 'shoes': 'शूज',
     'hardware': 'हार्डवेयर', 'sanitary': 'सैनिटरी', 'paints': 'पेंट्स', 'paint': 'पेंट',
-    'plywood': 'प्लाईवुड', 'timber': 'टिम्बर', 'glass': 'ग्लास', 'steel': 'स्टील',
+    'hardware & sanitary': 'हार्डवेयर एवं सेनेटरी', 'plywood': 'प्लाईवुड', 'timber': 'टिम्बर', 'glass': 'ग्लास', 'steel': 'स्टील',
     'iron': 'लोहा', 'cement': 'सीमेंट', 'pipe': 'पाइप', 'pipes': 'पाइप्स',
     'electricals': 'इलेक्ट्रिकल्स', 'electrical': 'इलेक्ट्रिकल', 'electronics': 'इलेक्ट्रॉनिक्स', 'electronic': 'इलेक्ट्रॉनिक',
     'appliances': 'उपकरण', 'digital': 'डिजिटल', 'mobile': 'मोबाइल', 'mobiles': 'मोबाइल्स',
     'computers': 'कंप्यूटर्स', 'computer': 'कंप्यूटर', 'infotech': 'इन्फोटेक', 'solutions': 'सॉल्यूशंस',
     'technologies': 'टेक्नोलॉजीज', 'technology': 'टेक्नोलॉजी',
+    'opticals': 'ऑप्टिकल्स', 'optical': 'ऑप्टिकल', 'stationery': 'स्टेशनरी', 'book store': 'बुक स्टोर', 'pustak bhandar': 'पुस्तक भंडार',
     'properties': 'प्रॉपर्टीज', 'property': 'प्रॉपर्टी', 'real estate': 'रियल एस्टेट',
     'developers': 'डेवलपर्स', 'developer': 'डेवलपर', 'builders': 'बिल्डर्स', 'builder': 'बिल्डर',
     'constructions': 'कंस्ट्रक्शंस', 'construction': 'कंस्ट्रक्शन', 'colonizers': 'कॉलोनाइजर्स',
@@ -95,7 +99,8 @@ NEWSPAPER_GLOSSARY = {
     'institute': 'इंस्टीट्यूट', 'academy': 'अकादमी', 'classes': 'क्लासेस', 'coaching': 'कोचिंग',
     'tutorials': 'ट्यूटोरियल्स', 'university': 'यूनिवर्सिटी', 'education': 'एजुकेशन',
     'hotel': 'होटल', 'resort': 'रिसॉर्ट', 'restaurant': 'रेस्टोरेंट', 'cafe': 'कैफे', 'dhaba': 'ढाबा',
-    'sweets': 'मिष्ठान्न', 'sweet': 'मिष्ठान्न', 'namkeen': 'नमकीन', 'bakers': 'बेकर्स', 'bakery': 'बेकरी',
+    'sweets': 'मिष्ठान्न', 'sweet': 'मिष्ठान्न', 'sweets & namkeen': 'मिष्ठान्न एवं नमकीन', 'mishtan bhandar': 'मिष्ठान्न भंडार',
+    'namkeen': 'नमकीन', 'bakers': 'बेकर्स', 'bakery': 'बेकरी',
     'dairy': 'डेयरी', 'milk': 'दूध', 'parlour': 'पार्लर', 'parlor': 'पार्लर', 'salon': 'सैलून',
     'fitness': 'फिटनेस', 'gym': 'जिम', 'yoga': 'योग', 'travels': 'ट्रैवल्स', 'tours': 'टूर्स',
     'transport': 'ट्रांसपोर्ट', 'logistics': 'लॉजिस्टिक्स', 'cargo': 'कार्गो', 'courier': 'कूरियर',
@@ -107,11 +112,12 @@ NEWSPAPER_GLOSSARY = {
     'store': 'स्टोर', 'stores': 'स्टोर्स', 'shop': 'दुकान', 'mart': 'मार्ट',
     'bazaar': 'बाजार', 'bazar': 'बाजार', 'collection': 'कलेक्शन', 'centre': 'सेंटर', 'center': 'सेंटर',
     'point': 'पॉइंट', 'hub': 'हब', 'world': 'वर्ल्ड', 'zone': 'जोन', 'plaza': 'प्लाजा',
-    'mall': 'मॉल', 'complex': 'कॉम्प्लेक्स', 'kirana': 'किराना', 'general': 'जनरल', 'provisions': 'प्रोविजंस',
+    'mall': 'मॉल', 'complex': 'कॉम्प्लेक्स', 'kirana': 'किराना', 'kirana store': 'किराना स्टोर', 'general': 'जनरल', 'provisions': 'प्रोविजंस',
     'pvt': 'प्राइवेट', 'pvt.': 'प्राइवेट', 'private': 'प्राइवेट', 'ltd': 'लिमिटेड', 'ltd.': 'लिमिटेड', 'limited': 'लिमिटेड',
 
     # Events & Ad Headlines
-    'sale': 'सेल', 'mega sale': 'महासेल', 'grand sale': 'भव्य सेल', 'dhamaka sale': 'धमाका सेल',
+    'sale': 'सेल', 'mega sale': 'महासेल', 'grand sale': 'भव्य सेल', 'dhamaka': 'धमाका', 'dhamaka sale': 'धमाका सेल',
+    'mega sale dhamaka': 'महासेल धमाका',
     'clearance sale': 'क्लीयरेंस सेल', 'grand opening': 'भव्य शुभारंभ', 'opening': 'शुभारंभ',
     'inauguration': 'उद्घाटन व शुभारंभ', 'launch': 'लॉन्च', 'launching': 'नवीन लॉन्चिंग',
     'welcome': 'हार्दिक स्वागत', 'offer': 'विशेष ऑफर', 'festive offer': 'त्योहारी ऑफर',
@@ -160,12 +166,35 @@ NEWSPAPER_GLOSSARY = {
 NEWSPAPER_GLOSSARY_REV = {
     v: k.title() for k, v in NEWSPAPER_GLOSSARY.items()
 }
-# Override specific reverse mappings for natural English casing
+# Override specific reverse mappings for natural English casing & advertising terminology
 NEWSPAPER_GLOSSARY_REV.update({
+    'किराना स्टोर': 'Kirana Store',
+    'किराना': 'Kirana',
     'मिष्ठान्न': 'Sweets',
     'स्वीट्स': 'Sweets',
+    'मिष्ठान्न भंडार': 'Mishtan Bhandar',
+    'मिष्ठान्न एवं नमकीन': 'Sweets & Namkeen',
+    'वस्त्र भंडार': 'Vastra Bhandar',
+    'वस्त्र': 'Cloth',
+    'भंडार': 'Bhandar',
+    'शोरूम': 'Showroom',
+    'ऑटो पार्ट्स': 'Auto Parts',
+    'स्पेयर पार्ट्स': 'Spare Parts',
+    'हार्डवेयर एवं सेनेटरी': 'Hardware & Sanitary',
+    'हार्डवेयर': 'Hardware',
+    'सैनिटरी': 'Sanitary',
+    'इलेक्ट्रॉनिक्स': 'Electronics',
+    'मोबाइल': 'Mobile',
+    'ज्वेलर्स': 'Jewellers',
+    'पुस्तक भंडार': 'Pustak Bhandar',
+    'बुक स्टोर': 'Book Store',
+    'स्टेशनरी': 'Stationery',
+    'ऑप्टिकल्स': 'Opticals',
     'अग्रवाल': 'Agrawal',
     'महासेल': 'Mega Sale',
+    'धमाका': 'Dhamaka',
+    'महासेल धमाका': 'Mega Sale Dhamaka',
+    'धमाका सेल': 'Dhamaka Sale',
     'भव्य शुभारंभ': 'Grand Opening',
     'दीपावली': 'Diwali',
     'सार्वजनिक सूचना': 'Public Notice',
@@ -175,11 +204,22 @@ NEWSPAPER_GLOSSARY_REV.update({
     'विजयनगर': 'Vijay Nagar',
     'सुदामा नगर': 'Sudama Nagar',
     'प्रेस परिसर': 'Press Complex',
+    'प्रेस कॉम्प्लेक्स': 'Press Complex',
     'एम.जी. रोड': 'M.G. Road',
     'एबी रोड': 'AB Road',
     'जेल रोड': 'Jail Road',
     'सराफा बाजार': 'Sarafa Bazar',
+    'सराफा': 'Sarafa',
     'भंवरकुआं': 'Bhawarkua',
+    'पलासिया': 'Palasia',
+    'सियागंज': 'Siaganj',
+    'मल्हारगंज': 'Malharganj',
+    'खजराना': 'Khajrana',
+    'अन्नपूर्णा': 'Annapurna',
+    'मे.': 'M/s',
+    'श्री': 'Shri',
+    'श्रीमती': 'Smt.',
+    'डॉ.': 'Dr.',
 })
 
 # Pre-sorted lists for longest multi-word matches first
@@ -313,6 +353,10 @@ def phonetic_transliterate_hi_to_en(word: str) -> str:
                     res.append(cons)
                     i += 2
                     continue
+                elif next_ch in ('ं', 'ँ'):  # Anusvara / Chandrabindu with implicit vowel 'a'
+                    res.append(cons + 'an')
+                    i += 2
+                    continue
                 elif next_ch in _HI_MATRAS_MAP:
                     res.append(cons + _HI_MATRAS_MAP[next_ch])
                     i += 2
@@ -385,17 +429,12 @@ def translate_offline(raw_text: str, sl: str, tl: str) -> str:
     elif sl == 'hi' and tl == 'en':
         res = raw_text
 
-        # 1. Multi-word phrases
-        for phrase in _MULTI_WORD_HI:
+        # 1. Multi-word phrases (longest first)
+        for phrase in sorted(_MULTI_WORD_HI, key=len, reverse=True):
             if phrase in res:
                 res = res.replace(phrase, NEWSPAPER_GLOSSARY_REV[phrase])
 
-        # 2. Single-word Hindi matches
-        for hi_w, en_w in NEWSPAPER_GLOSSARY_REV.items():
-            if ' ' not in hi_w and hi_w in res:
-                res = res.replace(hi_w, en_w)
-
-        # 3. If any Devanagari words remain, transliterate phonetically
+        # 2. Tokenize remaining Devanagari words and replace / transliterate
         def _replace_hi_token(m):
             w = m.group(0)
             if w in NEWSPAPER_GLOSSARY_REV:
@@ -406,6 +445,29 @@ def translate_offline(raw_text: str, sl: str, tl: str) -> str:
         return res
 
     return raw_text
+
+
+def _normalize_ad_translation(text: str, sl: str, tl: str) -> str:
+    """Post-processes translations to guarantee authentic Indian newspaper advertising terminology."""
+    if not text:
+        return ''
+    if tl == 'en':
+        # Prevent literal English mistranslations from generic MT models
+        text = re.sub(r'(?i)\bgrocery store\b', 'Kirana Store', text)
+        text = re.sub(r'(?i)\bgrocery\b', 'Kirana', text)
+        text = re.sub(r'(?i)\bmegacell\b', 'Mega Sale', text)
+        text = re.sub(r'(?i)\bexplosion\b', 'Dhamaka', text)
+        text = re.sub(r'(?i)\bclothing store\b', 'Cloth Store', text)
+        text = re.sub(r'(?i)\bbhanwarkuan\b', 'Bhawarkua', text)
+        text = re.sub(r'(?i)\bm/s\b', 'M/s', text)
+    elif tl == 'hi':
+        # Prevent weird literal Hindi translations
+        text = re.sub(r'किराना की दुकान', 'किराना स्टोर', text)
+        text = re.sub(r'किराने का सामान', 'किराना', text)
+        text = re.sub(r'महाकोशिका', 'महासेल', text)
+        text = re.sub(r'विस्फोट', 'धमाका', text)
+        text = re.sub(r'(डॉ|पं|प्रो|एड|मे|श्री|श्रीमती)\.\.', r'\1.', text)
+    return text.strip()
 
 
 def translate_text(text: str, source_lang: str = 'auto', target_lang: str = None) -> str:
@@ -446,6 +508,25 @@ def translate_text(text: str, source_lang: str = 'auto', target_lang: str = None
         _TRANSLATION_CACHE[cache_key] = res
         return res
 
+    # 1. High-accuracy offline translation & transliteration
+    offline_candidate = translate_offline(raw_text, sl, tl)
+
+    # Check if all tokens in the input are present in our curated lexicon
+    all_known = False
+    if sl == 'hi':
+        tokens = re.findall(r'[\u0900-\u097F]+', raw_text)
+        if tokens and all(t in NEWSPAPER_GLOSSARY_REV for t in tokens):
+            all_known = True
+    elif sl == 'en':
+        tokens = re.findall(r'[a-zA-Z]+', raw_text.lower())
+        if tokens and all(t in NEWSPAPER_GLOSSARY for t in tokens):
+            all_known = True
+
+    if all_known:
+        result = _normalize_ad_translation(offline_candidate, sl, tl)
+        _TRANSLATION_CACHE[cache_key] = result
+        return result
+
     # Opportunistic network call (Google Translate single endpoint with quick 1.5s timeout)
     try:
         query = urllib.parse.quote(raw_text)
@@ -465,13 +546,14 @@ def translate_text(text: str, source_lang: str = 'auto', target_lang: str = None
                 if tl == 'en' and not raw_text.isupper() and not raw_text.islower():
                     translated_result = translated_result.title()
 
-                _TRANSLATION_CACHE[cache_key] = translated_result
-                return translated_result
+                normalized = _normalize_ad_translation(translated_result, sl, tl)
+                _TRANSLATION_CACHE[cache_key] = normalized
+                return normalized
     except Exception as exc:
         logger.debug("Network translation unavailable (%s). Using lightweight offline engine.", exc)
 
     # High-accuracy offline translation & transliteration
-    result = translate_offline(raw_text, sl, tl)
+    result = _normalize_ad_translation(offline_candidate, sl, tl)
     _TRANSLATION_CACHE[cache_key] = result
     return result
 

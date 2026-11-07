@@ -534,6 +534,23 @@
         - **Result: 12/12 tests PASS (strictly 1 single sheet of paper)**.
         - Visual inspection via live_bill3_print_preview.png confirms 100% visibility of all sections: Masthead, Meta cards, Ruled ledger table, Totals & Amount in words, Payment Settled badge, Terms & Conditions, Bank Details, and Authorized Signatory / Digital Verification.
       - **Automated Unit Tests**: All 29 tests passing (python manage.py test billing -> 29/29 OK).
+* **Bilingual Translation Accuracy & Sticky Receipt Localization Overhaul (Resolved)**:
+  - **Sticky Receipt Real-time Reactive Localization (`calculator.js` & `bill_form.html`)**:
+    - Defined `RECEIPT_I18N` supporting full localized strings for English (`en`), Hindi (`hi`), and Bilingual (`bi`).
+    - Added dedicated ID hooks (`#receipt_card_title`, `#receipt_masthead_title`, `#receipt_masthead_sub`, `#lbl_receipt_client`, `#lbl_receipt_placement`, `#lbl_receipt_date`, `#lbl_receipt_base`, `#lbl_receipt_discount`, `#lbl_receipt_previous_due`, `#lbl_receipt_total`, `#lbl_receipt_status`, `#lbl_receipt_paid`, `#lbl_receipt_balance`, `#submitBillBtnText`, `#receipt_footer_note_text`).
+    - Dynamically updates header titles, all row labels, status badges (`Paid in Full` $\leftrightarrow$ `पूर्ण भुगतान`), and submit buttons when `#receipt_bill_language` changes.
+    - Synchronized client name display: automatically prioritizes the script matching the selected bill language (Hindi name if `hi`, English if `en`, composite if `bi`).
+    - Synchronized placement preset names: translates placement presets (`Front Page Full` $\rightarrow$ `मुख्य पृष्ठ — पूरा पेज`) and formats custom dimensions (`12x8 cm` $\leftrightarrow$ `12x8 सेमी`) dynamically.
+  - **Form Placement Chips Mismatch Fix (`bill_form.html`)**:
+    - Fixed `data-value` on preset buttons to match exact `PlacementType` keys (`Front Page Full`, `Front Page Half`, `Front Page Quarter`, `Inside Page Half`, `Ear Panel`, `Back Page Full`, `Custom Size`).
+  - **Translation Engine Accuracy & Substring Tokenization Fix (`billing/translator.py`)**:
+    - Fixed Devanagari word tokenization bug in `translate_offline`: replaced naive substring `.replace()` with whole-word regex tokenization (`[\u0900-\u097F]+`), completely eliminating prefix corruption (e.g. `राज` inside `राजेश` causing `RajEsh`).
+    - Fixed anusvara / chandrabindu phonetic transliteration: added implicit vowel `'a'` before anusvara (`cons + 'an'`), resolving `भंडार` $\rightarrow$ `Bhandar` (previously `Bhndar`), `पंत` $\rightarrow$ `Pant`, `संजय` $\rightarrow$ `Sanjay`.
+    - Added comprehensive newspaper ad domain vocabulary (`Kirana Store`, `Mega Sale Dhamaka`, `Mishtan Bhandar`, `Vastra Bhandar`, `Auto Parts`, `Hardware & Sanitary`, etc.).
+    - Added domain-specific post-processing normalization (`_normalize_ad_translation`) to prevent generic machine translation artifacts (e.g. "Grocery Store" $\rightarrow$ "Kirana Store", "Megacell Explosion" $\rightarrow$ "Mega Sale Dhamaka").
+  - **Automated Verification**:
+    - 33/33 unit tests passing (`python manage.py test billing`).
+    - Verified live in Chrome headless via CDP across initial English state, live translation to Hindi, chip selection, and English switch-back (`receipt_live_en.png`, `receipt_live_hi.png`, `receipt_live_en_active.png`).
 
 ---
 

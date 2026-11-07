@@ -16,6 +16,9 @@ document.addEventListener('DOMContentLoaded', function () {
     const clientPhoneInput = document.getElementById('id_client_phone');
     const clientAddressInput = document.getElementById('id_client_address');
     const clientGstinInput = document.getElementById('id_client_gstin');
+    const clientNameTransInput = document.getElementById('id_client_name_trans');
+    const clientAddressTransInput = document.getElementById('id_client_address_trans');
+    const adTitleTransInput = document.getElementById('id_ad_title_trans');
     const clientSuggestionsBox = document.getElementById('client_suggestions_box');
     const clientPendingAlert = document.getElementById('client_pending_alert');
     const clientPendingAmountBadge = document.getElementById('client_pending_amount_badge');
@@ -93,35 +96,282 @@ document.addEventListener('DOMContentLoaded', function () {
         updateStatusBadge(status, balance);
     }
 
-    // 2. Status Badge Sync
+    // Bilingual Localization Dictionary for Sticky Receipt
+    const RECEIPT_I18N = {
+        en: {
+            title: 'Invoice Summary',
+            mastheadTitle: 'Vishwaguru Ki Jhalak',
+            mastheadSub: 'Vishwaguru Ki Jhalak Billing',
+            lblClient: 'Client:',
+            clientFallback: 'Client Name',
+            lblPlacement: 'Placement:',
+            placementFallback: 'Select Placement',
+            lblDate: 'Edition Date:',
+            lblBase: 'Base Rate:',
+            lblDiscount: 'Discount:',
+            lblPreviousDue: 'Previous Due:',
+            lblTotal: 'Net Total:',
+            lblStatus: 'Status:',
+            lblPaid: 'Paid Now:',
+            lblBalance: 'Balance Due:',
+            btnSubmit: 'Generate Bill & Print',
+            footerNote: 'Instant WeasyPrint PDF & WhatsApp link',
+            statusPaid: 'Paid in Full',
+            statusPartial: 'Partial',
+            statusUnpaid: 'Unpaid',
+            placements: {
+                'Front Page Full': 'Front Page — Full Page',
+                'Front Page Half': 'Front Page — Half Page',
+                'Front Page Quarter': 'Front Page — Quarter (1/4)',
+                'Inside Page Full': 'Inside Page — Full Page',
+                'Inside Page Half': 'Inside Page — Half Page',
+                'Inside Page Quarter': 'Inside Page — Quarter (1/4)',
+                'Back Page Full': 'Back Page — Full Page',
+                'Back Page Half': 'Back Page — Half Page',
+                'Back Page Quarter': 'Back Page — Quarter (1/4)',
+                'Ear Panel': 'Ear Panel (Top Header)',
+                'Custom Size': 'Custom Dimensions'
+            }
+        },
+        hi: {
+            title: 'बिल सारांश',
+            mastheadTitle: 'विश्वगुरु की झलक',
+            mastheadSub: 'विश्वगुरु की झलक बिलिंग',
+            lblClient: 'विज्ञापनदाता:',
+            clientFallback: 'ग्राहक का नाम',
+            lblPlacement: 'स्थान व आकार:',
+            placementFallback: 'स्थान चुनें',
+            lblDate: 'प्रकाशन दिनांक:',
+            lblBase: 'मूल दर:',
+            lblDiscount: 'छूट:',
+            lblPreviousDue: 'पुराना बकाया:',
+            lblTotal: 'शुद्ध देय राशि:',
+            lblStatus: 'स्थिति:',
+            lblPaid: 'प्राप्त राशि:',
+            lblBalance: 'शेष देय राशि:',
+            btnSubmit: 'बिल बनाएं व प्रिंट करें',
+            footerNote: 'तुरंत वीज़ीप्रिंट पीडीएफ व व्हाट्सऐप लिंक',
+            statusPaid: 'पूर्ण भुगतान',
+            statusPartial: 'आंशिक भुगतान',
+            statusUnpaid: 'अदत्त',
+            placements: {
+                'Front Page Full': 'मुख्य पृष्ठ — पूरा पेज',
+                'Front Page Half': 'मुख्य पृष्ठ — आधा पेज',
+                'Front Page Quarter': 'मुख्य पृष्ठ — चौथाई',
+                'Inside Page Full': 'अंदर का पृष्ठ — पूरा पेज',
+                'Inside Page Half': 'अंदर का पृष्ठ — आधा पेज',
+                'Inside Page Quarter': 'अंदर का पृष्ठ — चौथाई',
+                'Back Page Full': 'अंतिम पृष्ठ — पूरा पेज',
+                'Back Page Half': 'अंतिम पृष्ठ — आधा पेज',
+                'Back Page Quarter': 'अंतिम पृष्ठ — चौथाई',
+                'Ear Panel': 'शीर्ष विज्ञापन (ईयर पैनल)',
+                'Custom Size': 'विशिष्ट आकार'
+            }
+        },
+        bi: {
+            title: 'Invoice Summary / बिल सारांश',
+            mastheadTitle: 'विश्वगुरु की झलक / Vishwaguru',
+            mastheadSub: 'विश्वगुरु की झलक बिलिंग (Billing)',
+            lblClient: 'Client / विज्ञापनदाता:',
+            clientFallback: 'ग्राहक का नाम (Client)',
+            lblPlacement: 'Placement / स्थान:',
+            placementFallback: 'स्थान / Placement',
+            lblDate: 'Date / दिनांक:',
+            lblBase: 'Base / मूल दर:',
+            lblDiscount: 'Discount / छूट:',
+            lblPreviousDue: 'Old Due / पुराना बकाया:',
+            lblTotal: 'Net Total / कुल देय:',
+            lblStatus: 'Status / स्थिति:',
+            lblPaid: 'Paid / प्राप्त:',
+            lblBalance: 'Due / शेष बकाया:',
+            btnSubmit: 'Generate Bill & Print / बिल बनाएं',
+            footerNote: 'Instant WeasyPrint PDF & WhatsApp link',
+            statusPaid: 'Paid in Full (पूर्ण भुगतान)',
+            statusPartial: 'Partial (आंशिक)',
+            statusUnpaid: 'Unpaid (अदत्त)',
+            placements: {
+                'Front Page Full': 'मुख्य पृष्ठ पूरा पेज (Front Full)',
+                'Front Page Half': 'मुख्य पृष्ठ आधा पेज (Front Half)',
+                'Front Page Quarter': 'मुख्य पृष्ठ चौथाई (Front Quarter)',
+                'Inside Page Full': 'अंदर का पृष्ठ पूरा (Inside Full)',
+                'Inside Page Half': 'अंदर का पृष्ठ आधा (Inside Half)',
+                'Inside Page Quarter': 'अंदर का पृष्ठ चौथाई (Inside Quarter)',
+                'Back Page Full': 'अंतिम पृष्ठ पूरा (Back Full)',
+                'Back Page Half': 'अंतिम पृष्ठ आधा (Back Half)',
+                'Back Page Quarter': 'अंतिम पृष्ठ चौथाई (Back Quarter)',
+                'Ear Panel': 'शीर्ष विज्ञापन (Ear Panel)',
+                'Custom Size': 'विशिष्ट आकार (Custom Size)'
+            }
+        }
+    };
+
+    // 2. Localize Sticky Receipt on Language Change
+    function updateReceiptLanguage(targetLang) {
+        const lang = targetLang || (receiptLangSelect ? receiptLangSelect.value : (billLangSelect ? billLangSelect.value : 'en'));
+        const i18n = RECEIPT_I18N[lang] || RECEIPT_I18N.en;
+
+        const cardTitle = document.getElementById('receipt_card_title');
+        if (cardTitle) cardTitle.textContent = i18n.title;
+
+        const mastTitle = document.getElementById('receipt_masthead_title');
+        if (mastTitle) mastTitle.textContent = i18n.mastheadTitle;
+
+        const mastSub = document.getElementById('receipt_masthead_sub');
+        if (mastSub) mastSub.textContent = i18n.mastheadSub;
+
+        const lblClient = document.getElementById('lbl_receipt_client');
+        if (lblClient) lblClient.textContent = i18n.lblClient;
+
+        const lblPlacement = document.getElementById('lbl_receipt_placement');
+        if (lblPlacement) lblPlacement.textContent = i18n.lblPlacement;
+
+        const lblDate = document.getElementById('lbl_receipt_date');
+        if (lblDate) lblDate.textContent = i18n.lblDate;
+
+        const lblBase = document.getElementById('lbl_receipt_base');
+        if (lblBase) lblBase.textContent = i18n.lblBase;
+
+        const lblDiscount = document.getElementById('lbl_receipt_discount');
+        if (lblDiscount) lblDiscount.textContent = i18n.lblDiscount;
+
+        const lblPreviousDue = document.getElementById('lbl_receipt_previous_due');
+        if (lblPreviousDue) lblPreviousDue.textContent = i18n.lblPreviousDue;
+
+        const lblTotal = document.getElementById('lbl_receipt_total');
+        if (lblTotal) lblTotal.textContent = i18n.lblTotal;
+
+        const lblStatus = document.getElementById('lbl_receipt_status');
+        if (lblStatus) lblStatus.textContent = i18n.lblStatus;
+
+        const lblPaid = document.getElementById('lbl_receipt_paid');
+        if (lblPaid) lblPaid.textContent = i18n.lblPaid;
+
+        const lblBalance = document.getElementById('lbl_receipt_balance');
+        if (lblBalance) lblBalance.textContent = i18n.lblBalance;
+
+        const btnSubmitText = document.getElementById('submitBillBtnText');
+        if (btnSubmitText) btnSubmitText.textContent = i18n.btnSubmit;
+
+        const footerNoteText = document.getElementById('receipt_footer_note_text');
+        if (footerNoteText) footerNoteText.textContent = i18n.footerNote;
+
+        // Re-sync client name, placement & status badge in this language
+        syncClientAndAdDetails();
+        const currentStatus = paymentStatusSelect ? paymentStatusSelect.value : 'Paid';
+        const paid = parseFloat(amountPaidInput?.value) || 0;
+        const base = parseFloat(baseInput?.value) || 0;
+        const discount = parseFloat(discountInput?.value) || 0;
+        const previousDue = parseFloat(previousDueInput?.value) || 0;
+        const netTotal = Math.max(0, (base - discount) + previousDue);
+        const balance = Math.max(0, netTotal - paid);
+        updateStatusBadge(currentStatus, balance);
+    }
+
+    // 3. Status Badge Sync
     function updateStatusBadge(status, balance) {
         if (!receiptStatusBadge) return;
+        const currentBillLang = receiptLangSelect ? receiptLangSelect.value : (billLangSelect?.value || 'en');
+        const i18n = RECEIPT_I18N[currentBillLang] || RECEIPT_I18N.en;
+
         receiptStatusBadge.className = 'badge';
         if (status === 'Paid') {
             receiptStatusBadge.classList.add('badge-paid');
-            receiptStatusBadge.innerHTML = '<i class="bi bi-check-circle-fill"></i> ' + (window.siteLang === 'hi' ? 'पूर्ण भुगतान' : 'Paid in Full');
+            receiptStatusBadge.innerHTML = '<i class="bi bi-check-circle-fill"></i> ' + i18n.statusPaid;
             if (receiptPaidRow) receiptPaidRow.style.display = 'none';
         } else if (status === 'Partial') {
             receiptStatusBadge.classList.add('badge-partial');
-            receiptStatusBadge.innerHTML = '<i class="bi bi-clock-history"></i> ' + (window.siteLang === 'hi' ? 'आंशिक' : 'Partial');
+            receiptStatusBadge.innerHTML = '<i class="bi bi-clock-history"></i> ' + i18n.statusPartial;
             if (receiptPaidRow) receiptPaidRow.style.display = 'flex';
         } else {
             receiptStatusBadge.classList.add('badge-unpaid');
-            receiptStatusBadge.innerHTML = '<i class="bi bi-x-circle-fill"></i> ' + (window.siteLang === 'hi' ? 'अदत्त' : 'Unpaid');
+            receiptStatusBadge.innerHTML = '<i class="bi bi-x-circle-fill"></i> ' + i18n.statusUnpaid;
             if (receiptPaidRow) receiptPaidRow.style.display = 'none';
         }
     }
 
-    // 3. Client & Placement live receipt text
+    // 4. Client & Placement live receipt text
     function syncClientAndAdDetails() {
-        if (receiptClient && clientNameInput) {
-            const name = clientNameInput.value.trim();
-            receiptClient.textContent = name || (window.siteLang === 'hi' ? 'ग्राहक का नाम' : 'Client Name');
+        const currentBillLang = receiptLangSelect ? receiptLangSelect.value : (billLangSelect?.value || 'en');
+        const i18n = RECEIPT_I18N[currentBillLang] || RECEIPT_I18N.en;
+
+        // 1. Client Name
+        if (receiptClient) {
+            const rawPrimary = clientNameInput ? clientNameInput.value.trim() : '';
+            const rawTrans = clientNameTransInput ? clientNameTransInput.value.trim() : '';
+
+            let displayName = '';
+            if (rawPrimary || rawTrans) {
+                // Check if rawPrimary itself has composite "हिन्दी (English)" format
+                const compMatch = rawPrimary.match(/^(.*?)\s*\((.*?)\)$/);
+                let compHi = '', compEn = '';
+                if (compMatch) {
+                    const p1 = compMatch[1].trim();
+                    const p2 = compMatch[2].trim();
+                    if (/[ऀ-ॿ]/.test(p1)) {
+                        compHi = p1; compEn = p2;
+                    } else {
+                        compHi = p2; compEn = p1;
+                    }
+                }
+
+                // If not composite, check individual scripts of primary and trans
+                const pIsHi = /[ऀ-ॿ]/.test(rawPrimary);
+                const tIsHi = /[ऀ-ॿ]/.test(rawTrans);
+
+                let hiName = compHi;
+                let enName = compEn;
+
+                if (!hiName) {
+                    if (pIsHi) hiName = rawPrimary;
+                    else if (tIsHi) hiName = rawTrans;
+                }
+                if (!enName) {
+                    if (!pIsHi && rawPrimary) enName = rawPrimary;
+                    else if (!tIsHi && rawTrans) enName = rawTrans;
+                }
+
+                if (currentBillLang === 'hi') {
+                    displayName = hiName || enName || rawPrimary;
+                } else if (currentBillLang === 'en') {
+                    displayName = enName || hiName || rawPrimary;
+                } else { // 'bi'
+                    if (hiName && enName) {
+                        displayName = `${hiName} (${enName})`;
+                    } else {
+                        displayName = rawPrimary || rawTrans;
+                    }
+                }
+            }
+
+            receiptClient.textContent = displayName || i18n.clientFallback;
         }
+
+        // 2. Placement / Size Preset
         if (receiptPlacement && placementSelect) {
-            const selectedText = placementSelect.options[placementSelect.selectedIndex]?.text || '';
-            receiptPlacement.textContent = selectedText || '---';
+            const selectedVal = placementSelect.value;
+            if (selectedVal === 'Custom Size') {
+                const rawCustom = customSizeInput ? customSizeInput.value.trim() : '';
+                if (rawCustom) {
+                    if (currentBillLang === 'hi') {
+                        receiptPlacement.textContent = rawCustom.replace(/(?:cm|cms|centimeters?)/gi, 'सेमी');
+                    } else {
+                        receiptPlacement.textContent = rawCustom.replace(/(?:सेमी|से\.मी\.)/g, 'cm');
+                    }
+                } else {
+                    receiptPlacement.textContent = i18n.placements['Custom Size'] || 'Custom Size';
+                }
+            } else {
+                const localizedPlacement = i18n.placements[selectedVal];
+                if (localizedPlacement) {
+                    receiptPlacement.textContent = localizedPlacement;
+                } else {
+                    const optionText = placementSelect.options[placementSelect.selectedIndex]?.text || '';
+                    receiptPlacement.textContent = optionText || i18n.placementFallback;
+                }
+            }
         }
+
+        // 3. Edition Date
         if (receiptDate && editionDateInput) {
             const dateVal = editionDateInput.value;
             if (dateVal) {
@@ -134,7 +384,6 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         }
     }
-
     // 4. Custom Size Visibility Toggle
     function toggleCustomSize() {
         if (!placementSelect || !customSizeContainer) return;
@@ -261,17 +510,18 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 
-    // 9. Synchronize Receipt Language dropdown with main form
+    // 9. Synchronize Receipt Language dropdown with main form & update receipt UI reactively
     if (receiptLangSelect && billLangSelect) {
         receiptLangSelect.value = billLangSelect.value;
         receiptLangSelect.addEventListener('change', function () {
             billLangSelect.value = this.value;
+            updateReceiptLanguage(this.value);
         });
         billLangSelect.addEventListener('change', function () {
             receiptLangSelect.value = this.value;
+            updateReceiptLanguage(this.value);
         });
     }
-
     // Helper: Parse composite "हिन्दी (English)" string according to active site language
     function parseBilingualString(str) {
         if (!str) return { primary: '', secondary: '' };
@@ -329,6 +579,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     if (data && data.translated) {
                         transInput.value = data.translated;
                         isManuallyEdited = false;
+                        syncClientAndAdDetails();
                         if (lbl) {
                             if (data.detected_script === 'hi') {
                                 lbl.innerHTML = '<i class="bi bi-translate"></i> ' + (window.siteLang === 'hi' ? 'अंग्रेजी अनुवाद:' : 'English Trans:');
@@ -505,6 +756,8 @@ document.addEventListener('DOMContentLoaded', function () {
     if (previousDueInput) previousDueInput.addEventListener('input', calculateTotal);
     if (amountPaidInput) amountPaidInput.addEventListener('input', calculateTotal);
     if (clientNameInput) clientNameInput.addEventListener('input', syncClientAndAdDetails);
+    if (clientNameTransInput) clientNameTransInput.addEventListener('input', syncClientAndAdDetails);
+    if (customSizeInput) customSizeInput.addEventListener('input', syncClientAndAdDetails);
     if (editionDateInput) editionDateInput.addEventListener('input', syncClientAndAdDetails);
 
     // Duplicate submission prevention & progress feedback
@@ -526,6 +779,6 @@ document.addEventListener('DOMContentLoaded', function () {
     // Initial setup on page load
     toggleCustomSize();
     if (paymentStatusSelect) updateStatusPillUI(paymentStatusSelect.value);
-    syncClientAndAdDetails();
+    updateReceiptLanguage(receiptLangSelect ? receiptLangSelect.value : (billLangSelect ? billLangSelect.value : 'en'));
     calculateTotal();
 });

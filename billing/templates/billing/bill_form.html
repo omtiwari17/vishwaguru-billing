@@ -177,22 +177,22 @@
                             <span>{% if site_lang == 'hi' %}स्थान व आकार चुनें *{% else %}Placement / Size Preset *{% endif %}</span>
                         </label>
                         <div class="chip-grid">
-                            <button type="button" class="chip-btn" data-value="Front Page — Full Page">
+                            <button type="button" class="chip-btn" data-value="Front Page Full">
                                 <i class="bi bi-newspaper"></i> {% if site_lang == 'hi' %}मुख्य पृष्ठ (पूरा){% else %}Front Full{% endif %}
                             </button>
-                            <button type="button" class="chip-btn" data-value="Front Page — Half Page">
+                            <button type="button" class="chip-btn" data-value="Front Page Half">
                                 <i class="bi bi-layout-split"></i> {% if site_lang == 'hi' %}मुख्य पृष्ठ (आधा){% else %}Front Half{% endif %}
                             </button>
-                            <button type="button" class="chip-btn" data-value="Front Page — Quarter">
+                            <button type="button" class="chip-btn" data-value="Front Page Quarter">
                                 <i class="bi bi-grid-fill"></i> {% if site_lang == 'hi' %}मुख्य पृष्ठ (चौथाई){% else %}Front Quarter{% endif %}
                             </button>
-                            <button type="button" class="chip-btn" data-value="Inside Page — Half Page">
+                            <button type="button" class="chip-btn" data-value="Inside Page Half">
                                 <i class="bi bi-book"></i> {% if site_lang == 'hi' %}अंदर का पृष्ठ (आधा){% else %}Inside Half{% endif %}
                             </button>
-                            <button type="button" class="chip-btn" data-value="Ear Panel (Top Header)">
+                            <button type="button" class="chip-btn" data-value="Ear Panel">
                                 <i class="bi bi-pin-angle-fill"></i> {% if site_lang == 'hi' %}ईयर पैनल (शीर्ष){% else %}Ear Panel{% endif %}
                             </button>
-                            <button type="button" class="chip-btn" data-value="Back Page — Full Page">
+                            <button type="button" class="chip-btn" data-value="Back Page Full">
                                 <i class="bi bi-file-earmark-text"></i> {% if site_lang == 'hi' %}अंतिम पृष्ठ (बैक){% else %}Back Page{% endif %}
                             </button>
                             <button type="button" class="chip-btn" data-value="Custom Size">
@@ -409,7 +409,7 @@
                 <!-- Receipt Header with Language Selector -->
                 <div class="receipt-header">
                     <div class="receipt-title">
-                        <i class="bi bi-receipt"></i> {% if site_lang == 'hi' %}लाइव बिल रसीद{% else %}Invoice Summary{% endif %}
+                        <i class="bi bi-receipt"></i> <span id="receipt_card_title">{% if site_lang == 'hi' %}बिल सारांश{% else %}Invoice Summary{% endif %}</span>
                     </div>
                     <select id="receipt_bill_language" class="receipt-lang-select" title="Bill Print Language">
                         <option value="en">English Bill</option>
@@ -421,52 +421,52 @@
                 <!-- Receipt Body -->
                 <div class="receipt-body">
                     <div style="text-align: center; margin-bottom: 0.75rem;">
-                        <span style="font-weight: 800; font-size: 1.05rem; color: #1c1917;">विश्वगुरु की झलक</span>
-                        <div style="font-size: 0.75rem; color: #57534e;">Vishwaguru Ki Jhalak Billing</div>
+                        <span id="receipt_masthead_title" style="font-weight: 800; font-size: 1.05rem; color: #1c1917;">विश्वगुरु की झलक</span>
+                        <div id="receipt_masthead_sub" style="font-size: 0.75rem; color: #57534e;">{% if site_lang == 'hi' %}विश्वगुरु की झलक बिलिंग{% else %}Vishwaguru Ki Jhalak Billing{% endif %}</div>
                     </div>
 
                     <div class="receipt-divider"></div>
 
                     <div class="receipt-row strong">
-                        <span>{% if site_lang == 'hi' %}विज्ञापनदाता:{% else %}Client:{% endif %}</span>
+                        <span id="lbl_receipt_client">{% if site_lang == 'hi' %}विज्ञापनदाता:{% else %}Client:{% endif %}</span>
                         <span id="receipt_client" style="text-align: right; max-width: 170px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
                             {% if site_lang == 'hi' %}ग्राहक का नाम{% else %}Client Name{% endif %}
                         </span>
                     </div>
 
                     <div class="receipt-row">
-                        <span>{% if site_lang == 'hi' %}स्थान व आकार:{% else %}Placement:{% endif %}</span>
+                        <span id="lbl_receipt_placement">{% if site_lang == 'hi' %}स्थान व आकार:{% else %}Placement:{% endif %}</span>
                         <span id="receipt_placement" style="text-align: right; font-weight: 600; color: #1c1917;">
                             Front Full
                         </span>
                     </div>
 
                     <div class="receipt-row">
-                        <span>{% if site_lang == 'hi' %}प्रकाशन दिनांक:{% else %}Edition Date:{% endif %}</span>
+                        <span id="lbl_receipt_date">{% if site_lang == 'hi' %}प्रकाशन दिनांक:{% else %}Edition Date:{% endif %}</span>
                         <span id="receipt_date">--/--/----</span>
                     </div>
 
                     <div class="receipt-divider"></div>
 
                     <div class="receipt-row">
-                        <span>{% if site_lang == 'hi' %}मूल दर (Base):{% else %}Base Rate:{% endif %}</span>
+                        <span id="lbl_receipt_base">{% if site_lang == 'hi' %}मूल दर (Base):{% else %}Base Rate:{% endif %}</span>
                         <span id="receipt_base" style="font-weight: 600;">₹0.00</span>
                     </div>
 
                     <div class="receipt-row" id="receipt_discount_row" style="display: none; color: #9f1d1d;">
-                        <span>{% if site_lang == 'hi' %}छूट (Discount):{% else %}Discount:{% endif %}</span>
+                        <span id="lbl_receipt_discount">{% if site_lang == 'hi' %}छूट (Discount):{% else %}Discount:{% endif %}</span>
                         <span id="receipt_discount" style="font-weight: 600;">- ₹0.00</span>
                     </div>
 
                     <div class="receipt-row" id="receipt_previous_due_row" style="display: none; color: #b91c1c;">
-                        <span>{% if site_lang == 'hi' %}पुराना बकाया:{% else %}Previous Due:{% endif %}</span>
+                        <span id="lbl_receipt_previous_due">{% if site_lang == 'hi' %}पुराना बकाया:{% else %}Previous Due:{% endif %}</span>
                         <span id="receipt_previous_due" style="font-weight: 700;">+ ₹0.00</span>
                     </div>
 
                     <div class="receipt-divider"></div>
 
                     <div class="receipt-total-row">
-                        <span class="receipt-total-label">
+                        <span class="receipt-total-label" id="lbl_receipt_total">
                             {% if site_lang == 'hi' %}शुद्ध देय राशि:{% else %}Net Total:{% endif %}
                         </span>
                         <span class="receipt-total-val" id="receipt_total">
@@ -475,19 +475,19 @@
                     </div>
 
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 0.5rem;">
-                        <span style="font-size: 14px; color: #57534e;">{% if site_lang == 'hi' %}स्थिति:{% else %}Status:{% endif %}</span>
+                        <span id="lbl_receipt_status" style="font-size: 14px; color: #57534e;">{% if site_lang == 'hi' %}स्थिति:{% else %}Status:{% endif %}</span>
                         <span id="receipt_status_badge" class="badge badge-paid">
                             <i class="bi bi-check-circle-fill"></i> {% if site_lang == 'hi' %}पूर्ण भुगतान{% else %}Paid in Full{% endif %}
                         </span>
                     </div>
 
                     <div class="receipt-due-row" id="receipt_paid_row" style="display: none;">
-                        <span>{% if site_lang == 'hi' %}प्राप्त राशि:{% else %}Paid Now:{% endif %}</span>
+                        <span id="lbl_receipt_paid">{% if site_lang == 'hi' %}प्राप्त राशि:{% else %}Paid Now:{% endif %}</span>
                         <span id="receipt_paid" style="color: #15803d;">₹0.00</span>
                     </div>
 
                     <div class="receipt-due-row">
-                        <span>{% if site_lang == 'hi' %}शेष देय राशि:{% else %}Balance Due:{% endif %}</span>
+                        <span id="lbl_receipt_balance">{% if site_lang == 'hi' %}शेष देय राशि:{% else %}Balance Due:{% endif %}</span>
                         <span id="receipt_balance" style="color: #9f1d1d;">₹0.00</span>
                     </div>
                 </div>
@@ -495,10 +495,10 @@
                 <!-- Receipt Sticky Footer Action -->
                 <div class="receipt-footer-actions">
                     <button type="submit" class="btn-generate" id="submitBillBtn">
-                        <i class="bi bi-printer-fill"></i> {% if site_lang == 'hi' %}बिल बनाएं व प्रिंट करें{% else %}Generate Bill & Print{% endif %}
+                        <i class="bi bi-printer-fill"></i> <span id="submitBillBtnText">{% if site_lang == 'hi' %}बिल बनाएं व प्रिंट करें{% else %}Generate Bill &amp; Print{% endif %}</span>
                     </button>
                     <div style="text-align: center; margin-top: 0.5rem; font-size: 13px; color: #57534e;">
-                        <i class="bi bi-shield-check"></i> {% if site_lang == 'hi' %}तुरंत वीज़ीप्रिंट पीडीएफ व व्हाट्सएप लिंक{% else %}Instant WeasyPrint PDF & WhatsApp link{% endif %}
+                        <i class="bi bi-shield-check"></i> <span id="receipt_footer_note_text">{% if site_lang == 'hi' %}तुरंत वीज़ीप्रिंट पीडीएफ व व्हाट्सऐप लिंक{% else %}Instant WeasyPrint PDF &amp; WhatsApp link{% endif %}</span>
                     </div>
                 </div>
             </div>
