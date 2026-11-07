@@ -6,7 +6,7 @@
 > 2. **ALWAYS UPDATE:** Keep this file updated with current progress, architectural decisions, and context at every step.
 > 3. **DO NOT COMMIT:** Do **NOT** run `git commit` until the user explicitly instructs you to commit.
 > 4. **NEVER PUSH:** **NEVER run `git push`**. Pushing to remote is strictly prohibited unless explicitly requested by the user.
-> 5. **DEV SERVER PORT:** The local development server runs on port **`8080`** (`http://127.0.0.1:8080/`).
+> 5. **DEV SERVER PORT:** The local development server runs on port **`8000`** / **`8080`** (`http://127.0.0.1:8000/`).
 
 ---
 
